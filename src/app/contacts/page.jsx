@@ -24,6 +24,8 @@ export default function ContactsPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: "", mobile: "" });
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+   const [activeTab, setActiveTab] = useState('tab1');
 
   const fileRef = useRef(null);
 
@@ -69,10 +71,20 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex-1 p-6">
-        <Header />
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+     
+        <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
+      <div className="flex-1 flex flex-col overflow-hidden">
+       
+
+         <div className="sticky top-0 z-30 bg-gray-50 shadow">
+          <Header title="Individual Contacts" />
+        </div>
 
         <ContactsHeader
           searchTerm={search}

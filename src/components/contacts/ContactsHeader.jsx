@@ -8,7 +8,7 @@ export default function ContactsHeader({
   fileInputRef,
 }) {
   return (
-    <div className="p-6 border-b flex flex-col md:flex-row justify-end gap-3">
+    <div className="p-6  flex flex-col md:flex-row justify-end gap-3">
       <input
         type="text"
         placeholder="Search..."

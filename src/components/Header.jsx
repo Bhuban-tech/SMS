@@ -1,51 +1,58 @@
-"use client";
+'use client';
+
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Users, LogOut, User } from "lucide-react";
+// import ProfileModal from "@/components/ProfileModal";
+import ProfileModal from "./profile/ProfileModal";
 
 const Header = ({
   collegeName = "Aadim National College",
   balance = 5000,
-  avatarIcon = <Users size={20} className="text-white" />,
+  avatarIcon = <Users size={20} className="w-6 h-6 sm:w-8 sm:h-8 bg-teal-500 rounded-full flex items-center justify-center shrink-0" />,
   bgColor = "bg-white",
+  title 
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const router = useRouter();
 
-  const dropdownRef = useRef(null);
-
-  // Close when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(e) {
+    const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
-    }
-
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleProfileClick = () => {
-    router.push("/profile"); 
+    setProfileOpen(true);
     setDropdownOpen(false);
   };
 
   const handleLogout = () => {
     alert("Logged out");
     setDropdownOpen(false);
+    // TODO: implement actual logout logic
+    router.push("/login");
   };
 
   return (
     <header
-      className={`${bgColor} w-full rounded-xl shadow-md p-4 lg:p-5 flex flex-col lg:flex-row items-center justify-between`}
+      className=" bg-slate-800 w-full  shadow-md p-4 lg:p-5 flex flex-col lg:flex-row items-center justify-between"
     >
-      <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-4"></div>
+      <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-4">
+       <h1 className="text-base sm:text-lg md:text-xl font-semibold text-white truncate"> {title} </h1>
+      </div>
 
       <div className="flex items-center gap-4 mt-3 lg:mt-0 relative" ref={dropdownRef}>
         <div className="text-right">
-          <p className="text-sm lg:text-base text-slate-600">{collegeName}</p>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-sm lg:text-base text-white">{collegeName}</p>
+          <p className="text-xs text-white mt-0.5">
             Rs. {balance.toLocaleString()}
           </p>
         </div>
@@ -58,7 +65,7 @@ const Header = ({
         </div>
 
         {dropdownOpen && (
-          <div className="absolute right-6 mt-25 bg-white shadow-md rounded-md w-40">
+          <div className="absolute right-0 mt-2 bg-white shadow-md rounded-md w-40 z-50">
             <ul>
               <li
                 className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 cursor-pointer"
@@ -76,6 +83,9 @@ const Header = ({
           </div>
         )}
       </div>
+
+      {/* Profile modal */}
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </header>
   );
 };
