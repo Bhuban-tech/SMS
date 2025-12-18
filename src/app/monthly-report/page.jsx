@@ -1,42 +1,44 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calendar, MessageSquare, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import {
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
+} from 'recharts';
+import { Calendar, MessageSquare, CheckCircle, XCircle, Clock, Menu, X, ArrowLeft } from 'lucide-react';
 
-const DailyReport = () => {
+const MonthlyReport = () => {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
-  // Sample daily data - hourly breakdown
-  const dailyData = [
-    { hour: '00:00', sent: 45, delivered: 43, failed: 2 },
-    { hour: '02:00', sent: 28, delivered: 27, failed: 1 },
-    { hour: '04:00', sent: 32, delivered: 31, failed: 1 },
-    { hour: '06:00', sent: 89, delivered: 87, failed: 2 },
-    { hour: '08:00', sent: 156, delivered: 152, failed: 4 },
-    { hour: '10:00', sent: 234, delivered: 230, failed: 4 },
-    { hour: '12:00', sent: 289, delivered: 285, failed: 4 },
-    { hour: '14:00', sent: 267, delivered: 263, failed: 4 },
-    { hour: '16:00', sent: 234, delivered: 230, failed: 4 },
-    { hour: '18:00', sent: 198, delivered: 195, failed: 3 },
-    { hour: '20:00', sent: 178, delivered: 175, failed: 3 },
-    { hour: '22:00', sent: 134, delivered: 132, failed: 2 },
+  const handleBack = () => {
+  router.push("/dashboard"); 
+};
+
+
+  
+  const monthlyData = [
+    { date: 'Week 1', sent: 4520, delivered: 4456, failed: 64 },
+    { date: 'Week 2', sent: 5230, delivered: 5180, failed: 50 },
+    { date: 'Week 3', sent: 4890, delivered: 4820, failed: 70 },
+    { date: 'Week 4', sent: 5670, delivered: 5610, failed: 60 },
   ];
+
 
   const providerData = [
-    { name: 'NTC', value: 1245, color: '#14b8a6' },
-    { name: 'Ncell', value: 834, color: '#8b5cf6' },
+    { name: 'NTC', value: 12450, color: '#14b8a6' },
+    { name: 'Ncell', value: 8340, color: '#8b5cf6' },
   ];
 
-  const dailyStats = {
-    total: 1884,
-    delivered: 1850,
-    failed: 34,
+  const monthlyStats = {
+    total: 20310,
+    delivered: 20066,
+    failed: 244,
     pending: 0,
-    deliveryRate: 98.2,
+    deliveryRate: 98.8
   };
 
   const StatCard = ({ icon: Icon, label, value, subValue, color }) => (
@@ -56,62 +58,101 @@ const DailyReport = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+     
+      <button
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+      >
+        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
 
-      {/* Main content */}
+   
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        activeTab="monthly-report"
+      />
+
+     
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <Header />
+        <Header username="Admin" email="admin@example.com" title="Monthly Report" />
 
-        <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8 overflow-y-auto">
-          {/* Mobile menu button */}
-          <button
-            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
-          >
-            {sidebarOpen ? <X size={22} /> : <MessageSquare size={22} />}
-          </button>
+       
+        <div className="p-6 lg:p-8 overflow-y-auto h-[calc(100vh-80px)] space-y-6">
+       
+          {/* <div>
+            
+            <p className="text-gray-600 mt-1">SMS delivery performance overview for the month</p>
+          </div> */}
 
-          {/* Header Title */}
-          <div>
-            <h2 className="text-3xl font-bold text-slate-800">Daily Report</h2>
-            <p className="text-gray-600 mt-1">SMS delivery performance overview for the day</p>
-          </div>
+          <div className="space-y-4">
+  <button
+    onClick={handleBack}
+    className="flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-slate-900 transition cursor-pointer"
+  >
+    <ArrowLeft size={20} className='font-bold' />
+            Back to dashboard
+  </button>
 
-          {/* Date Selector */}
+  <p className="text-gray-600">
+    SMS delivery performance overview for the month
+  </p>
+</div>
+
+
+         
           <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200">
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
               <Calendar className="w-5 h-5 text-teal-600" />
-              <label className="text-sm font-semibold text-gray-700">
-                Select Date:
-              </label>
+              <label className="text-sm font-semibold text-gray-700">Select Month:</label>
               <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard icon={MessageSquare} label="Total Messages" value={dailyStats.total.toLocaleString()} color="bg-blue-600" />
-            <StatCard icon={CheckCircle} label="Delivered" value={dailyStats.delivered.toLocaleString()} subValue={`${dailyStats.deliveryRate}% success rate`} color="bg-green-600" />
-            <StatCard icon={XCircle} label="Failed" value={dailyStats.failed.toLocaleString()} color="bg-red-600" />
-            <StatCard icon={Clock} label="Pending" value={dailyStats.pending.toLocaleString()} color="bg-yellow-600" />
+     
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              icon={MessageSquare}
+              label="Total Messages"
+              value={monthlyStats.total.toLocaleString()}
+              color="bg-blue-600"
+            />
+            <StatCard
+              icon={CheckCircle}
+              label="Delivered"
+              value={monthlyStats.delivered.toLocaleString()}
+              subValue={`${monthlyStats.deliveryRate}% success rate`}
+              color="bg-green-600"
+            />
+            <StatCard
+              icon={XCircle}
+              label="Failed"
+              value={monthlyStats.failed.toLocaleString()}
+              color="bg-red-600"
+            />
+            <StatCard
+              icon={Clock}
+              label="Pending"
+              value={monthlyStats.pending.toLocaleString()}
+              color="bg-yellow-600"
+            />
           </div>
 
-          {/* Charts */}
+        
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
             <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-md border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Hourly Distribution</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Distribution</h3>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dailyData}>
+                <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="hour" />
+                  <XAxis dataKey="date" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
@@ -122,6 +163,7 @@ const DailyReport = () => {
               </ResponsiveContainer>
             </div>
 
+          
             <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Provider Distribution</h3>
               <ResponsiveContainer width="100%" height={300}>
@@ -143,6 +185,7 @@ const DailyReport = () => {
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
+
               <div className="mt-4 space-y-2">
                 {providerData.map((provider) => (
                   <div key={provider.name} className="flex items-center justify-between">
@@ -157,13 +200,13 @@ const DailyReport = () => {
             </div>
           </div>
 
-          {/* Delivery Trend */}
+   
           <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Delivery Success Trend</h3>
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={dailyData}>
+              <LineChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="hour" />
+                <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
@@ -178,4 +221,4 @@ const DailyReport = () => {
   );
 };
 
-export default DailyReport;
+export default MonthlyReport;

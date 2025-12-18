@@ -15,6 +15,8 @@ import SMSTypePieChart from "@/components/dashboard/SMSTypePieChart";
 import TopRecipients from "@/components/dashboard/TopRecipients";
 import GroupPage from "../groups/page";
 
+
+
 const SMSDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -121,10 +123,11 @@ const SMSDashboard = () => {
         setSidebarOpen={setSidebarOpen}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden p-6">
-        <Header username={dashboardData?.username} email={dashboardData?.email} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header username={dashboardData?.username} email={dashboardData?.email} title="SMS Dashboard" />
 
         <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8 overflow-y-auto">
           {activeTab === "dashboard" && (
@@ -155,11 +158,11 @@ const SMSDashboard = () => {
                   <TopStats dashboardData={dashboardData} />
                   <div className="flex gap-4 overflow-x-auto pb-3">
                     <button className="px-6 py-3 bg-teal-600 text-white rounded-xl font-semibold shadow-md hover:bg-teal-700 transition whitespace-nowrap"
-                      onClick={() => router.push('/daily-reports')}>
+                      onClick={() => router.push('/daily-report')}>
                       Daily Report
                     </button>
                     <button className="px-6 py-3 bg-gray-200 text-slate-700 rounded-xl font-semibold border border-gray-300 hover:bg-gray-300 transition whitespace-nowrap"
-                     onClick={() => router.push('/monthly-reports')}
+                     onClick={() => router.push('/monthly-report')}
                     >
                       Monthly Report
                     </button>
