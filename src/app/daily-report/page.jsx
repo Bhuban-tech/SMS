@@ -17,7 +17,7 @@ const DailyReport = () => {
   router.push("/dashboard"); 
 };
 
-  // Sample daily data - hourly breakdown
+  
   const dailyData = [
     { hour: '00:00', sent: 45, delivered: 43, failed: 2 },
     { hour: '02:00', sent: 28, delivered: 27, failed: 1 },
