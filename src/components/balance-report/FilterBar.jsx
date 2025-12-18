@@ -34,7 +34,7 @@ export default function FilterBar({
 
       <div className="ml-auto flex gap-3">
         <button className="bg-teal-600 px-4 py-2 text-white rounded-xl shadow hover:bg-teal-700">
-          Load Balance
+        TOP UP 
         </button>
 
         <button className="px-3 py-2 border rounded hover:bg-gray-100 shadow flex items-center gap-2">

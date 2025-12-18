@@ -183,8 +183,8 @@ const SMSDashboard = () => {
           )}
 
           {activeTab === "groups" && <GroupPage />}
-          {activeTab === "batch" && <SMSFilesPage />}
-          {activeTab === "balance-report" && <BalanceReportPage />}
+          {/* {activeTab === "batch" && <SMSFilesPage />}
+          {activeTab === "balance-report" && <BalanceReportPage />} */}
 
           {activeTab === "messages" && (
             <div className="max-w-2xl mx-auto">

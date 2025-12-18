@@ -15,6 +15,8 @@ import BulkSMS from "@/components/send-sms/BulkSMS";
 
 import MessageBox from "@/components/send-sms/MessageBox";
 import Alert from "@/components/send-sms/Alert";
+import { useSMSFiles } from "@/context/SMSFileContext";
+
 
 import { fetchGroups } from "@/lib/group";
 import { fetchContacts } from "@/lib/contacts";
@@ -36,6 +38,7 @@ export default function SMSSendUI() {
   const [adminId, setAdminId] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("send-sms");
+  const { smsFiles, setSmsFiles } = useSMSFiles();
 
   const { alert, showAlert } = useAlert();
 
@@ -72,7 +75,24 @@ export default function SMSSendUI() {
       let response;
       if (formData.sendType === "individual") response = await sendIndividualSMS(token, adminId, formData.message, phoneNumbers);
       else if (formData.sendType === "group") response = await sendGroupSMS(token, adminId, selectedGroup, formData.message);
-      else if (formData.sendType === "bulk") response = await sendBulkSMS(token, adminId, bulkFile, bulkGroupName);
+      // else if (formData.sendType === "bulk") response = await sendBulkSMS(token, adminId, bulkFile, bulkGroupName);
+        if (formData.sendType === "bulk") {
+      const response = await sendBulkSMS(token, adminId, bulkFile, bulkGroupName);
+      if (response.success) {
+        setSmsFiles(prev => [
+          ...prev,
+          {
+            id: response.id || Date.now(),
+            fileName: bulkFile.name,
+            fileType: bulkFile.name.split(".").pop(),
+            size: bulkFile.size,
+            groupName: bulkGroupName,
+            createdAt: new Date().toISOString(),
+            author: "admin",
+          }
+        ]);
+      }
+    }
 
       if (response.success) {
         showAlert("success", formData.sendType === "bulk" ? "Bulk contacts uploaded!" : "SMS sent successfully!");
@@ -90,6 +110,8 @@ export default function SMSSendUI() {
       setSending(false);
     }
   };
+
+ 
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">

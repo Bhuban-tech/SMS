@@ -32,6 +32,7 @@ export default function SMSFilesPage() {
   const [adminId, setAdminId] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("batch");
+  
 
   // Load token/adminId
   useEffect(() => {

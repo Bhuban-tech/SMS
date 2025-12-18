@@ -1,10 +1,13 @@
+"use client";
+
 import { API_BASE_URL, ENDPOINTS } from "@/config/api";
 
 export const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
+
   return {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    ...(token && { Authorization: `Bearer ${token}` }),
   };
 };
 
@@ -21,5 +24,8 @@ export const login = async (username, password) => {
     throw new Error(data.message || "Login failed");
   }
 
-  return data.data; 
+  localStorage.setItem("token", data.data.token);
+  localStorage.setItem("user", JSON.stringify(data.data.user));
+
+  return data.data;
 };

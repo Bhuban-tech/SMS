@@ -6,6 +6,7 @@ export const getHeaders =(token) =>({
 });
 
 export const fetchGroups = async (token) =>{
+     console.log("TOKEN USED:", token);
     const response = await fetch (API_BASE_URL + ENDPOINTS.GET_ALL_GROUPS,{
         headers: getHeaders (token),
     })
@@ -17,7 +18,7 @@ export const createGroup = async (token,name) => {
         method:"POST",
         headers: getHeaders(token),
         body: JSON.stringify({name}),
-    })
+    })// Group SMS
     return response.json();
 }
 
