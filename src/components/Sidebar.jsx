@@ -9,6 +9,7 @@ import {
   FileText,
   File,
   Pen,
+  BookTemplate,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,6 +22,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
     { id: "delivery-reports", icon: FileText, label: "Delivery Reports", path: "/delivery-reports" },
     { id: "balance-report", icon: Pen, label: "Balance Report", path: "/balance-report" },
      { id: "send sms", icon: Users, label: "Send SMS", path: "/send-sms" },
+    //  {id:"template",icon:BookTemplate, label:"Templates",path:"/templates"}
     
   ];
 

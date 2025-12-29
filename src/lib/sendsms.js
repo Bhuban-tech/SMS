@@ -40,7 +40,7 @@ export const sendBulkSMS = async (token, senderId, groupName, file) => {
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // ✅ only Authorization
+        Authorization: `Bearer ${token}`, 
       },
       body: form,
     }
@@ -48,3 +48,36 @@ export const sendBulkSMS = async (token, senderId, groupName, file) => {
 
   return response.json();
 };
+
+
+export const sendTemplateSMS = async (token, adminId, file, groupName) => {
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    form.append(
+      "groupRequest",
+      new Blob(
+        [JSON.stringify({ name: groupName.trim(), senderId: adminId })],
+        { type: "application/json" }
+      )
+    );
+
+    const response = await fetch(
+      `${API_BASE_URL}${ENDPOINTS.BULK_ADD_CONTACTS_TO_GROUP("new")}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      }
+    );
+
+    return response.json();
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+
+
+

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Papa from "papaparse";
 import { toast } from "sonner";
 
 import Sidebar from "@/components/Sidebar";
@@ -25,14 +24,28 @@ export default function ContactsPage() {
   const [form, setForm] = useState({ name: "", mobile: "" });
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-   const [activeTab, setActiveTab] = useState('tab1');
+  const [activeTab, setActiveTab] = useState("tab1");
+
+  const [token, setToken] = useState("");
 
   const fileRef = useRef(null);
 
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    if (t) setToken(t);
+  }, []);
+
+
+  useEffect(() => {
+    if (token) loadContacts();
+  }, [token]);
+
   const loadContacts = async () => {
     setLoading(true);
-    const res = await fetchContacts();
-    if (res.success) {
+    try {
+      const res = await fetchContacts(token);
+      if (!res.success) return toast.error(res.message);
       setContacts(
         res.data.map((c) => ({
           id: c.id,
@@ -40,13 +53,52 @@ export default function ContactsPage() {
           mobile: c.phoneNo,
         }))
       );
+    } catch {
+      toast.error("Failed to load contacts");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  useEffect(() => {
-    loadContacts();
-  }, []);
+  const saveContact = async () => {
+    if (!token) return toast.error("Session expired. Please login again.");
+
+    try {
+      if (editing) {
+        const res = await updateContact(token, editing, {
+          name: form.name,
+          phoneNo: form.mobile,
+        });
+        if (!res.success) return toast.error(res.message);
+        toast.success("Contact updated");
+      } else {
+        const res = await createContact(token, {
+          name: form.name,
+          phoneNo: form.mobile,
+        });
+        if (!res.success) return toast.error(res.message);
+        toast.success("Contact added");
+      }
+      setModalOpen(false);
+      setEditing(null);
+      loadContacts();
+    } catch {
+      toast.error("Failed to save contact");
+    }
+  };
+
+  const handleDelete = async (c) => {
+    if (!token) return toast.error("Session expired. Please login again.");
+
+    try {
+      const res = await deleteContact(token, c.id);
+      if (!res.success) return toast.error(res.message);
+      toast.success("Contact deleted");
+      loadContacts();
+    } catch {
+      toast.error("Failed to delete contact");
+    }
+  };
 
   const filtered = contacts.filter(
     (c) =>
@@ -54,35 +106,16 @@ export default function ContactsPage() {
       c.mobile.includes(search)
   );
 
-  const saveContact = async () => {
-    if (editing) {
-      await updateContact(editing, {
-        name: form.name,
-        phoneNo: form.mobile,
-      });
-      toast.success("Contact updated");
-    } else {
-      await createContact({ name: form.name, phoneNo: form.mobile });
-      toast.success("Contact added");
-    }
-    setModalOpen(false);
-    setEditing(null);
-    loadContacts();
-  };
-
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-     
-        <Sidebar
+      <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
-       
-
-         <div className="sticky top-0 z-30 bg-gray-50 shadow">
+        <div className="sticky top-0 z-30 bg-gray-50 shadow">
           <Header title="Individual Contacts" />
         </div>
 
@@ -102,19 +135,21 @@ export default function ContactsPage() {
             setForm(c);
             setModalOpen(true);
           }}
-          onDelete={(c) => deleteContact(c.id).then(loadContacts)}
+          onDelete={handleDelete}
           onView={(c) => toast.info(c.name)}
           onSend={(c) => toast.success(`SMS sent to ${c.name}`)}
         />
 
-        <ContactModal
-          open={modalOpen}
-          close={() => setModalOpen(false)}
-          data={form}
-          setData={setForm}
-          onSave={saveContact}
-          isEdit={!!editing}
-        />
+        {modalOpen && (
+          <ContactModal
+            open={modalOpen}
+            close={() => setModalOpen(false)}
+            data={form}
+            setData={setForm}
+            onSave={saveContact}
+            isEdit={!!editing}
+          />
+        )}
       </div>
     </div>
   );

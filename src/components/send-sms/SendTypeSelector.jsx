@@ -1,15 +1,16 @@
 import React from "react";
-import { User, Users, Upload } from "lucide-react";
+import { User, Users, Upload, LayoutTemplate } from "lucide-react";
 
 export default function SendTypeSelector({ sendType, setSendType }) {
   const types = [
     { key: "individual", label: "Individual", Icon: User },
     { key: "group", label: "Group", Icon: Users },
     { key: "bulk", label: "Bulk", Icon: Upload },
+    {key: "template", label: "Template", Icon: LayoutTemplate },
   ];
 
   return (
-    <div className="mb-8 grid grid-cols-3 gap-4">
+    <div className="mb-8 grid grid-cols-4 gap-4">
       {types.map(({ key, label, Icon }) => (
         <button
           key={key}

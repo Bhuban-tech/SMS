@@ -1,11 +1,10 @@
 "use client";
+import React, { createContext, useContext, useState } from "react";
 
-import { createContext, useContext, useState } from "react";
-
-const SMSFilesContext = createContext();
+const SMSFilesContext = createContext(null);
 
 export function SMSFilesProvider({ children }) {
-  const [smsFiles, setSmsFiles] = useState([]); // stores all SMS files
+  const [smsFiles, setSmsFiles] = useState([]);
 
   return (
     <SMSFilesContext.Provider value={{ smsFiles, setSmsFiles }}>
@@ -14,9 +13,10 @@ export function SMSFilesProvider({ children }) {
   );
 }
 
-// Custom hook to access the context
 export function useSMSFiles() {
   const context = useContext(SMSFilesContext);
-  if (!context) throw new Error("useSMSFiles must be used within SMSFilesProvider");
+  if (!context) {
+    throw new Error("useSMSFiles must be used within SMSFilesProvider");
+  }
   return context;
 }

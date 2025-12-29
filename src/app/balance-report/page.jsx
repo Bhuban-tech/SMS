@@ -3,9 +3,7 @@
 import React, { useMemo, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-// import FilterBar from "./FilterBar";
 import FilterBar from "@/components/balance-report/FilterBar";
-// import BalanceTable from "./BalanceTable";
 import BalanceTable from "@/components/balance-report/BalanceTable";
 import { balanceReportData } from "@/components/balance-report/Data";
 

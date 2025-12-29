@@ -35,7 +35,7 @@ function BulkSMS({ bulkFile, setBulkFile, selectedFile, setSelectedFile, bulkGro
         <input
           type="text"
           value={bulkGroupName}
-          onChange={(e) => setBulkGroupName(e.target.value)}
+          onChange={(e) => setBulkGroupName(e.target.value) || ""}
           placeholder="e.g., Customers 2025, VIP Members"
           className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500"
         />

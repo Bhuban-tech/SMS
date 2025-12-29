@@ -34,12 +34,28 @@ const Header = ({
     setDropdownOpen(false);
   };
 
+  // const handleLogout = () => {
+  //   alert("Logged out");
+  //   setDropdownOpen(false);
+  //   // TODO: implement actual logout logic
+  //   router.push("/login");
+  // };
+
   const handleLogout = () => {
-    alert("Logged out");
-    setDropdownOpen(false);
-    // TODO: implement actual logout logic
-    router.push("/login");
-  };
+  // 1. Remove localStorage items
+  localStorage.removeItem("token");
+  localStorage.removeItem("adminId");
+  localStorage.removeItem("user");
+
+  // 2. Remove auth cookie (used by middleware)
+  document.cookie = "token=; path=/; max-age=0";
+
+  // 3. Close dropdown
+  setDropdownOpen(false);
+
+  // 4. Redirect to login
+  router.replace("/login");
+};
 
   return (
     <header
