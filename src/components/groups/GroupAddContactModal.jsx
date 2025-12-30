@@ -1,25 +1,33 @@
 import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { toast } from "sonner";
-import { bulkAddContactsToGroup } from "@/lib/group";
+import { addContactsToGroup, bulkAddContactsToGroup } from "@/lib/group";
+import { fetchContacts as fetchContactsAPI } from "@/lib/contacts";
 
- function GroupAddContactModal({ token, group, onClose, onSuccess }) {
+function GroupAddContactModal({ token, group, onClose, onSuccess }) {
   const [contactIds, setContactIds] = useState([]);
-    const [contacts, setContacts] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-      useEffect(() => {
-    const fetchContacts = async () => {
-      const res = await fetchContacts(token);
-      if (!res.success) {
-        toast.error(res.message);
-        return;
+  useEffect(() => {
+    if (!token) return;
+
+    const loadContacts = async () => {
+      try {
+        const res = await fetchContactsAPI(token);
+        if (!res.success) {
+          toast.error(res.message);
+          return;
+        }
+        setContacts(res.data);
+      } catch (err) {
+        toast.error("Failed to load contacts");
+      } finally {
+        setLoading(false);
       }
-      setContacts(res.data);
-      setLoading(false);
     };
 
-    fetchContacts();
+    loadContacts();
   }, [token]);
 
   const toggle = (id) => {
@@ -29,30 +37,23 @@ import { bulkAddContactsToGroup } from "@/lib/group";
   };
 
   const handleAdd = async () => {
-    if (contactIds.length === 0)
-      return toast.error("Select at least one contact");
+    if (contactIds.length === 0) {
+      toast.error("Select at least one contact");
+      return;
+    }
 
-    const res = await bulkAddContactsToGroup(token, group.id, contactIds);
-    if (!res.success) return toast.error(res.message);
+    const res = await addContactsToGroup(token, group.id, contactIds);
+    if (!res.success) {
+      toast.error(res.message);
+      return;
+    }
 
     toast.success("Contacts added");
     onSuccess();
     onClose();
   };
 
-  // return (
-  //   <Modal title={`Add contacts to ${group.name}`} close={onClose}>
-  //     {/* map contacts here */}
-  //     <button
-  //       onClick={handleAdd}
-  //       className="w-full mt-4 bg-teal-600 text-white py-2 rounded-xl"
-  //     >
-  //       Add Contacts
-  //     </button>
-  //   </Modal>
-  // );
-
-    return (
+  return (
     <Modal title={`Add contacts to ${group.name}`} close={onClose}>
       {loading ? (
         <p className="text-center text-gray-500">Loading contacts...</p>
@@ -89,7 +90,5 @@ import { bulkAddContactsToGroup } from "@/lib/group";
     </Modal>
   );
 }
-
-
 
 export default GroupAddContactModal;

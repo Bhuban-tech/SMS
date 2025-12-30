@@ -16,13 +16,13 @@ export default function ContactModal({
         placeholder="Name"
         value={data.name}
         onChange={(e) => setData({ ...data, name: e.target.value })}
-        className="w-full border px-3 py-2 rounded"
+        className="w-full border px-3 py-2 rounded mb-4"
       />
       <input
         placeholder="Mobile"
         value={data.mobile}
         onChange={(e) => setData({ ...data, mobile: e.target.value })}
-        className="w-full border px-3 py-2 rounded"
+        className="w-full border px-3 py-2 rounded mb-4"
       />
       <button
         onClick={onSave}

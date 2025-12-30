@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-
 import SendTypeSelector from "@/components/send-sms/SendTypeSelector";
 import IndividualSMS from "@/components/send-sms/IndividualSMS";
 import GroupSMS from "@/components/send-sms/GroupSMS";
 import BulkSMS from "@/components/send-sms/BulkSMS";
 import MessageBox from "@/components/send-sms/MessageBox";
 import Alert from "@/components/send-sms/Alert";
+import TemplateSMS from "@/components/send-sms/TemplateSMS";
 
 import { useSMSFiles } from "@/context/SMSFileContext";
 import { fetchGroups } from "@/lib/group";
@@ -22,43 +23,47 @@ import {
 } from "@/lib/sendsms";
 
 import useAlert from "@/hooks/useAlert";
-import TemplateSMS from "@/components/send-sms/TemplateSMS";
 
 export default function SMSSendUI() {
   const [formData, setFormData] = useState({
     message: "",
-    sendType: "individual",
+    sendType: "individual"
   });
-
-  const [selectedGroup, setSelectedGroup] = useState("");
-  const [phoneNumbers, setPhoneNumbers] = useState([]);
-  const [currentPhone, setCurrentPhone] = useState("");
-  const [bulkFile, setBulkFile] = useState(null);
-  const [selectedFile, setSelectedFile] = useState("");
-  const [bulkGroupName, setBulkGroupName] = useState("");
-  const [sending, setSending] = useState(false);
-
-  const [groups, setGroups] = useState([]);
-  const [contacts, setContacts] = useState([]);
 
   const [token, setToken] = useState("");
   const [adminId, setAdminId] = useState(0);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("send-sms");
+  const [groups, setGroups] = useState([]);
+  const [contacts, setContacts] = useState([]);
+
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [phoneNumbers, setPhoneNumbers] = useState([]);
+  const [currentPhone, setCurrentPhone] = useState("");
+
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkGroupName, setBulkGroupName] = useState("");
+
+  const [sending, setSending] = useState(false);
+
+  const [templatePayload, setTemplatePayload] = useState(null);
 
   const { smsFiles, setSmsFiles } = useSMSFiles();
   const { alert, showAlert } = useAlert();
 
-  const [templatePayload, setTemplatePayload] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("send-sms");
 
-  // Load token
+  /* =============================
+     LOAD TOKEN
+  ============================== */
   useEffect(() => {
     setToken(localStorage.getItem("token") || "");
     setAdminId(Number(localStorage.getItem("adminId")) || 0);
   }, []);
 
-  // Load groups & contacts
+  /* =============================
+     LOAD GROUPS & CONTACTS
+  ============================== */
   useEffect(() => {
     if (!token) return;
 
@@ -75,48 +80,22 @@ export default function SMSSendUI() {
     })();
   }, [token]);
 
- 
+  /* =============================
+     SEND SMS HANDLER
+  ============================== */
   const handleSendSMS = async () => {
- 
-    if (
-      formData.sendType !== "bulk" &&
-      formData.sendType !== "template" &&
-      !formData.message.trim()
-    ) {
-      return showAlert("error", "Enter a message");
-    }
-
-    if (formData.sendType === "individual" && phoneNumbers.length === 0) {
-      return showAlert("error", "Add phone number");
-    }
-
-    if (formData.sendType === "group" && !selectedGroup) {
-      return showAlert("error", "Select group");
-    }
-
-    if (
-      formData.sendType === "template" &&
-      (!templatePayload || templatePayload.messages.length === 0)
-    ) {
-      return showAlert("error", "Select template and upload CSV");
-    }
-
-    const finalBulkGroupName =
-      typeof bulkGroupName === "string"
-        ? bulkGroupName.trim()
-        : bulkGroupName?.name?.trim();
-
-    if (formData.sendType === "bulk" && (!bulkFile || !finalBulkGroupName)) {
-      return showAlert("error", "Select file & group name");
-    }
-
     setSending(true);
 
     try {
       let response;
 
-   
+      /* ---------- Individual ---------- */
       if (formData.sendType === "individual") {
+        if (!formData.message.trim())
+          throw new Error("Enter a message");
+        if (phoneNumbers.length === 0)
+          throw new Error("Add phone numbers");
+
         response = await sendIndividualSMS(
           token,
           adminId,
@@ -125,8 +104,13 @@ export default function SMSSendUI() {
         );
       }
 
-     
+      /* ---------- Group ---------- */
       if (formData.sendType === "group") {
+        if (!selectedGroup)
+          throw new Error("Select a group");
+        if (!formData.message.trim())
+          throw new Error("Enter a message");
+
         response = await sendGroupSMS(
           token,
           adminId,
@@ -135,71 +119,58 @@ export default function SMSSendUI() {
         );
       }
 
-   
+      /* ---------- Bulk ---------- */
       if (formData.sendType === "bulk") {
+        if (!bulkFile || !bulkGroupName)
+          throw new Error("Select file & group name");
+
         response = await sendBulkSMS(
           token,
           adminId,
           bulkFile,
-          finalBulkGroupName
+          bulkGroupName
         );
 
         if (response?.success) {
-          const newFile = {
-            id: response.id || Date.now(),
-            fileName: bulkFile.name,
-            fileType: bulkFile.name.split(".").pop(),
-            size: bulkFile.size,
-            name: finalBulkGroupName,
-            createdAt: new Date().toISOString(),
-            author: "admin",
-          };
-
-          setSmsFiles((prev) => [newFile, ...prev]);
+          setSmsFiles((prev) => [
+            {
+              id: response.id || Date.now(),
+              fileName: bulkFile.name,
+              size: bulkFile.size,
+              name: bulkGroupName,
+              createdAt: new Date().toISOString()
+            },
+            ...prev
+          ]);
         }
       }
 
-
-//      if (formData.sendType === "template") {
-//   response = await sendTemplateSMS(
-//     token,
-//     adminId,
-//     templatePayload.messages
-//   );
-// }
+      /* ---------- TEMPLATE ---------- */
       if (formData.sendType === "template") {
-  if (!bulkFile || !bulkGroupName) {
-    return showAlert("error", "Select file & group name");
-  }
+        if (!templatePayload)
+          throw new Error("Select template & upload CSV");
 
-  response = await sendTemplateSMS(token, adminId, bulkFile, bulkGroupName);
+        response = await sendTemplateSMS(
+          token,
+          adminId,
+          templatePayload.csvData,
+          templatePayload.content // 🔥 NEVER NULL
+        );
+      }
 
-  if (!response.success) throw new Error("Failed to send template messages");
+      if (!response?.success) throw new Error("Failed to send");
 
-  showAlert("success", "Template SMS uploaded successfully!");
-}
+      showAlert("success", "SMS sent successfully");
 
-
-
-      if (!response?.success) throw new Error("Failed");
-
-      showAlert(
-        "success",
-        formData.sendType === "bulk"
-          ? "Contacts uploaded successfully!"
-          : formData.sendType === "template"
-          ? "Template SMS sent successfully!"
-          : "SMS sent!"
-      );
-
-
+      /* ---------- RESET ---------- */
       setFormData({ message: "", sendType: formData.sendType });
       setPhoneNumbers([]);
       setCurrentPhone("");
       setBulkFile(null);
-      setSelectedFile("");
       setBulkGroupName("");
       setSelectedGroup("");
+      setTemplatePayload(null);
+
     } catch (err) {
       showAlert("error", err.message || "Error");
     } finally {
@@ -207,7 +178,9 @@ export default function SMSSendUI() {
     }
   };
 
-
+  /* =============================
+     UI
+  ============================== */
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar
@@ -221,11 +194,7 @@ export default function SMSSendUI() {
         <Header title="Send SMS" />
 
         <main className="p-6 max-w-4xl mx-auto w-full">
-          <Alert
-            type={alert?.type}
-            message={alert?.message}
-            onClose={() => showAlert(null)}
-          />
+          <Alert {...alert} onClose={() => showAlert(null)} />
 
           <SendTypeSelector
             sendType={formData.sendType}
@@ -241,7 +210,6 @@ export default function SMSSendUI() {
               contacts={contacts}
               phoneNumbers={phoneNumbers}
               setPhoneNumbers={setPhoneNumbers}
-              showAlert={showAlert}
             />
           )}
 
@@ -257,28 +225,20 @@ export default function SMSSendUI() {
             <BulkSMS
               bulkFile={bulkFile}
               setBulkFile={setBulkFile}
-              selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}
               bulkGroupName={bulkGroupName}
               setBulkGroupName={setBulkGroupName}
-              showAlert={showAlert}
             />
           )}
 
-          {/* {formData.sendType === "template" && (
-            <TemplateSMS setTemplatePayload={setTemplatePayload} />
-          )} */}
-
           {formData.sendType === "template" && (
-  <TemplateSMS
-    bulkFile={bulkFile}
-    setBulkFile={setBulkFile}
-    bulkGroupName={bulkGroupName}
-    setBulkGroupName={setBulkGroupName}
-    showAlert={showAlert}
-  />
-)}
-
+            <TemplateSMS
+              bulkFile={bulkFile}
+              setBulkFile={setBulkFile}
+              bulkGroupName={bulkGroupName}
+              setBulkGroupName={setBulkGroupName}
+              setTemplatePayload={setTemplatePayload} // 🔥
+            />
+          )}
 
           {formData.sendType !== "bulk" &&
             formData.sendType !== "template" && (
@@ -295,13 +255,7 @@ export default function SMSSendUI() {
             disabled={sending}
             className="w-full bg-teal-600 text-white py-4 rounded-xl mt-4"
           >
-            {sending
-              ? "Processing..."
-              : formData.sendType === "bulk"
-              ? "Upload Contacts"
-              : formData.sendType === "template"
-              ? "Send Template SMS"
-              : "Send SMS"}
+            {sending ? "Processing..." : "Send SMS"}
           </button>
         </main>
       </div>

@@ -1,5 +1,5 @@
 
-export const API_BASE_URL = "http://192.168.110.98:8080"; 
+export const API_BASE_URL = "http://192.168.1.13:8080"; 
 export const ENDPOINTS = {
   //auth
   LOGIN: "/api/auth/login",
@@ -24,7 +24,7 @@ export const ENDPOINTS = {
   DELETE_GROUP: (id) => `/api/groups/delete/${id}`,
   CONTACTS_ADD_TO_GROUP: (id) => `/api/groups/${id}/contacts`,
   GET_GROUP_CONTACTS: (id) => `/api/groups/${id}`,
-  BULK_ADD_CONTACTS_TO_GROUP: (groupId) => `/api/groups/${groupId}/contacts/bulk`,
+  BULK_ADD_CONTACTS_TO_GROUP: "/api/groups/contacts/bulk",
 
   
   //delivery reports
@@ -33,6 +33,11 @@ export const ENDPOINTS = {
   //sms files
   SEND_MESSAGE: "/api/messages/send",
 
-  
+  //template messages
+  CREATE_TEMPLATE:"/api/templates",
+  GET_TEMPLATES:"/api/templates",
+  UPDATE_TEMPLATE:(id) => `/api/templates/${id}`,
+  DELETE_TEMPLATE:(id) => `/api/templates/${id}`,
+  GET_TEMPLATE: (name) => `/api/templates/name/${name}`
 
 };

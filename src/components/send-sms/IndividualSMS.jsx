@@ -27,7 +27,7 @@ import { X } from "lucide-react";
                   if (!phoneNumbers.includes(c.phoneNo)) {
                     setPhoneNumbers([...phoneNumbers, c.phoneNo]);
                     setCurrentPhone("");
-                    showAlert("success", `${c.name} added`);
+                    
                   }
                 }}
               >

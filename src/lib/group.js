@@ -46,22 +46,48 @@ export const getGroupContacts = async (token,groupId) => {
     return response.json();
 }
 
-export const addContactsToGroup = async (token,groupId, contactIds) => {
-    const response = await fetch (API_BASE_URL+ ENDPOINTS.CONTACTS_ADD_TO_GROUP(groupId),{
-        method: "POST",
-        headers : getHeaders(token),
-        body: JSON.stringify(contactIds)
-    })
-    return response.json();
-}
+export const addContactsToGroup = async (token, groupId, contactIds) => {
+  const response = await fetch(
+    API_BASE_URL + ENDPOINTS.CONTACTS_ADD_TO_GROUP(groupId),
+    {
+      method: "POST",
+      headers: getHeaders(token),
+      body: JSON.stringify({
+        contactIds,
+      }),
+    }
+  );
+  return response.json();
+};
+export const bulkAddContactsToGroup = async (token, groupId, contactIds) => {
+  const formData = new FormData();
 
-export const bulkAddContactsToGroup = async (token,groupId, contacts) => {
-    const response = await fetch (API_BASE_URL + ENDPOINTS.BULK_ADD_CONTACTS_TO_GROUP(groupId),{
-        method: "POST",
-        headers: getHeaders(token),
-        body: JSON.stringify(contacts),
+  // This object must EXACTLY match backend DTO
+  const groupRequest = {
+    groupId: groupId,
+    contactIds: contactIds,
+  };
+
+  formData.append(
+    "groupRequest",
+    new Blob([JSON.stringify(groupRequest)], {
+      type: "application/json",
     })
-    return response.json();
-}
+  );
+
+  const response = await fetch(
+    API_BASE_URL + ENDPOINTS.BULK_ADD_CONTACTS_TO_GROUP,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // ❌ DO NOT set Content-Type
+      },
+      body: formData,
+    }
+  );
+
+  return response.json();
+};
 
 

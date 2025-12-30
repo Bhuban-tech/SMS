@@ -27,7 +27,6 @@ export default function GroupPage() {
 
   const [token, setToken] = useState("");
 
-
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
 
@@ -38,6 +37,7 @@ export default function GroupPage() {
   const [showAddContactModal, setShowAddContactModal] = useState(false);
 
   const [groupToDelete, setGroupToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // <-- Add state for delete confirmation
 
   useEffect(() => {
     const t = localStorage.getItem("token");
@@ -62,13 +62,17 @@ export default function GroupPage() {
   };
 
   const handleDelete = async () => {
+    if (!groupToDelete) return;
     try {
       const res = await deleteGroup(token, groupToDelete.id);
       if (!res.success) return toast.error(res.message);
       toast.success("Group deleted");
       loadGroups();
+    } catch {
+      toast.error("Failed to delete group");
     } finally {
       setGroupToDelete(null);
+      setShowDeleteModal(false);
     }
   };
 
@@ -93,9 +97,7 @@ export default function GroupPage() {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* <Header /> */}
-
-         <div className="sticky top-0 z-30 bg-gray-50 shadow">
+        <div className="sticky top-0 z-30 bg-gray-50 shadow">
           <Header title="Group Contacts" />
         </div>
 
@@ -115,7 +117,10 @@ export default function GroupPage() {
               setEditingGroup(g);
               setShowGroupModal(true);
             }}
-            onDelete={setGroupToDelete}
+            onDelete={(g) => {
+              setGroupToDelete(g);
+              setShowDeleteModal(true); // <-- Open delete confirmation
+            }}
             onView={handleViewContacts}
             onAddContact={(g) => {
               setSelectedGroup(g);
@@ -125,6 +130,7 @@ export default function GroupPage() {
         </main>
       </div>
 
+      {/* Group Modal */}
       {showGroupModal && (
         <GroupModal
           token={token}
@@ -134,6 +140,7 @@ export default function GroupPage() {
         />
       )}
 
+      {/* View Contacts Modal */}
       {showViewModal && (
         <GroupViewModal
           group={selectedGroup}
@@ -142,6 +149,7 @@ export default function GroupPage() {
         />
       )}
 
+      {/* Add Contact Modal */}
       {showAddContactModal && (
         <GroupAddContactModal
           token={token}
@@ -149,6 +157,30 @@ export default function GroupPage() {
           onClose={() => setShowAddContactModal(false)}
           onSuccess={loadGroups}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && groupToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur bg-opacity-50 z-50">
+          <div className="bg-white rounded p-6 w-96">
+            <h2 className="text-lg font-bold mb-4">Delete Group</h2>
+            <p>Are you sure you want to delete "{groupToDelete.name}"?</p>
+            <div className="mt-6 flex justify-end space-x-4">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded"
+                onClick={handleDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

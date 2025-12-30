@@ -50,34 +50,128 @@ export const sendBulkSMS = async (token, senderId, groupName, file) => {
 };
 
 
-export const sendTemplateSMS = async (token, adminId, file, groupName) => {
-  try {
-    const form = new FormData();
-    form.append("file", file);
-    form.append(
-      "groupRequest",
-      new Blob(
-        [JSON.stringify({ name: groupName.trim(), senderId: adminId })],
-        { type: "application/json" }
-      )
-    );
-
-    const response = await fetch(
-      `${API_BASE_URL}${ENDPOINTS.BULK_ADD_CONTACTS_TO_GROUP("new")}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: form,
-      }
-    );
-
+export const createTemplate= async (token,templateData)=>{
+  try{
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.CREATE_TEMPLATE}`,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${token}`
+      },
+      body:JSON.stringify(templateData)
+    });
     return response.json();
+      }catch(error){
+        return {success:false,message:error.message};
+      }
+};
+
+// export const getTemplateSMS = async(token) =>{
+//   try{
+//     const response = await fetch (`${API_BASE_URL}${ENDPOINTS.GET_TEMPLATES}`,{
+//       method:"GET",
+//       headers:{
+//         "Content-Type":"application/json",
+//         Authorization:`Bearer ${token}`
+//       },
+
+//     });
+//     return response.json();
+//   }catch(error){
+//     return{success:false,message:error.message}
+//   }
+// };
+
+export const getTemplateSMS = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.GET_TEMPLATES}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return {
+        success: false,
+        status: response.status,
+        message: errorText || "Forbidden"
+      };
+    }
+
+    return await response.json();
   } catch (error) {
     return { success: false, message: error.message };
   }
 };
 
 
+export const getTemplateByName = async (token,name) => {
+  try{
+    const response = await fetch (`${API_BASE_URL}${ENDPOINTS.GET_TEMPLATE(name)}`,{
+      method:"GET",
+      headers:{
+       
+        Authorization:`Bearer ${token}`
+      }
+    });
+    return response.json();
+  }catch(error){
+    return{success:false, message:error.message}
+  }
+}
 
+export const updateTemplate = async(token, id, updateData) => {
+  try{
+    const response = await fetch (`${API_BASE_URL}${ENDPOINTS.UPDATE_TEMPLATE(id)}`,{
+      method:"PUT",
+      headers:{
+         "Content-Type":"application/json",
+        Authorization:`Bearer ${token}`
+      },
+      body:JSON.stringify(updateData)
+    });
+    return response.json();
+  }catch(error){
+    return{success:false, message:error.message}
+  }
+}
+
+export const deleteTemplate = async (token,id) =>{
+  try{
+    const response = await fetch (`${API_BASE_URL}${ENDPOINTS.DELETE_TEMPLATE(id)}`,{
+      method:"DELETE",
+       headers:{
+         
+        Authorization:`Bearer ${token}`
+      },
+    });
+    return response.json();
+  }catch(error){
+    return{success:false,message:error.message}
+  }
+}
+
+
+export const sendTemplateSMS = async (token, adminId, csvData, content) => {
+  const res = await fetch(`${API_BASE_URL}${ENDPOINTS.SEND_MESSAGE}`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      senderId: adminId,
+      content,        // 🔥 REQUIRED
+      contacts: csvData
+    })
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to send template SMS");
+  }
+
+  return await res.json();
+};

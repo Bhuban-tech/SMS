@@ -27,15 +27,15 @@ export default function ContactsPage() {
   const [activeTab, setActiveTab] = useState("tab1");
 
   const [token, setToken] = useState("");
+  const [contactToDelete, setContactToDelete] = useState(null); // <-- new state
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // <-- new state
 
   const fileRef = useRef(null);
-
 
   useEffect(() => {
     const t = localStorage.getItem("token");
     if (t) setToken(t);
   }, []);
-
 
   useEffect(() => {
     if (token) loadContacts();
@@ -87,16 +87,23 @@ export default function ContactsPage() {
     }
   };
 
-  const handleDelete = async (c) => {
-    if (!token) return toast.error("Session expired. Please login again.");
+  const confirmDelete = (c) => {
+    setContactToDelete(c);
+    setShowDeleteModal(true);
+  };
 
+  const handleDelete = async () => {
+    if (!token || !contactToDelete) return toast.error("Session expired. Please login again.");
     try {
-      const res = await deleteContact(token, c.id);
+      const res = await deleteContact(token, contactToDelete.id);
       if (!res.success) return toast.error(res.message);
       toast.success("Contact deleted");
       loadContacts();
     } catch {
       toast.error("Failed to delete contact");
+    } finally {
+      setShowDeleteModal(false);
+      setContactToDelete(null);
     }
   };
 
@@ -135,7 +142,7 @@ export default function ContactsPage() {
             setForm(c);
             setModalOpen(true);
           }}
-          onDelete={handleDelete}
+          onDelete={confirmDelete} // <-- use confirmDelete
           onView={(c) => toast.info(c.name)}
           onSend={(c) => toast.success(`SMS sent to ${c.name}`)}
         />
@@ -149,6 +156,30 @@ export default function ContactsPage() {
             onSave={saveContact}
             isEdit={!!editing}
           />
+        )}
+
+
+        {showDeleteModal && contactToDelete && (
+          <div className="fixed inset-0 flex items-center justify-center backdrop-blur bg-opacity-50 z-50">
+            <div className="bg-white rounded p-6 w-96">
+              <h2 className="text-lg font-bold mb-4">Delete Contact</h2>
+              <p>Are you sure you want to delete "{contactToDelete.name}"?</p>
+              <div className="mt-6 flex justify-end space-x-4">
+                <button
+                  className="px-4 py-2 bg-gray-200 rounded"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
