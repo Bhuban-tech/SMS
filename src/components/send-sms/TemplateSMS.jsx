@@ -172,12 +172,10 @@ const TemplateSMS = ({
     setShowModal(true);
   };
 
-  /* =============================
-     UI
-  ============================== */
+ 
   return (
     <div className="p-6 bg-white rounded-xl shadow space-y-6">
-      {/* Template Select */}
+  
       <select
         className="w-full p-2 border rounded"
         value={selectedTemplateId || ""}
@@ -191,21 +189,21 @@ const TemplateSMS = ({
         ))}
       </select>
 
-      {/* CSV Upload */}
+     
       <CsvUploader
         selectedFile={bulkFile}
         setSelectedFile={handleFileUpload}
       />
 
-      {/* Preview */}
+     
       <TemplatePreview
         templateText={renderPreview()}
         mappedVariables={csvData[currentRowIndex] || {}}
       />
 
-      {/* Bottom action buttons */}
+     
       <div className="fixed bottom-8 right-8 flex gap-4">
-        {/* Add Template Floating Button */}
+     
         <button
           onClick={() => {
             setShowModal(true);
@@ -213,25 +211,25 @@ const TemplateSMS = ({
             setNewTemplateName("");
             setNewTemplateContent("");
           }}
-          className="w-14 h-14 bg-teal-600 text-white rounded-full text-3xl flex items-center justify-center"
+          className="w-12 h-12 bg-teal-600 text-white rounded-full text-3xl flex items-center justify-center"
           title="Add Template"
         >
           +
         </button>
 
-        {/* Manage Templates Normal Button */}
+      
         <button
           onClick={() => setShowTemplatesModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center justify-center"
+          className="px-4 py-2 bg-teal-600 text-white rounded-lg flex items-center justify-center"
           title="Manage Templates"
         >
           Manage Templates
         </button>
       </div>
 
-      {/* Template create/edit modal */}
+      
       {showModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 space-y-4">
             <input
               className="w-full p-2 border rounded"
@@ -245,11 +243,11 @@ const TemplateSMS = ({
               value={newTemplateContent}
               onChange={(e) => setNewTemplateContent(e.target.value)}
             />
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowModal(false)}>Cancel</button>
+            <div className="flex justify-end gap-2  rounded">
+              <button onClick={() => setShowModal(false)} className="bg-gray-200 px-4 py-2 rounded cursor-pointer hover:bg-gray-500">Cancel</button>
               <button
                 onClick={handleSaveTemplate}
-                className="bg-teal-600 text-white px-4 py-2 rounded"
+                className="bg-teal-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-teal-800"
               >
                 {editingTemplateId ? "Update" : "Create"}
               </button>
@@ -258,9 +256,9 @@ const TemplateSMS = ({
         </div>
       )}
 
-      {/* Templates management modal */}
+    
       {showTemplatesModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 max-h-[80vh] overflow-y-auto space-y-2">
             <h2 className="text-lg font-bold mb-4">Existing Templates</h2>
             {templates.length === 0 && <p>No templates available</p>}
@@ -271,18 +269,18 @@ const TemplateSMS = ({
               >
                 <span>{t.name}</span>
                 <div className="flex gap-2">
-                  {/* Edit Button */}
+                
                   <button
                     onClick={() => {
                       setShowTemplatesModal(false);
                       handleEditTemplate(t);
                     }}
-                    className="px-2 py-1 bg-yellow-400 rounded text-sm"
+                    className="px-2 py-1 bg-teal-600 rounded text-sm text-white"
                   >
                     Edit
                   </button>
 
-                  {/* Delete Button */}
+                
                   <button
                     onClick={() => {
                       setShowTemplatesModal(false);
@@ -308,9 +306,9 @@ const TemplateSMS = ({
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+     
       {showDeleteConfirm && templateToDelete && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 space-y-4">
             <h2 className="text-lg font-bold">Delete Template</h2>
             <p>Are you sure you want to delete "{templateToDelete.name}"?</p>

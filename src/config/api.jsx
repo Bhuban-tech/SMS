@@ -1,5 +1,5 @@
 
-export const API_BASE_URL = "http://192.168.1.13:8080"; 
+export const API_BASE_URL = "http://192.168.110.233:8080"; 
 export const ENDPOINTS = {
   //auth
   LOGIN: "/api/auth/login",
@@ -38,6 +38,14 @@ export const ENDPOINTS = {
   GET_TEMPLATES:"/api/templates",
   UPDATE_TEMPLATE:(id) => `/api/templates/${id}`,
   DELETE_TEMPLATE:(id) => `/api/templates/${id}`,
-  GET_TEMPLATE: (name) => `/api/templates/name/${name}`
+  GET_TEMPLATE: (name) => `/api/templates/name/${name}`,
+
+   // Payments
+  ESEWA_TRANSACTIONS: "/api/esewa/transactions",
+  KHALTI_TRANSACTIONS: "/api/khalti/payments",
+  ESEWA_INITIATE: "/api/esewa/initiate",
+  KHALTI_INITIATE: "/api/khalti/initiate",
+  ESEWA_VERIFY: "/api/esewa/verify",
+  KHALTI_VERIFY: "/api/khalti/verify"
 
 };

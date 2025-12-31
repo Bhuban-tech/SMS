@@ -15,14 +15,14 @@ import Link from "next/link";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
   const menuItems = [
-    { id: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/" },
+    { id: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { id: "messages", icon: MessageSquare, label: "Individual Contact", path: "/contacts" },
     { id: "batch", icon: File, label: "SMS Files", path: "/sms-files" },
     { id: "groups", icon: Users, label: "Group Contact", path: "/groups" },
     { id: "delivery-reports", icon: FileText, label: "Delivery Reports", path: "/delivery-reports" },
     { id: "balance-report", icon: Pen, label: "Balance Report", path: "/balance-report" },
      { id: "send sms", icon: Users, label: "Send SMS", path: "/send-sms" },
-    //  {id:"template",icon:BookTemplate, label:"Templates",path:"/templates"}
+   
     
   ];
 
@@ -38,55 +38,56 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
 
     
       <aside
-        className={`
-          fixed lg:relative top-0 left-0 h-full w-64 z-40 bg-linear-to-b from-slate-900 via-slate-800 to-slate-900
-          p-6 transform transition-transform duration-300 ease-in-out shadow-2xl
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          lg:translate-x-0
-        `}
-      >
-        
-        <div className="mb-12">
-          <h1 className="text-white text-4xl sm:text-5xl font-bold tracking-tight">sms</h1>
-        </div>
+  className={`
+    fixed lg:relative top-0 left-0 h-screen w-64 z-40 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+    p-6 flex flex-col justify-between transform transition-transform duration-300 ease-in-out shadow-2xl
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+    lg:translate-x-0
+  `}
+>
+  {/* Top Section */}
+  <div>
+    <div className="mb-12">
+      <h1 className="text-white text-4xl sm:text-5xl font-bold tracking-tight">sms</h1>
+    </div>
 
-       
-        <nav className="space-y-2 flex flex-col">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
+    {/* Menu Items */}
+    <nav className="flex-1 px-2 space-y-2">
+      {menuItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = activeTab === item.id;
 
-            return (
-              <Link key={item.id} href={item.path}>
-                <button
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setSidebarOpen(false); 
-                  }}
-                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span className="font-medium truncate">{item.label}</span>
-                </button>
-              </Link>
-            );
-          })}
-        </nav>
-
-  
-        <div className="absolute bottom-6 left-6 right-6">
-          <div className="border-t border-slate-700 pt-4">
-            <button className="flex items-center gap-3 w-full px-4 py-2 text-slate-400 hover:text-white transition">
-              <Settings size={18} />
-              <span className="text-sm truncate">Settings</span>
+        return (
+          <Link key={item.id} href={item.path}>
+            <button
+              onClick={() => {
+                setActiveTab(item.id);
+                setSidebarOpen(false);
+              }}
+              className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all duration-200 ${
+                isActive
+                  ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <Icon size={20} />
+              <span className="font-medium truncate">{item.label}</span>
             </button>
-          </div>
-        </div>
-      </aside>
+          </Link>
+        );
+      })}
+    </nav>
+  </div>
+
+  {/* Bottom Section */}
+  <div className="mt-auto">
+    <button className="flex items-center gap-3 w-full px-4 py-2 text-slate-400 hover:text-white transition">
+      <Settings size={18} />
+      <span className="text-sm truncate">Settings</span>
+    </button>
+  </div>
+</aside>
+
 
 
       {!sidebarOpen && (

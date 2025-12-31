@@ -125,14 +125,14 @@ export default function DeliveryReports() {
             </select>
             <button
               onClick={fetchDeliveryReports}
-              className="px-6 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700"
+              className="px-6 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-blue-700"
             >
               Reload
             </button>
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-x-auto">
+          <div className="bg-white  shadow-xl overflow-x-auto">
             <table className="w-full text-sm text-center">
               <thead className="bg-teal-700 text-white sticky top-0">
                 <tr>

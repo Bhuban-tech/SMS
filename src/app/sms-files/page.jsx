@@ -1,9 +1,13 @@
 "use client";
-
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { toast } from "sonner";
+
+import SearchUploadBar from "@/components/sms-files/SearchUploadBar";
+import FilesTable from "@/components/sms-files/FilesTable";
+import EditGroupModal from "@/components/sms-files/EditGroupModal";
+import DeleteGroupModal from "@/components/sms-files/DeleteGroupModal";
 
 import {
   fetchGroups,
@@ -12,48 +16,41 @@ import {
   deleteGroup,
 } from "@/lib/smsfiles";
 
-import FileUploadControls from "@/components/sms-files/FileUploadControl";
-import FileTable from "@/components/sms-files/FileTable";
-import EditModal from "@/components/sms-files/EditModal";
-import DeleteModal from "@/components/sms-files/DeleteModal";
-
-import { useSMSFiles } from "@/context/SMSFileContext";
-
 export default function SMSFilesPage() {
-  const { smsFiles, setSmsFiles } = useSMSFiles();
-
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("batch");
+  const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [newFile, setNewFile] = useState({});
-
+  const [bulkGroupName, setBulkGroupName] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
-
-  const [bulkGroupName, setBulkGroupName] = useState("");
-  const fileInputRef = useRef(null);
+  const [newGroupName, setNewGroupName] = useState("");
 
   const [token, setToken] = useState("");
   const [adminId, setAdminId] = useState(0);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("batch");
-
+  // Load token & adminId
   useEffect(() => {
-    setToken(localStorage.getItem("token") || "");
-    setAdminId(Number(localStorage.getItem("adminId")) || 0);
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem("token") || "");
+      setAdminId(Number(localStorage.getItem("adminId")) || 0);
+    }
   }, []);
 
+  // Fetch all groups
   const fetchFiles = async () => {
     setLoading(true);
     try {
       const data = await fetchGroups(token);
-      setSmsFiles(data);
-    } catch {
-      toast.error("Failed to load files");
+      setFiles(data);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Failed to load groups");
+      setFiles([]);
     } finally {
       setLoading(false);
     }
@@ -63,16 +60,91 @@ export default function SMSFilesPage() {
     if (token) fetchFiles();
   }, [token]);
 
-  const filteredFiles = useMemo(
-    () =>
-      smsFiles.filter(
-        (f) =>
-          (f.groupName || f.name || "")
-            .toLowerCase()
-            .includes(search.toLowerCase()) ||
-          (f.fileName || "").toLowerCase().includes(search.toLowerCase())
-      ),
-    [smsFiles, search]
+  // Upload file
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ["csv", "xlsx"];
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (!extension || !allowedTypes.includes(extension)) {
+      toast.warning("Only CSV or XLSX files are allowed");
+      e.target.value = null;
+      return;
+    }
+
+    if (!bulkGroupName.trim()) {
+      toast.warning("Please enter a group name");
+      e.target.value = null;
+      return;
+    }
+
+    setUploading(true);
+    try {
+      await uploadGroupFile(token, adminId, file, bulkGroupName);
+      toast.success("File uploaded and contacts added successfully!");
+      setBulkGroupName("");
+      e.target.value = null;
+      await fetchFiles();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Failed to upload file");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Edit modal
+  const openEditModal = (file) => {
+    setSelectedFile(file);
+    setNewGroupName(file.name || "");
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedFile?.id) return;
+
+    const trimmedName = newGroupName.trim();
+    if (!trimmedName) return toast.warning("Group name cannot be empty");
+
+    try {
+      await updateGroup(token, selectedFile.id, { name: trimmedName });
+      toast.success("Group name updated successfully!");
+      setEditModalOpen(false);
+      setNewGroupName("");
+      await fetchFiles();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Failed to update group");
+      await fetchFiles();
+    }
+  };
+
+  // Delete modal
+  const handleDeleteClick = (file) => {
+    setFileToDelete(file);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!fileToDelete?.id) return;
+    try {
+      await deleteGroup(token, fileToDelete.id);
+      toast.success("Group deleted successfully!");
+      await fetchFiles();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Failed to delete group");
+      await fetchFiles();
+    } finally {
+      setDeleteModalOpen(false);
+      setFileToDelete(null);
+    }
+  };
+
+  const filteredFiles = files.filter((f) =>
+    (f.name || "").toLowerCase().includes(search.toLowerCase()) ||
+    (f.fileName || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -83,69 +155,37 @@ export default function SMSFilesPage() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
-
-      <div className="flex-1 flex flex-col">
-        <Header title="SMS Files" />
-
-        <main className="p-6 space-y-6">
-          <FileUploadControls
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header title="SMS-Files" />
+        <main className="flex-1 overflow-auto p-6">
+          <SearchUploadBar
             search={search}
             setSearch={setSearch}
             bulkGroupName={bulkGroupName}
             setBulkGroupName={setBulkGroupName}
-            fileInputRef={fileInputRef}
+            handleUpload={handleUpload}
             uploading={uploading}
           />
-
-          <FileTable
-            files={filteredFiles}
+          <FilesTable
+            files={files}
+            filteredFiles={filteredFiles}
             loading={loading}
-            onEdit={(file) => {
-              setSelectedFile(file);
-              setNewFile(file);
-              setEditModalOpen(true);
-            }}
-            onDelete={(file) => {
-              setFileToDelete(file);
-              setDeleteModalOpen(true);
-            }}
+            openEditModal={openEditModal}
+            handleDeleteClick={handleDeleteClick}
           />
-
-          {editModalOpen && (
-            <EditModal
-              file={selectedFile}
-              newFile={newFile}
-              setNewFile={setNewFile}
-              onClose={() => setEditModalOpen(false)}
-              onSave={async () => {
-                const updated = await updateGroup(
-                  token,
-                  selectedFile.id,
-                  newFile
-                );
-                setSmsFiles((prev) =>
-                  prev.map((f) =>
-                    f.id === selectedFile.id ? updated : f
-                  )
-                );
-                setEditModalOpen(false);
-              }}
-            />
-          )}
-
-          {deleteModalOpen && (
-            <DeleteModal
-              file={fileToDelete}
-              onClose={() => setDeleteModalOpen(false)}
-              onConfirm={async () => {
-                await deleteGroup(token, fileToDelete.id);
-                setSmsFiles((prev) =>
-                  prev.filter((f) => f.id !== fileToDelete.id)
-                );
-                setDeleteModalOpen(false);
-              }}
-            />
-          )}
+          <EditGroupModal
+            editModalOpen={editModalOpen}
+            setEditModalOpen={setEditModalOpen}
+            newGroupName={newGroupName}
+            setNewGroupName={setNewGroupName}
+            handleSaveEdit={handleSaveEdit}
+          />
+          <DeleteGroupModal
+            deleteModalOpen={deleteModalOpen}
+            setDeleteModalOpen={setDeleteModalOpen}
+            fileToDelete={fileToDelete}
+            confirmDelete={confirmDelete}
+          />
         </main>
       </div>
     </div>
