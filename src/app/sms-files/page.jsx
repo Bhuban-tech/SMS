@@ -166,13 +166,17 @@ export default function SMSFilesPage() {
             handleUpload={handleUpload}
             uploading={uploading}
           />
-          <FilesTable
-            files={files}
-            filteredFiles={filteredFiles}
-            loading={loading}
-            openEditModal={openEditModal}
-            handleDeleteClick={handleDeleteClick}
-          />
+        <FilesTable
+  files={files}
+  filteredFiles={filteredFiles}
+  loading={loading}
+  openEditModal={openEditModal}
+  handleDeleteClick={handleDeleteClick} 
+  handleViewClick={(file) => {
+    console.log("Viewing file:", file);
+    alert(`Viewing contacts from: ${file.originalFileName}\nGroup: ${file.name}`);
+  }}
+/>
           <EditGroupModal
             editModalOpen={editModalOpen}
             setEditModalOpen={setEditModalOpen}

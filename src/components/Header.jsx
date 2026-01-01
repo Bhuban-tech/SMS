@@ -18,7 +18,6 @@ const Header = ({
   const dropdownRef = useRef(null);
   const router = useRouter();
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -42,7 +41,7 @@ const Header = ({
   // };
 
   const handleLogout = () => {
-  // 1. Remove localStorage items
+
   localStorage.removeItem("token");
   localStorage.removeItem("adminId");
   localStorage.removeItem("user");
@@ -81,7 +80,7 @@ const Header = ({
         </div>
 
         {dropdownOpen && (
-          <div className="absolute right-0 mt-2 bg-white shadow-md rounded-md w-40 z-50">
+          <div className="absolute right-4 mt-30 bg-white shadow-md rounded-md w-40 z-50">
             <ul>
               <li
                 className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 cursor-pointer"

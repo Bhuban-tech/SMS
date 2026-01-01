@@ -1,13 +1,14 @@
 "use client";
 import React from "react";
-import { Download, Edit, Trash2 } from "lucide-react";
+import { Eye, Edit, Trash2 } from "lucide-react";
 
 export default function FilesTable({
   files,
   filteredFiles,
   loading,
   openEditModal,
-  handleDeleteClick
+  handleDeleteClick,
+  handleViewClick, // ← Add this new prop to handle viewing
 }) {
   return (
     <div className="rounded-2xl bg-white shadow-xl p-4 overflow-x-auto">
@@ -44,26 +45,35 @@ export default function FilesTable({
               <tr key={row.id} className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}>
                 <td className="p-3">{index + 1}</td>
                 <td className="p-3">{row.author || "admin college"}</td>
-                <td className="p-3">{row.fileName || "-"}</td>
-                <td className="p-3 uppercase">{row.fileType || "-"}</td>
-                <td className="p-3">{row.size || "-"}</td>
+                <td className="p-3">{row.originalFileName || "-"}</td>
+                <td className="p-3">{row.contentType || "-"}</td>
+                <td className="p-3">{row.fileSizeBytes || "-"}</td>
                 <td className="p-3 font-medium">{row.name || "-"}</td>
                 <td className="p-3">
                   {row.createdAt ? new Date(row.createdAt).toLocaleString() : "-"}
                 </td>
                 <td className="p-3 flex gap-3 justify-center">
-                  <button className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600">
-                    <Download size={16} />
+                  {/* View button (replaces Download) */}
+                  <button
+                    onClick={() => handleViewClick?.(row)}
+                    className="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600"
+                    title="View file"
+                  >
+                    <Eye size={16} />
                   </button>
+
                   <button
                     onClick={() => openEditModal(row)}
                     className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                    title="Edit file"
                   >
                     <Edit size={16} />
                   </button>
+
                   <button
                     onClick={() => handleDeleteClick(row)}
                     className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                    title="Delete file"
                   >
                     <Trash2 size={16} />
                   </button>

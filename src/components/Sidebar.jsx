@@ -39,7 +39,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
     
       <aside
   className={`
-    fixed lg:relative top-0 left-0 h-screen w-64 z-40 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+    fixed lg:relative top-0 left-0 h-screen w-64 z-40 bg-linear-to-b from-slate-900 via-slate-800 to-slate-900
     p-6 flex flex-col justify-between transform transition-transform duration-300 ease-in-out shadow-2xl
     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
     lg:translate-x-0
