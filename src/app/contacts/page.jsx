@@ -27,8 +27,8 @@ export default function ContactsPage() {
   const [activeTab, setActiveTab] = useState("tab1");
 
   const [token, setToken] = useState("");
-  const [contactToDelete, setContactToDelete] = useState(null); // <-- new state
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // <-- new state
+  const [contactToDelete, setContactToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const fileRef = useRef(null);
 
@@ -93,7 +93,8 @@ export default function ContactsPage() {
   };
 
   const handleDelete = async () => {
-    if (!token || !contactToDelete) return toast.error("Session expired. Please login again.");
+    if (!token || !contactToDelete)
+      return toast.error("Session expired. Please login again.");
     try {
       const res = await deleteContact(token, contactToDelete.id);
       if (!res.success) return toast.error(res.message);
@@ -114,39 +115,54 @@ export default function ContactsPage() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="sticky top-0 z-30 bg-gray-50 shadow">
+        {/* Header */}
+        <div className="sticky top-0 z-30 bg-white shadow-sm">
           <Header title="Individual Contacts" />
         </div>
 
-        <ContactsHeader
-          searchTerm={search}
-          setSearchTerm={setSearch}
-          onAdd={() => setModalOpen(true)}
-          onUpload={() => fileRef.current.click()}
-          fileInputRef={fileRef}
-        />
+      
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-6xl mx-auto space-y-6">
 
-        <ContactsTable
-          contacts={filtered}
-          loading={loading}
-          onEdit={(c) => {
-            setEditing(c.id);
-            setForm(c);
-            setModalOpen(true);
-          }}
-          onDelete={confirmDelete} // <-- use confirmDelete
-          onView={(c) => toast.info(c.name)}
-          onSend={(c) => toast.success(`SMS sent to ${c.name}`)}
-        />
+           
+            <div className=" flex flex-colbg-white rounded-2xl shadow-md p-2">
+              <ContactsHeader
+                searchTerm={search}
+                setSearchTerm={setSearch}
+                onAdd={() => setModalOpen(true)}
+                onUpload={() => fileRef.current.click()}
+                fileInputRef={fileRef}
+              />
+            </div>
 
+            {/* Table Card */}
+            <div className="bg-white rounded-2xl shadow-md p-4">
+              <ContactsTable
+                contacts={filtered}
+                loading={loading}
+                onEdit={(c) => {
+                  setEditing(c.id);
+                  setForm(c);
+                  setModalOpen(true);
+                }}
+                onDelete={confirmDelete}
+                onView={(c) => toast.info(c.name)}
+                onSend={(c) => toast.success(`SMS sent to ${c.name}`)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Add/Edit Modal */}
         {modalOpen && (
           <ContactModal
             open={modalOpen}
@@ -158,21 +174,27 @@ export default function ContactsPage() {
           />
         )}
 
-
+        {/* Delete Modal */}
         {showDeleteModal && contactToDelete && (
-          <div className="fixed inset-0 flex items-center justify-center backdrop-blur bg-opacity-50 z-50">
-            <div className="bg-white rounded p-6 w-96">
-              <h2 className="text-lg font-bold mb-4">Delete Contact</h2>
-              <p>Are you sure you want to delete "{contactToDelete.name}"?</p>
+          <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+            <div className="bg-white rounded-2xl p-6 w-96 shadow-xl">
+              <h2 className="text-lg font-semibold mb-4">Delete Contact</h2>
+              <p className="text-gray-600">
+                Are you sure you want to delete{" "}
+                <span className="font-medium text-gray-900">
+                  "{contactToDelete.name}"
+                </span>
+                ?
+              </p>
               <div className="mt-6 flex justify-end space-x-4">
                 <button
-                  className="px-4 py-2 bg-gray-200 rounded"
+                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
                   onClick={() => setShowDeleteModal(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-red-500 text-white rounded"
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                   onClick={handleDelete}
                 >
                   Delete

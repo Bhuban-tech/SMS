@@ -177,11 +177,11 @@ const TemplateSMS = ({
     <div className="p-6 bg-white rounded-xl shadow space-y-6">
   
       <select
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border border-gray-300 rounded"
         value={selectedTemplateId || ""}
         onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
       >
-        <option value="">-- Select Template --</option>
+        <option value="">Select Template</option>
         {templates.map((t) => (
           <option key={t.id} value={t.id}>
             {t.name}

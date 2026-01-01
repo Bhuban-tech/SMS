@@ -84,7 +84,7 @@ export default function BalanceReportPage() {
       {/* Main content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <Header />
+        <Header title="Balance Report" />
 
         {/* Page Content */}
         <main className="p-4 sm:p-6 flex-1 overflow-y-auto">

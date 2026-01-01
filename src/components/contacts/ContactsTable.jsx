@@ -10,8 +10,8 @@ export default function ContactsTable({
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-4 overflow-x-auto">
-      <table className="w-full text-sm text-center">
-        <thead className="bg-teal-700 text-white">
+      <table className="w-full text-sm rounded-2xl text-center">
+        <thead className="bg-teal-700 rounded-2xl text-white">
           <tr>
             <th className="p-3">SN</th>
             <th className="p-3 text-left">Name</th>
@@ -37,7 +37,7 @@ export default function ContactsTable({
             contacts.map((c, i) => (
               <tr
                 key={c.id}
-                className="border-b last:border-none hover:bg-gray-50 transition"
+                className="border border-gray-300 hover:bg-gray-50 transition"
               >
                 <td className="p-3">{i + 1}</td>
 
@@ -49,9 +49,9 @@ export default function ContactsTable({
 
                 <td className="p-3">
                   <div className="flex justify-center gap-2">
-                    <ActionBtn onClick={() => onView(c)} color="green">
+                    {/* <ActionBtn onClick={() => onView(c)} color="green">
                       <Eye size={16} />
-                    </ActionBtn>
+                    </ActionBtn> */}
 
                     <ActionBtn onClick={() => onEdit(c)} color="blue">
                       <Edit size={16} />
@@ -61,9 +61,9 @@ export default function ContactsTable({
                       <Trash size={16} />
                     </ActionBtn>
 
-                    <ActionBtn onClick={() => onSend(c)} color="gray">
+                    {/* <ActionBtn onClick={() => onSend(c)} color="gray">
                       <Send size={16} />
-                    </ActionBtn>
+                    </ActionBtn> */}
                   </div>
                 </td>
               </tr>

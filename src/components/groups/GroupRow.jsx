@@ -1,6 +1,6 @@
 import { Edit, Plus, Trash } from "lucide-react";
 
-function GroupRow ({group, index, onEdit, onDelete, onAddContact, onViewContacts}){
+function GroupRow ({group, index, onEdit, onDelete, onAddContact,  onViewContacts = () => {}}){
     return(
         <tr className="border-b hover:bg-gray-100">
             <td className="p-3">{index+1}</td>

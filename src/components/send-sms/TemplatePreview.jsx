@@ -11,7 +11,7 @@ const TemplatePreview = ({ mappedVariables, templateText }) => {
   });
 
   return (
-    <div className="p-4 border rounded-md bg-gray-50 min-h-[80px]">
+    <div className="p-4 border border-gray-300 rounded-md bg-gray-50 min-h-[80px]">
       <p>{preview}</p>
     </div>
   );

@@ -14,7 +14,7 @@ export default function ContactsHeader({
         placeholder="Search..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-48 px-3 py-2 border rounded-lg"
+        className="w-48 px-3 py-2 border border-gray-300 rounded-lg"
       />
 
       <button
@@ -34,7 +34,7 @@ export default function ContactsHeader({
 
       <button
         onClick={() => fileInputRef.current.click()}
-        className="px-3 py-2 border rounded"
+        className="px-3 py-2 border border-gray-300 rounded"
       >
         <Upload size={16} />
       </button>

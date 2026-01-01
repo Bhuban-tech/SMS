@@ -121,7 +121,7 @@ export default function GroupPage() {
               setGroupToDelete(g);
               setShowDeleteModal(true); // <-- Open delete confirmation
             }}
-            onView={handleViewContacts}
+            onViewContacts={handleViewContacts}
             onAddContact={(g) => {
               setSelectedGroup(g);
               setShowAddContactModal(true);

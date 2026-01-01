@@ -12,7 +12,6 @@ import MessageBox from "@/components/send-sms/MessageBox";
 import Alert from "@/components/send-sms/Alert";
 import TemplateSMS from "@/components/send-sms/TemplateSMS";
 
-import { useSMSFiles } from "@/context/SMSFileContext";
 import { fetchGroups } from "@/lib/group";
 import { fetchContacts } from "@/lib/contacts";
 import {
@@ -21,6 +20,8 @@ import {
   sendBulkSMS,
   sendTemplateSMS
 } from "@/lib/sendsms";
+
+import { uploadGroupFile } from "@/lib/smsfiles"; // ✅ ADDED
 
 import useAlert from "@/hooks/useAlert";
 
@@ -47,7 +48,6 @@ export default function SMSSendUI() {
 
   const [templatePayload, setTemplatePayload] = useState(null);
 
-  const { smsFiles, setSmsFiles } = useSMSFiles();
   const { alert, showAlert } = useAlert();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -119,30 +119,33 @@ export default function SMSSendUI() {
         );
       }
 
-      /* ---------- Bulk ---------- */
+      /* ---------- Bulk (FIXED ONLY HERE) ---------- */
       if (formData.sendType === "bulk") {
         if (!bulkFile || !bulkGroupName)
           throw new Error("Select file & group name");
+        if (!formData.message.trim())
+          throw new Error("Enter a message");
 
-        response = await sendBulkSMS(
+        // 1️⃣ Upload CSV & save group (SMS Files compatible)
+        const uploadRes = await uploadGroupFile(
           token,
           adminId,
           bulkFile,
           bulkGroupName
         );
 
-        if (response?.success) {
-          setSmsFiles((prev) => [
-            {
-              id: response.id || Date.now(),
-              fileName: bulkFile.name,
-              size: bulkFile.size,
-              name: bulkGroupName,
-              createdAt: new Date().toISOString()
-            },
-            ...prev
-          ]);
-        }
+        if (!uploadRes?.success)
+          throw new Error("Failed to upload bulk file");
+
+        const groupId = uploadRes.groupId || uploadRes.id;
+
+        // 2️⃣ Send SMS using saved group
+        response = await sendGroupSMS(
+          token,
+          adminId,
+          groupId,
+          formData.message
+        );
       }
 
       /* ---------- TEMPLATE ---------- */
@@ -154,11 +157,12 @@ export default function SMSSendUI() {
           token,
           adminId,
           templatePayload.csvData,
-          templatePayload.content // 🔥 NEVER NULL
+          templatePayload.content
         );
       }
 
-      if (!response?.success) throw new Error("Failed to send");
+      if (!response?.success)
+        throw new Error("Failed to send");
 
       showAlert("success", "SMS sent successfully");
 
@@ -190,10 +194,12 @@ export default function SMSSendUI() {
         setActiveTab={setActiveTab}
       />
 
+      {/* Main content area */}
       <div className="flex-1 flex flex-col">
         <Header title="Send SMS" />
 
-        <main className="p-6 max-w-4xl mx-auto w-full">
+        {/* Scrollable div only for SendSMSUI */}
+        <main className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full">
           <Alert {...alert} onClose={() => showAlert(null)} />
 
           <SendTypeSelector
@@ -236,12 +242,11 @@ export default function SMSSendUI() {
               setBulkFile={setBulkFile}
               bulkGroupName={bulkGroupName}
               setBulkGroupName={setBulkGroupName}
-              setTemplatePayload={setTemplatePayload} // 🔥
+              setTemplatePayload={setTemplatePayload}
             />
           )}
 
-          {formData.sendType !== "bulk" &&
-            formData.sendType !== "template" && (
+          {formData.sendType !== "template" && (
               <MessageBox
                 message={formData.message}
                 setMessage={(msg) =>

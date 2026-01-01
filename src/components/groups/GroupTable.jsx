@@ -32,7 +32,8 @@ function GroupTable({ groups, onEdit, onDelete, onAddContact, onViewContacts }) 
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onAddContact={onAddContact}
-                onViewContacts={onViewContacts}
+                 onViewContacts={onViewContacts} 
+                
               />
             ))
           )}
