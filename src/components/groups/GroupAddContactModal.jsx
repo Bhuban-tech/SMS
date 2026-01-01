@@ -64,7 +64,7 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
           {contacts.map((contact) => (
             <label
               key={contact.id}
-              className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-50"
+              className="flex items-center gap-3 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
             >
               <input
                 type="checkbox"
@@ -82,7 +82,7 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
 
       <button
         onClick={handleAdd}
-        className="w-full mt-4 bg-teal-600 text-white py-2 rounded-xl disabled:opacity-50"
+        className="w-full mt-4 bg-teal-600 text-white py-2 rounded-xl disabled:opacity-50 hover:cursor pointer hover:bg-teal-700"
         disabled={contactIds.length === 0}
       >
         Add Contacts

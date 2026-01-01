@@ -53,11 +53,11 @@ export default function ContactsTable({
                       <Eye size={16} />
                     </ActionBtn> */}
 
-                    <ActionBtn onClick={() => onEdit(c)} color="blue">
+                    <ActionBtn onClick={() => onEdit(c)} color="blue" className="hover:bg-blue-600 hover:cursor-pointer">
                       <Edit size={16} />
                     </ActionBtn>
 
-                    <ActionBtn onClick={() => onDelete(c)} color="red">
+                    <ActionBtn onClick={() => onDelete(c)} color="red" className="hover:bg-red-600 hover:cursor-pointer">
                       <Trash size={16} />
                     </ActionBtn>
 
@@ -78,10 +78,10 @@ export default function ContactsTable({
 
 function ActionBtn({ children, onClick, color }) {
   const colors = {
-    green: "bg-green-500 hover:bg-green-600",
-    blue: "bg-blue-500 hover:bg-blue-600",
-    red: "bg-red-500 hover:bg-red-600",
-    gray: "bg-gray-500 hover:bg-gray-600",
+    green: "bg-green-500 hover:bg-green-600 hover:cursor-pointer",
+    blue: "bg-blue-500 hover:bg-blue-600 hover:cursor-pointer",
+    red: "bg-red-500 hover:bg-red-600 hover:cursor-pointer",
+    gray: "bg-gray-500 hover:bg-gray-600 hover:cursor-pointer",
   };
 
   return (

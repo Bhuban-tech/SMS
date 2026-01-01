@@ -26,7 +26,7 @@ export default function SearchFilterBar({ searchTerm, setSearchTerm, filterType,
 
       <button
         onClick={onReload}
-        className="px-6 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700"
+        className="px-6 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 hover:cursor-pointer"
       >
         Reload
       </button>

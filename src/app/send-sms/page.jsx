@@ -21,8 +21,7 @@ import {
   sendTemplateSMS
 } from "@/lib/sendsms";
 
-import { uploadGroupFile } from "@/lib/smsfiles"; // ✅ ADDED
-
+import { uploadGroupFile } from "@/lib/smsfiles"; // ✅ Bulk file upload helper
 import useAlert from "@/hooks/useAlert";
 
 export default function SMSSendUI() {
@@ -53,17 +52,13 @@ export default function SMSSendUI() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("send-sms");
 
-  /* =============================
-     LOAD TOKEN
-  ============================== */
+  /** Load token & adminId */
   useEffect(() => {
     setToken(localStorage.getItem("token") || "");
     setAdminId(Number(localStorage.getItem("adminId")) || 0);
   }, []);
 
-  /* =============================
-     LOAD GROUPS & CONTACTS
-  ============================== */
+  /** Load contacts and groups */
   useEffect(() => {
     if (!token) return;
 
@@ -80,16 +75,14 @@ export default function SMSSendUI() {
     })();
   }, [token]);
 
-  /* =============================
-     SEND SMS HANDLER
-  ============================== */
+  /** ================= SEND SMS HANDLER ================= */
   const handleSendSMS = async () => {
     setSending(true);
 
     try {
       let response;
 
-      /* ---------- Individual ---------- */
+      /** ---------- Individual ---------- */
       if (formData.sendType === "individual") {
         if (!formData.message.trim())
           throw new Error("Enter a message");
@@ -104,7 +97,7 @@ export default function SMSSendUI() {
         );
       }
 
-      /* ---------- Group ---------- */
+      /** ---------- Group ---------- */
       if (formData.sendType === "group") {
         if (!selectedGroup)
           throw new Error("Select a group");
@@ -119,14 +112,11 @@ export default function SMSSendUI() {
         );
       }
 
-      /* ---------- Bulk (FIXED ONLY HERE) ---------- */
+      /** ---------- Bulk ---------- */
       if (formData.sendType === "bulk") {
         if (!bulkFile || !bulkGroupName)
           throw new Error("Select file & group name");
-        if (!formData.message.trim())
-          throw new Error("Enter a message");
 
-        // 1️⃣ Upload CSV & save group (SMS Files compatible)
         const uploadRes = await uploadGroupFile(
           token,
           adminId,
@@ -137,36 +127,48 @@ export default function SMSSendUI() {
         if (!uploadRes?.success)
           throw new Error("Failed to upload bulk file");
 
-        const groupId = uploadRes.groupId || uploadRes.id;
-
-        // 2️⃣ Send SMS using saved group
-        response = await sendGroupSMS(
-          token,
-          adminId,
-          groupId,
-          formData.message
+        showAlert(
+          "success",
+          "Bulk contacts uploaded and added to group successfully!"
         );
+
+        setBulkFile(null);
+        setBulkGroupName("");
+        return;
       }
 
-      /* ---------- TEMPLATE ---------- */
+      /** ---------- Template ---------- */
       if (formData.sendType === "template") {
         if (!templatePayload)
-          throw new Error("Select template & upload CSV");
+          throw new Error("Select template & CSV if needed");
 
-        response = await sendTemplateSMS(
-          token,
-          adminId,
-          templatePayload.csvData,
-          templatePayload.content
-        );
+        const { content, csvData, selectedContacts, selectedGroup } = templatePayload;
+
+        // Individual template send
+        if (selectedContacts?.length > 0) {
+          response = await sendTemplateSMS(token, adminId, csvData, content);
+        }
+        // Group template send
+        else if (selectedGroup) {
+          response = await sendGroupSMS(token, adminId, selectedGroup, content);
+        }
+        // Bulk template send (CSV only)
+        else if (csvData?.length > 0) {
+          response = await sendTemplateSMS(token, adminId, csvData, content);
+        }
+        else {
+          throw new Error(
+            "Select individual contacts, a group, or upload CSV to send template SMS"
+          );
+        }
       }
 
       if (!response?.success)
-        throw new Error("Failed to send");
+        throw new Error(response?.message || "Failed to send");
 
       showAlert("success", "SMS sent successfully");
 
-      /* ---------- RESET ---------- */
+      /** ---------- RESET ---------- */
       setFormData({ message: "", sendType: formData.sendType });
       setPhoneNumbers([]);
       setCurrentPhone("");
@@ -174,17 +176,14 @@ export default function SMSSendUI() {
       setBulkGroupName("");
       setSelectedGroup("");
       setTemplatePayload(null);
-
     } catch (err) {
-      showAlert("error", err.message || "Error");
+      showAlert("error", err.message || "Error sending SMS");
     } finally {
       setSending(false);
     }
   };
 
-  /* =============================
-     UI
-  ============================== */
+  /** ================= Render UI ================= */
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar
@@ -194,11 +193,9 @@ export default function SMSSendUI() {
         setActiveTab={setActiveTab}
       />
 
-      {/* Main content area */}
       <div className="flex-1 flex flex-col">
         <Header title="Send SMS" />
 
-        {/* Scrollable div only for SendSMSUI */}
         <main className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full">
           <Alert {...alert} onClose={() => showAlert(null)} />
 
@@ -209,6 +206,7 @@ export default function SMSSendUI() {
             }
           />
 
+          {/* Individual */}
           {formData.sendType === "individual" && (
             <IndividualSMS
               currentPhone={currentPhone}
@@ -219,6 +217,7 @@ export default function SMSSendUI() {
             />
           )}
 
+          {/* Group */}
           {formData.sendType === "group" && (
             <GroupSMS
               selectedGroup={selectedGroup}
@@ -227,6 +226,7 @@ export default function SMSSendUI() {
             />
           )}
 
+          {/* Bulk */}
           {formData.sendType === "bulk" && (
             <BulkSMS
               bulkFile={bulkFile}
@@ -236,6 +236,7 @@ export default function SMSSendUI() {
             />
           )}
 
+          {/* Template */}
           {formData.sendType === "template" && (
             <TemplateSMS
               bulkFile={bulkFile}
@@ -243,24 +244,37 @@ export default function SMSSendUI() {
               bulkGroupName={bulkGroupName}
               setBulkGroupName={setBulkGroupName}
               setTemplatePayload={setTemplatePayload}
+              contacts={contacts}
+              groups={groups}
+              selectedContacts={phoneNumbers}
+              setSelectedContacts={setPhoneNumbers}
+              selectedGroup={selectedGroup}
+              setSelectedGroup={setSelectedGroup}
             />
           )}
 
-          {formData.sendType !== "template" && (
-              <MessageBox
-                message={formData.message}
-                setMessage={(msg) =>
-                  setFormData({ ...formData, message: msg })
-                }
-              />
-            )}
+          {/* MessageBox for manual SMS (not template/bulk) */}
+          {formData.sendType !== "template" &&
+           formData.sendType !== "bulk" && (
+            <MessageBox
+              message={formData.message}
+              setMessage={(msg) =>
+                setFormData({ ...formData, message: msg })
+              }
+            />
+          )}
 
+          {/* Send Button */}
           <button
             onClick={handleSendSMS}
             disabled={sending}
-            className="w-full bg-teal-600 text-white py-4 rounded-xl mt-4"
+            className="w-full bg-teal-600 text-white py-4 rounded-xl mt-4 hover:bg-teal-700 disabled:opacity-50 transition hover:cursor-pointer"
           >
-            {sending ? "Processing..." : "Send SMS"}
+            {sending
+              ? "Processing..."
+              : formData.sendType === "bulk"
+              ? "Upload Contacts to Group"
+              : "Send SMS"}
           </button>
         </main>
       </div>

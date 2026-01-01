@@ -2,45 +2,60 @@ import React from "react";
 import { CreditCard, TrendingUp, TrendingDown, Activity } from "lucide-react";
 
 const TopStats = ({ dashboardData }) => {
-  const usagePercentage = dashboardData 
-    ? ((dashboardData.usedSmsCredits / dashboardData.totalSmsCredits) * 100).toFixed(1)
+  const totalCredits = dashboardData?.totalSmsCredits || 0;
+  const usedCredits = dashboardData?.usedSmsCredits || 0;
+  const remainingCredits = dashboardData?.remainingCredits || 0;
+
+  const usagePercentage = totalCredits > 0
+    ? ((usedCredits / totalCredits) * 100).toFixed(1)
     : 0;
+
+  const availablePercentage = (100 - parseFloat(usagePercentage)).toFixed(1);
+
+  const isActive = remainingCredits > 0;
 
   const stats = [
     {
       title: "Total SMS Credits",
-      value: dashboardData?.totalSmsCredits?.toLocaleString() || "0",
+      value: totalCredits.toLocaleString(),
       icon: CreditCard,
       bgColor: "bg-gradient-to-br from-teal-500 to-teal-600",
-      iconBg: "bg-blue-400/30",
+      iconBg: "bg-white/20",
       trend: null,
+      textColor: "text-white", // default white text
     },
     {
       title: "Used SMS Credits",
-      value: dashboardData?.usedSmsCredits?.toLocaleString() || "0",
+      value: usedCredits.toLocaleString(),
       icon: TrendingUp,
       bgColor: "bg-white",
-      iconBg: "bg-teal-500",
+      iconBg: "bg-teal-500/20",
       trend: `${usagePercentage}% used`,
-      trendColor: "text-black",
+      trendColor: "text-gray-700",
+      textColor: "text-black", // black text for this card
     },
     {
-      title: "Remaining Credits ",
-      value: dashboardData?.remainingCredits?.toLocaleString() || "0",
+      title: "Remaining Credits",
+      value: remainingCredits.toLocaleString(),
       icon: TrendingDown,
-      bgColor: "bg-gradient-to-br from-white-500 to-green-white",
-      iconBg: "bg-teal-500",
-      trend: `${(100 - usagePercentage).toFixed(1)}% available bg`,
-      trendColor: "text-teal-500",
+      bgColor: "bg-gradient-to-br from-emerald-500 to-teal-600",
+      iconBg: "bg-white/20",
+      trend: `${availablePercentage}% available`,
+      trendColor: "text-emerald-100",
+      textColor: "text-white",
     },
     {
       title: "Account Status",
-      value: dashboardData?.remainingCredits > 0 ? "Active" : "Depleted",
+      value: isActive ? "Active" : "Depleted",
       icon: Activity,
-      bgColor: "bg-gradient-to-br from-teal-500 to-teal-600",
-      iconBg: "bg-purple-400/30",
+      bgColor: isActive
+        ? "bg-gradient-to-br from-teal-500 to-teal-600"
+        : "bg-gradient-to-br from-gray-600 to-gray-700",
+      iconBg: isActive ? "bg-white/20" : "bg-white/10",
       trend: dashboardData?.email || "No email",
-      trendColor: "text-purple-100",
+      trendColor: "text-teal-100",
+      statusColor: isActive ? "text-emerald-300" : "text-red-300",
+      textColor: "text-white",
     },
   ];
 
@@ -48,23 +63,48 @@ const TopStats = ({ dashboardData }) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
+
         return (
           <div
             key={index}
-            className={`${stat.bgColor} rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300`}
+            className={`${stat.bgColor} rounded-2xl p-6 ${stat.textColor} shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-white/10 flex flex-col justify-between min-h-45`}
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`${stat.iconBg} p-3 rounded-xl`}>
-                <Icon size={24} />
+            {/* Top Section: Icon + Trend/Status */}
+            <div className="flex items-start justify-between mb-6">
+              <div className={`${stat.iconBg} p-4 rounded-xl backdrop-blur-sm`}>
+                <Icon 
+                  size={28} 
+                  className={
+                    stat.bgColor.includes("white") 
+                      ? "text-teal-600" 
+                      : "text-white"
+                  } 
+                />
               </div>
+
               {stat.trend && (
-                <span className={`text-xs font-medium ${stat.trendColor} bg-white/20 px-3 py-1 rounded-full`}>
-                  {stat.trend}
-                </span>
+                <div className="text-right">
+                  <span className={`text-xs font-medium ${stat.trendColor} bg-black/10 px-3 py-1.5 rounded-full`}>
+                    {stat.trend}
+                  </span>
+                  {stat.statusColor && (
+                    <p className={`text-lg font-bold mt-2 ${stat.statusColor}`}>
+                      {stat.value}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
-            <h3 className="text-sm font-medium opacity-90 mb-1">{stat.title}</h3>
-            <p className="text-3xl font-bold">{stat.value}</p>
+
+            {/* Bottom Section: Title + Value */}
+            <div className={stat.statusColor ? "" : "mt-auto"}>
+              <h3 className="text-sm font-medium opacity-90 mb-2">{stat.title}</h3>
+              {!stat.statusColor && (
+                <p className="text-3xl font-bold tracking-tight">
+                  {stat.value}
+                </p>
+              )}
+            </div>
           </div>
         );
       })}

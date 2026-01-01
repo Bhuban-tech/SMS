@@ -119,7 +119,7 @@ export default function GroupPage() {
             }}
             onDelete={(g) => {
               setGroupToDelete(g);
-              setShowDeleteModal(true); // <-- Open delete confirmation
+              setShowDeleteModal(true);
             }}
             onViewContacts={handleViewContacts}
             onAddContact={(g) => {
@@ -140,7 +140,7 @@ export default function GroupPage() {
         />
       )}
 
-      {/* View Contacts Modal */}
+     
       {showViewModal && (
         <GroupViewModal
           group={selectedGroup}
@@ -159,7 +159,7 @@ export default function GroupPage() {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
+     
       {showDeleteModal && groupToDelete && (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur bg-opacity-50 z-50">
           <div className="bg-white rounded p-6 w-96">

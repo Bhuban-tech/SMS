@@ -38,7 +38,7 @@ function GroupModal({ group, token, onClose, onSuccess }) {
         onClick={handleSave}
         disabled={loading}
         className={`w-full mt-4 py-2 text-white rounded-xl shadow ${
-          loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 hover:bg-teal-700"
+          loading ? "bg-gray-400 cursor-not-allowed" : "bg-teal-600 hover:bg-teal-700 hover:cursor-pointer"
         }`}
       >
         {loading ? "Saving..." : group ? "Save Changes" : "Add Group"}

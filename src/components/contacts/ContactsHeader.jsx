@@ -19,7 +19,7 @@ export default function ContactsHeader({
 
       <button
         onClick={onAdd}
-        className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg"
+        className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 hover:cursor-pointer"
       >
         <Plus size={16} /> Add Contact
       </button>

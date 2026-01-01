@@ -15,7 +15,7 @@ export default function SendTypeSelector({ sendType, setSendType }) {
         <button
           key={key}
           onClick={() => setSendType(key)}
-          className={`p-5 rounded-lg border-2 transition-all flex flex-col items-center ${
+          className={`p-5 rounded-lg border-2 transition-all flex flex-col items-center hover:cursor-pointer ${
             sendType === key ? "border-teal-600 bg-teal-50 text-teal-700" : "border-gray-200 hover:border-gray-300"
           }`}
         >

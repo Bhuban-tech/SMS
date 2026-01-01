@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { Eye, X } from "lucide-react";
+import { Eye, X, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config/api";
 
-// Helper to fetch with auth
+
 const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -40,43 +40,87 @@ export default function DeliveryReports() {
   const [filterType, setFilterType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewSMS, setViewSMS] = useState(null);
+  const [viewLoading, setViewLoading] = useState(false);
 
   const itemsPerPage = 10;
 
-  // Fetch delivery reports
+ 
   const fetchDeliveryReports = async () => {
     setLoading(true);
     try {
       const url = `${API_BASE_URL}/api/delivery-reports`;
       const response = await fetchWithAuth(url, { method: "GET" });
-      const reports = response?.data || response || [];
-      setSmsData(Array.isArray(reports) ? reports : []);
 
-      if (reports.length === 0) toast.info("No delivery reports found.");
-      else toast.success(`Loaded ${reports.length} report(s)`);
+      if (!response || !response.success) {
+        throw new Error(response?.message || "Invalid response");
+      }
+
+      const reports = Array.isArray(response.data) ? response.data : [];
+      setSmsData(reports);
+
+      if (reports.length === 0) {
+        toast.info("No delivery reports found.");
+      } else {
+        toast.success(`Loaded ${reports.length} delivery report`);
+      }
     } catch (error) {
       console.error(error);
-      if (error.message.includes("404")) toast.error("Endpoint not found.");
-      else if (error.message.includes("403")) toast.error("Permission denied.");
-      else toast.error("Failed to load reports");
+      toast.error(
+        error.message.includes("404")
+          ? "Endpoint not found."
+          : error.message.includes("403")
+          ? "Permission denied."
+          : "Failed to load delivery reports"
+      );
       setSmsData([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchSingleReport = async (reportId) => {
+    setViewLoading(true);
+    try {
+      const url = `${API_BASE_URL}/api/delivery_reports/${reportId}`;
+      const response = await fetchWithAuth(url, { method: "GET" });
+
+      if (!response || !response.success) {
+        throw new Error(response?.message || "Failed to fetch report details");
+      }
+
+      setViewSMS(response.data);
+      toast.success("Report details loaded");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load report detail");
+      setViewSMS(null);
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  const handleViewClick = (report) => {
+    fetchSingleReport(report.id);
+  };
+
   useEffect(() => {
     fetchDeliveryReports();
   }, []);
 
-  // Filter and paginate data
+
   const filteredData = smsData.filter((item) => {
     const search = searchTerm.toLowerCase();
-    const mobile = (item.mobile_number || "").toLowerCase();
-    const user = (item.user?.name || item.user || "").toLowerCase();
+    const recipientId = item.messageRecipientId?.toString() || "";
+    const status = (item.status || "").toLowerCase();
+    const description = (item.description || "").toLowerCase();
 
-    const searchMatch = mobile.includes(search) || user.includes(search);
-    const statusMatch = filterType === "all" || (item.status || "").toLowerCase() === filterType;
+    const searchMatch =
+      recipientId.includes(search) ||
+      status.includes(search) ||
+      description.includes(search);
+
+    const statusMatch =
+      filterType === "all" || status === filterType.toLowerCase();
 
     return searchMatch && statusMatch;
   });
@@ -84,6 +128,18 @@ export default function DeliveryReports() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -101,114 +157,136 @@ export default function DeliveryReports() {
 
         <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6">
           {loading && (
-            <p className="text-center text-blue-600 font-medium">Loading delivery reports...</p>
+            <p className="text-center text-blue-600 font-medium">
+              Loading delivery reports...
+            </p>
           )}
 
-          {/* Search and Filter */}
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <input
               type="text"
-              placeholder="Search by mobile or user..."
+              placeholder="Search by recipient ID, status, or description..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="border bg-white px-4 py-2 rounded-xl shadow-sm outline-none w-full md:w-96"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="border border-gray-300 bg-white px-4 py-2 rounded-xl shadow-sm outline-none w-full md:w-96 focus:ring-2 focus:ring-blue-500 transition-all"
             />
+
             <select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="border bg-white px-4 py-2 rounded-xl shadow-sm"
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="border border-gray-300 bg-white px-4 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer"
             >
               <option value="all">All Status</option>
               <option value="delivered">Delivered</option>
               <option value="failed">Failed</option>
               <option value="pending">Pending</option>
             </select>
+
             <button
               onClick={fetchDeliveryReports}
-              className="px-6 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-blue-700"
+              disabled={loading}
+              title="Reload reports"
+              className="flex items-center justify-center px-4 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700 disabled:opacity-70 transition-colors hover:cursor-pointer" 
             >
-              Reload
+              <RotateCw size={20} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
 
-          {/* Table */}
-          <div className="bg-white  shadow-xl overflow-x-auto">
-            <table className="w-full text-sm text-center">
-              <thead className="bg-teal-700 text-white sticky top-0">
-                <tr>
-                  <th className="p-3">S.N</th>
-                  <th className="p-3">User</th>
-                  <th className="p-3">Sent From</th>
-                  <th className="p-3">Mobile</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Message</th>
-                  <th className="p-3">Sent At</th>
-                  <th className="p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentData.length === 0 && !loading && (
+   
+          <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-center">
+                <thead className="bg-teal-700 text-white">
                   <tr>
-                    <td colSpan={8} className="p-12 text-gray-500">
-                      No delivery reports available
-                    </td>
+                    <th className="p-4">S.N</th>
+                    <th className="p-4">Report ID</th>
+                    <th className="p-4">Recipient ID</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Description</th>
+                    <th className="p-4">Reported At</th>
+                    <th className="p-4">Actions</th>
                   </tr>
-                )}
+                </thead>
+                <tbody>
+                  {currentData.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan={7} className="p-12 text-gray-500">
+                        No delivery reports available
+                      </td>
+                    </tr>
+                  )}
 
-                {currentData.map((sms, idx) => (
-                  <tr key={sms.id} className="border-b hover:bg-gray-100">
-                    <td className="p-3">{startIndex + idx + 1}</td>
-                    <td className="p-3">{sms.user?.name || sms.user || "-"}</td>
-                    <td className="p-3">{sms.sent_from || "-"}</td>
-                    <td className="p-3">{sms.mobile_number}</td>
-                    <td className="p-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        sms.status === "delivered" ? "bg-green-100 text-green-800" :
-                        sms.status === "failed" ? "bg-red-100 text-red-800" :
-                        "bg-yellow-100 text-yellow-800"
-                      }`}>
-                        {sms.status || "unknown"}
-                      </span>
-                    </td>
-                    <td className="p-3 max-w-xs truncate" title={sms.message || sms.content}>
-                      {sms.message || sms.content || "-"}
-                    </td>
-                    <td className="p-3">
-                      {sms.sent_at ? new Date(sms.sent_at).toLocaleString() : "-"}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex justify-center gap-3">
-                        <button
-                          onClick={() => setViewSMS(sms)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow"
+                  {currentData.map((report, idx) => (
+                    <tr
+                      key={report.id}
+                      className="border border-gray-300 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="p-4">{startIndex + idx + 1}</td>
+                      <td className="p-4 font-medium">{report.id}</td>
+                      <td className="p-4">{report.messageRecipientId}</td>
+                      <td className="p-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            report.status === "DELIVERED"
+                              ? "bg-green-100 text-green-800"
+                              : report.status === "FAILED"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
                         >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          {report.status || "Unknown"}
+                        </span>
+                      </td>
+                      <td
+                        className="p-4 max-w-xs truncate text-left"
+                        title={report.description}
+                      >
+                        {report.description || "-"}
+                      </td>
+                      <td className="p-4">
+                        {formatDate(report.createdAt)}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => handleViewClick(report)}
+                            disabled={viewLoading}
+                            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-70 text-white p-2 rounded-full shadow transition-colors hover:cursor-pointer"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          {/* Pagination */}
+          
           {totalPages > 1 && (
-            <div className="flex justify-end gap-3 mt-4">
+            <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-5 py-2 bg-white border rounded-xl shadow hover:bg-gray-50 disabled:opacity-50"
+                className="px-5 py-2 bg-white border rounded-xl shadow hover:bg-gray-50 disabled:opacity-50 transition"
               >
                 Previous
               </button>
-              <span className="px-5 py-2 bg-white border rounded-xl shadow">
+              <span className="px-5 py-2 bg-white border rounded-xl shadow flex items-center">
                 Page {currentPage} of {totalPages}
               </span>
               <button
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-5 py-2 bg-white border rounded-xl shadow hover:bg-gray-50 disabled:opacity-50"
+                className="px-5 py-2 bg-white border rounded-xl shadow hover:bg-gray-50 disabled:opacity-50 transition"
               >
                 Next
               </button>
@@ -217,28 +295,57 @@ export default function DeliveryReports() {
         </main>
       </div>
 
-      {/* View SMS Modal */}
+    
       {viewSMS && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl relative">
+          <div className="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
             <button
               onClick={() => setViewSMS(null)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
             >
-              <X size={24} />
+              <X size={28} />
             </button>
 
-            <h2 className="text-2xl font-bold mb-4">SMS Delivery Report</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              Delivery Report Details
+            </h2>
 
-            <div className="space-y-3 text-left">
-              <p><strong>User:</strong> {viewSMS.user?.name || viewSMS.user}</p>
-              <p><strong>Sent From:</strong> {viewSMS.sent_from}</p>
-              <p><strong>Mobile:</strong> {viewSMS.mobile_number}</p>
-              <p><strong>Status:</strong> <span className="font-bold text-blue-600">{viewSMS.status}</span></p>
-              <p><strong>Message:</strong></p>
-              <p className="bg-gray-50 p-3 rounded-lg text-sm">{viewSMS.message || viewSMS.content}</p>
-              <p><strong>Sent At:</strong> {new Date(viewSMS.sent_at || viewSMS.created_at).toLocaleString()}</p>
-            </div>
+            {viewLoading ? (
+              <p className="text-center text-blue-600">Loading details...</p>
+            ) : (
+              <div className="space-y-4 text-left">
+                <p>
+                  <strong>Report ID:</strong> #{viewSMS.id}
+                </p>
+                <p>
+                  <strong>Message Recipient ID:</strong> {viewSMS.messageRecipientId}
+                </p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span
+                    className={`font-bold ${
+                      viewSMS.status === "DELIVERED"
+                        ? "text-green-600"
+                        : viewSMS.status === "FAILED"
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                    }`}
+                  >
+                    {viewSMS.status || "Unknown"}
+                  </span>
+                </p>
+                <div>
+                  <strong>Description:</strong>
+                  <p className="bg-gray-50 p-4 rounded-lg text-sm mt-1">
+                    {viewSMS.description || "No description available"}
+                  </p>
+                </div>
+                <p>
+                  <strong>Reported At:</strong>{" "}
+                  {formatDate(viewSMS.createdAt)}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

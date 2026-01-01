@@ -52,18 +52,18 @@ export default function FilesTable({
                   {row.createdAt ? new Date(row.createdAt).toLocaleString() : "-"}
                 </td>
                 <td className="p-3 flex gap-3 justify-center">
-                  <button className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600">
+                  <button className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 hover:cursor-pointer">
                     <Download size={16} />
                   </button>
                   <button
                     onClick={() => openEditModal(row)}
-                    className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                    className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 hover:cursor-pointer"
                   >
                     <Edit size={16} />
                   </button>
                   <button
                     onClick={() => handleDeleteClick(row)}
-                    className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                    className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 hover:cursor-pointer"
                   >
                     <Trash2 size={16} />
                   </button>

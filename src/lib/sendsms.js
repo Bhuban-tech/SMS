@@ -29,25 +29,32 @@ export const sendGroupSMS = async (token, senderId, groupId, message) => {
 // Bulk SMS / bulk upload
 export const sendBulkSMS = async (token, senderId, groupName, file) => {
   const form = new FormData();
+
   form.append("file", file);
   form.append(
     "groupRequest",
-    new Blob([JSON.stringify({ name: groupName.trim(), senderId })], { type: "application/json" })
+    new Blob(
+      [JSON.stringify({ name: groupName.trim(), senderId })],
+      { type: "application/json" }
+    )
   );
 
   const response = await fetch(
-    `${API_BASE_URL}${ENDPOINTS.BULK_ADD_CONTACTS_TO_GROUP("new")}`,
+    `${API_BASE_URL}${ENDPOINTS.BULK_ADD_CONTACTS_TO_GROUP}`,
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${token}`,
       },
       body: form,
     }
   );
 
-  return response.json();
+  
+  const text = await response.text();
+  return text ? JSON.parse(text) : { success: true };
 };
+
 
 
 export const createTemplate= async (token,templateData)=>{
@@ -163,7 +170,7 @@ export const sendTemplateSMS = async (token, adminId, csvData, content) => {
     },
     body: JSON.stringify({
       senderId: adminId,
-      content,        // 🔥 REQUIRED
+      content,      
       contacts: csvData
     })
   });

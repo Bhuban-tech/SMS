@@ -26,7 +26,7 @@ export default function ContactModal({
       />
       <button
         onClick={onSave}
-        className="w-full bg-teal-500 text-white py-2 rounded"
+        className="w-full bg-teal-500 text-white py-2 rounded hover:bg-teal-700 hover:cursor-pointer"
       >
         Save
       </button>

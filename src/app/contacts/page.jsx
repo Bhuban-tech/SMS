@@ -188,13 +188,13 @@ export default function ContactsPage() {
               </p>
               <div className="mt-6 flex justify-end space-x-4">
                 <button
-                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
                   onClick={() => setShowDeleteModal(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 hover:cursor-pointer"
                   onClick={handleDelete}
                 >
                   Delete
