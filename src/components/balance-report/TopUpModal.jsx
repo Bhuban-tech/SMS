@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { X, Loader } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,9 +18,14 @@ export default function TopUpModal({
   setIsProcessing,
   resetModal,
   initiateTopUp,
-  verifyKhaltiPayment,
-  verifyEsewaPayment,
 }) {
+
+  const [hasClickedPay, setHasClickedPay] = useState(false);
+
+  useEffect(() => {
+    setHasClickedPay(false);
+  }, [topUpAmount, selectedPayment]);
+
   const handlePaymentSelect = (id) => {
     setSelectedPayment(id);
     setShowAmountInput(true);
@@ -30,16 +35,22 @@ export default function TopUpModal({
     setShowAmountInput(false);
     setSelectedPayment("");
     setTopUpAmount("");
+    setHasClickedPay(false)
   };
 
-  const handleTopUp = async () => {
+  const handleTopUp = useCallback(async () => {
+    if (hasClickedPay) return;
+
     const amount = parseFloat(topUpAmount);
     if (!amount || amount < 100) {
       toast.error("Minimum top-up is Rs. 100");
       return;
     }
 
+
+    setHasClickedPay(true);
     setIsProcessing(true);
+
     try {
       const result = await initiateTopUp(selectedPayment, amount);
 
@@ -51,7 +62,7 @@ export default function TopUpModal({
         }
       } else if (selectedPayment === "esewa") {
         if (!result.api_endpoint || !result.formData) {
-          throw new Error("Invalid eSewa initiation response");
+          throw new Error("Invalid eSewa response from server");
         }
 
         const form = document.createElement("form");
@@ -62,7 +73,7 @@ export default function TopUpModal({
           const input = document.createElement("input");
           input.type = "hidden";
           input.name = key;
-          input.value = value;
+          input.value = String(value);
           form.appendChild(input);
         });
 
@@ -70,16 +81,26 @@ export default function TopUpModal({
         form.submit();
       }
     } catch (err) {
-      toast.error(err.message || "Payment initiation failed");
+      toast.error(err.message || "Payment initiation failed. Please try again.");
       console.error("Payment initiation error:", err);
+   
     } finally {
       setIsProcessing(false);
+
     }
-  };
+  }, [topUpAmount, selectedPayment, initiateTopUp, hasClickedPay]);
+
+
+  const isPayDisabled =
+    isProcessing ||
+    !topUpAmount ||
+    parseFloat(topUpAmount) < 100 ||
+    hasClickedPay;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+       
         <div className="bg-linear-to-r from-teal-600 to-teal-500 p-6 rounded-t-3xl text-white relative">
           <h2 className="text-2xl font-bold mb-1">Top Up Balance</h2>
           <p className="text-teal-100 text-sm">
@@ -96,6 +117,7 @@ export default function TopUpModal({
         </div>
 
         <div className="p-6">
+          
           <div className="bg-teal-50 border-2 border-teal-200 rounded-xl p-4 mb-6">
             <p className="text-sm text-teal-700 font-medium mb-1">Current Balance</p>
             <p className="text-3xl font-bold text-teal-900">Rs. {balance.toFixed(2)}</p>
@@ -126,6 +148,7 @@ export default function TopUpModal({
             </>
           ) : (
             <>
+          
               {(() => {
                 const method = paymentMethods.find((m) => m.id === selectedPayment);
                 if (!method) return null;
@@ -151,6 +174,7 @@ export default function TopUpModal({
                 );
               })()}
 
+     
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-900 mb-3">
                   Amount (Min. Rs. 100)
@@ -160,11 +184,12 @@ export default function TopUpModal({
                     <button
                       key={amt}
                       onClick={() => setTopUpAmount(amt.toString())}
+                      disabled={isProcessing || hasClickedPay}
                       className={`p-3 rounded-lg border transition-all ${
                         topUpAmount === amt.toString()
                           ? "border-teal-500 bg-teal-50 text-teal-700 font-semibold"
                           : "border-gray-200 hover:border-teal-300"
-                      }`}
+                      } disabled:opacity-50`}
                     >
                       Rs. {amt}
                     </button>
@@ -179,7 +204,8 @@ export default function TopUpModal({
                     placeholder="Enter amount"
                     value={topUpAmount}
                     onChange={(e) => setTopUpAmount(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
+                    disabled={isProcessing || hasClickedPay}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none disabled:bg-gray-100"
                     min="100"
                   />
                 </div>
@@ -192,7 +218,7 @@ export default function TopUpModal({
           {!showAmountInput ? (
             <button
               onClick={resetModal}
-              className="w-full py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100"
+              className="w-full py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 transition"
             >
               Cancel
             </button>
@@ -200,20 +226,23 @@ export default function TopUpModal({
             <>
               <button
                 onClick={handleBackToPaymentMethod}
-                className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100"
+                disabled={isProcessing}
+                className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 disabled:opacity-50"
               >
                 Back
               </button>
               <button
                 onClick={handleTopUp}
-                disabled={isProcessing || !topUpAmount || parseFloat(topUpAmount) < 100}
-                className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white rounded-xl font-semibold flex items-center justify-center gap-2"
+                disabled={isPayDisabled}
+                className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition"
               >
                 {isProcessing ? (
                   <>
                     <Loader className="w-5 h-5 animate-spin" />
                     Processing...
                   </>
+                ) : hasClickedPay ? (
+                  "Payment Initiated"
                 ) : (
                   <>Pay Rs. {topUpAmount || "0"}</>
                 )}
