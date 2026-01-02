@@ -25,19 +25,16 @@ export default function ContactModal({
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 10) value = value.slice(0, 10);
 
-    // Block invalid prefixes early
     if (value.length >= 2 && !value.startsWith("97") && !value.startsWith("98")) {
       return;
     }
 
-    // If first digit is not 9, clear it
     if (value.length === 1 && value !== "9") {
       value = "";
     }
 
     setLocalData({ ...localData, mobile: value });
 
-    // Real-time error feedback
     const isInvalid =
       value.length > 0 &&
       (value.length < 10 || (!value.startsWith("97") && !value.startsWith("98")));
@@ -54,14 +51,12 @@ export default function ContactModal({
   const handleSave = () => {
     const trimmedName = localData.name?.trim();
 
-    // Validate Name
     if (!trimmedName || trimmedName === "") {
       toast.error("Name field is required");
       setErrors((prev) => ({ ...prev, name: true }));
       return;
     }
 
-    // Validate Mobile
     if (localData.mobile.length === 0) {
       toast.error("Mobile number is required");
       setErrors((prev) => ({ ...prev, mobile: true }));
@@ -74,7 +69,6 @@ export default function ContactModal({
       return;
     }
 
-    // All valid → save
     onSave({ name: trimmedName, mobile: localData.mobile });
     close();
   };
@@ -82,30 +76,44 @@ export default function ContactModal({
   return (
     <Modal title={isEdit ? "Edit Contact" : "Add Contact"} close={close}>
       {/* Name Field */}
-      <input
-        placeholder="Name *"
-        value={localData.name || ""}
-        onChange={handleNameChange}
-        className={`w-full border px-4 py-3 rounded-lg mb-4 transition-colors ${
-          errors.name
-            ? "border-red-500 focus:ring-red-300"
-            : "border-gray-300 focus:ring-teal-500"
-        } focus:outline-none focus:ring-2`}
-      />
+      <div className="mb-4">
+        <input
+          placeholder="Name"
+          value={localData.name || ""}
+          onChange={handleNameChange}
+          className={`w-full border px-4 py-3 rounded-lg transition-colors ${
+            errors.name
+              ? "border-red-500 focus:ring-red-300"
+              : "border-gray-300 focus:ring-teal-500"
+          } focus:outline-none focus:ring-2`}
+        />
+        {errors.name && (
+          <p className="mt-1 text-sm text-red-600">Name is required</p>
+        )}
+      </div>
 
       {/* Mobile Field */}
-      <input
-        placeholder="Mobile * (e.g. 9812345678)"
-        value={localData.mobile || ""}
-        onChange={handleMobileChange}
-        inputMode="numeric"
-        maxLength={10}
-        className={`w-full border px-4 py-3 rounded-lg mb-6 transition-colors ${
-          errors.mobile
-            ? "border-red-500 focus:ring-red-300"
-            : "border-gray-300 focus:ring-teal-500"
-        } focus:outline-none focus:ring-2`}
-      />
+      <div className="mb-6">
+        <input
+          placeholder="Phone Number (e.g. 9812345678)"
+          value={localData.mobile || ""}
+          onChange={handleMobileChange}
+          inputMode="numeric"
+          maxLength={10}
+          className={`w-full border px-4 py-3 rounded-lg transition-colors ${
+            errors.mobile
+              ? "border-red-500 focus:ring-red-300"
+              : "border-gray-300 focus:ring-teal-500"
+          } focus:outline-none focus:ring-2`}
+        />
+        {errors.mobile && (
+          <p className="mt-1 text-sm text-red-600">
+            {localData.mobile.length === 0
+              ? "Mobile number is required"
+              : "Must be 10 digits starting with 97 or 98"}
+          </p>
+        )}
+      </div>
 
       {/* Save Button */}
       <button
