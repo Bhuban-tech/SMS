@@ -82,7 +82,7 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
 
       <button
         onClick={handleAdd}
-        className="w-full mt-4 bg-teal-600 text-white py-2 rounded-xl disabled:opacity-50 hover:cursor pointer hover:bg-teal-700"
+        className="w-full mt-4 bg-teal-600 text-white py-2 rounded-xl disabled:opacity-50 hover:cursor-pointer hover:bg-teal-700"
         disabled={contactIds.length === 0}
       >
         Add Contacts

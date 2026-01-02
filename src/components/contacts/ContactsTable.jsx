@@ -1,69 +1,88 @@
-import { Eye, Edit, Trash, Send } from "lucide-react";
+
+
+import { useState } from "react";
+import { Edit, Trash } from "lucide-react";
 
 export default function ContactsTable({
-  contacts,
+  contacts = [],
   loading,
-  onView,
   onEdit,
   onDelete,
-  onSend,
 }) {
+  const [sortOrder, setSortOrder] = useState("asc"); 
+
+  const toggleSort = () => {
+    setSortOrder(prev => (prev === "asc" ? "desc" : "asc"));
+  };
+
+
+  const sortedContacts = [...contacts].sort((a, b) => {
+    const nameA = (a.name || "").toLowerCase();
+    const nameB = (b.name || "").toLowerCase();
+    return sortOrder === "asc"
+      ? nameA.localeCompare(nameB)
+      : nameB.localeCompare(nameA);
+  });
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-4 overflow-x-auto">
-      <table className="w-full text-sm rounded-2xl text-center">
-        <thead className="bg-teal-700 rounded-2xl text-white">
-          <tr>
-            <th className="p-3">SN</th>
-            <th className="p-3 text-left">Name</th>
-            <th className="p-3">Mobile</th>
-            <th className="p-3">Actions</th>
+    <div className="bg-white rounded-2xl shadow-xl p-6 overflow-x-auto">
+      <table className="w-full text-sm text-center">
+        <thead>
+          <tr className="bg-teal-700 text-white">
+            <th className="p-4 font-medium rounded-tl-2xl">SN</th>
+            <th className="p-4 text-left font-medium">
+              <button
+                onClick={toggleSort}
+                className="flex items-center gap-2 hover:bg-teal-600 px-2 py-1 rounded transition-all duration-200 group"
+              >
+                Name
+                <span className="flex flex-col text-xs leading-tight opacity-70 group-hover:opacity-100 transition-opacity">
+                  <span className={sortOrder === "asc" ? "font-bold text-white opacity-100" : "opacity-40"}>
+                    ▲
+                  </span>
+                  <span className={sortOrder === "desc" ? "font-bold text-white opacity-100 -mt-1" : "opacity-40 -mt-1"}>
+                    ▼
+                  </span>
+                </span>
+              </button>
+            </th>
+            <th className="p-4 font-medium">Mobile</th>
+            <th className="p-4 font-medium rounded-tr-2xl">Actions</th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className="divide-y divide-gray-200">
           {loading ? (
             <tr>
-              <td colSpan="4" className="p-12 text-gray-500">
+              <td colSpan="4" className="py-12 text-gray-500">
                 Loading contacts...
               </td>
             </tr>
-          ) : contacts.length === 0 ? (
+          ) : sortedContacts.length === 0 ? (
             <tr>
-              <td colSpan="4" className="p-12 text-gray-500">
+              <td colSpan="4" className="py-12 text-gray-500">
                 No contacts found
               </td>
             </tr>
           ) : (
-            contacts.map((c, i) => (
+            sortedContacts.map((contact, index) => (
               <tr
-                key={c.id}
-                className="border border-gray-300 hover:bg-gray-50 transition"
+                key={contact.id}
+                className="hover:bg-gray-50 transition-colors duration-150"
               >
-                <td className="p-3">{i + 1}</td>
-
-                <td className="p-3 text-left font-medium">
-                  {c.name}
+                <td className="p-4 text-gray-600">{index + 1}</td>
+                <td className="p-4 text-left font-medium text-gray-800">
+                  {contact.name}
                 </td>
-
-                <td className="p-3">{c.mobile}</td>
-
-                <td className="p-3">
-                  <div className="flex justify-center gap-2">
-                    {/* <ActionBtn onClick={() => onView(c)} color="green">
-                      <Eye size={16} />
-                    </ActionBtn> */}
-
-                    <ActionBtn onClick={() => onEdit(c)} color="blue" className="hover:bg-blue-600 hover:cursor-pointer">
+                <td className="p-4 text-gray-700">{contact.mobile}</td>
+                <td className="p-4">
+                  <div className="flex justify-center gap-3">
+                    <ActionBtn onClick={() => onEdit(contact)} color="blue">
                       <Edit size={16} />
                     </ActionBtn>
-
-                    <ActionBtn onClick={() => onDelete(c)} color="red" className="hover:bg-red-600 hover:cursor-pointer">
+                    <ActionBtn onClick={() => onDelete(contact)} color="red">
                       <Trash size={16} />
                     </ActionBtn>
-
-                    {/* <ActionBtn onClick={() => onSend(c)} color="gray">
-                      <Send size={16} />
-                    </ActionBtn> */}
                   </div>
                 </td>
               </tr>
@@ -75,19 +94,16 @@ export default function ContactsTable({
   );
 }
 
-
 function ActionBtn({ children, onClick, color }) {
   const colors = {
-    green: "bg-green-500 hover:bg-green-600 hover:cursor-pointer",
-    blue: "bg-blue-500 hover:bg-blue-600 hover:cursor-pointer",
-    red: "bg-red-500 hover:bg-red-600 hover:cursor-pointer",
-    gray: "bg-gray-500 hover:bg-gray-600 hover:cursor-pointer",
+    blue: "bg-teal-500 hover:bg-teal-700 text-white hover:cursor-pointer",
+    red: "bg-red-500 hover:bg-red-700 text-white hover:cursor-pointer",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`p-2 rounded text-white transition ${colors[color]}`}
+      className={`p-2.5 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md ${colors[color]}`}
     >
       {children}
     </button>

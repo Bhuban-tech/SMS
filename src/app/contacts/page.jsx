@@ -21,7 +21,6 @@ export default function ContactsPage() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", mobile: "" });
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("tab1");
@@ -60,28 +59,32 @@ export default function ContactsPage() {
     }
   };
 
-  const saveContact = async () => {
+  // Fixed: Now accepts contactData from modal
+  const saveContact = async (contactData) => {
     if (!token) return toast.error("Session expired. Please login again.");
 
     try {
+      let res;
       if (editing) {
-        const res = await updateContact(token, editing, {
-          name: form.name,
-          phoneNo: form.mobile,
+        res = await updateContact(token, editing, {
+          name: contactData.name,
+          phoneNo: contactData.mobile,
         });
         if (!res.success) return toast.error(res.message);
         toast.success("Contact updated");
       } else {
-        const res = await createContact(token, {
-          name: form.name,
-          phoneNo: form.mobile,
+        res = await createContact(token, {
+          name: contactData.name,
+          phoneNo: contactData.mobile,
         });
         if (!res.success) return toast.error(res.message);
         toast.success("Contact added");
       }
+
       setModalOpen(false);
       setEditing(null);
-      loadContacts();
+      setSearch("");
+      loadContacts(); // Refresh from server → correct data shown
     } catch {
       toast.error("Failed to save contact");
     }
@@ -124,34 +127,31 @@ export default function ContactsPage() {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
         <div className="sticky top-0 z-30 bg-white shadow-sm">
           <Header title="Individual Contacts" />
         </div>
 
-      
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-6xl mx-auto space-y-6">
-
-           
-            <div className=" flex flex-colbg-white rounded-2xl shadow-md p-2">
+            <div className="flex flex-col bg-white rounded-2xl shadow-md p-2">
               <ContactsHeader
                 searchTerm={search}
                 setSearchTerm={setSearch}
-                onAdd={() => setModalOpen(true)}
+                onAdd={() => {
+                  setEditing(null);
+                  setModalOpen(true);
+                }}
                 onUpload={() => fileRef.current.click()}
                 fileInputRef={fileRef}
               />
             </div>
 
-            {/* Table Card */}
             <div className="bg-white rounded-2xl shadow-md p-4">
               <ContactsTable
                 contacts={filtered}
                 loading={loading}
                 onEdit={(c) => {
                   setEditing(c.id);
-                  setForm(c);
                   setModalOpen(true);
                 }}
                 onDelete={confirmDelete}
@@ -162,19 +162,20 @@ export default function ContactsPage() {
           </div>
         </div>
 
-        {/* Add/Edit Modal */}
         {modalOpen && (
           <ContactModal
             open={modalOpen}
             close={() => setModalOpen(false)}
-            data={form}
-            setData={setForm}
+            editingId={editing}
+            initialData={
+              editing
+                ? contacts.find((c) => c.id === editing)
+                : { name: "", mobile: "" }
+            }
             onSave={saveContact}
-            isEdit={!!editing}
           />
         )}
 
-        {/* Delete Modal */}
         {showDeleteModal && contactToDelete && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
             <div className="bg-white rounded-2xl p-6 w-96 shadow-xl">

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Wallet, Loader, X, CreditCard, Phone } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { CreditCard, Phone } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
 import Filters from "../../components/balance-report/Filters";
@@ -24,6 +25,9 @@ const paymentMethods = [
 ];
 
 export default function BalanceReportPage() {
+  const searchParams = useSearchParams();
+
+  // States
   const [filterDate, setFilterDate] = useState("");
   const [filterType, setFilterType] = useState("");
   const [showTopUp, setShowTopUp] = useState(false);
@@ -32,48 +36,105 @@ export default function BalanceReportPage() {
   const [showAmountInput, setShowAmountInput] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verified, setVerified] = useState(false);
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [balance, setBalance] = useState(0);
   const [isLoadingData, setIsLoadingData] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState("balance-report");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("balance-report");
+
 
   const formatDate = (transaction) => {
-    let dateValue = transaction.paidAt || transaction.paid_at || transaction.completedAt || transaction.createdAt || transaction.created_at || transaction.updatedAt || transaction.date || transaction.timestamp;
+    const dateValue =
+      transaction.paidAt ||
+      transaction.paid_at ||
+      transaction.completedAt ||
+      transaction.createdAt ||
+      transaction.created_at ||
+      transaction.updatedAt ||
+      transaction.date ||
+      transaction.timestamp;
+
     if (!dateValue) return "N/A";
     const date = new Date(dateValue);
     if (isNaN(date.getTime())) return "Invalid Date";
-    return date.toLocaleString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true });
+
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
-  const getPaymentMethodDisplay = (method) => method === "esewa" ? "eSewa" : method === "khalti" ? "Khalti" : method || "-";
+  const getPaymentMethodDisplay = (method) =>
+    method === "esewa" ? "eSewa" : method === "khalti" ? "Khalti" : method || "-";
 
+  // Fetch all transactions
   const fetchAllTransactions = async () => {
     setIsLoadingData(true);
     try {
-      const esewaData = await fetchEsewaTransactions();
-      const khaltiData = await fetchKhaltiTransactions();
-      const allTransactions = [...esewaData, ...khaltiData].sort((a,b)=>new Date(b.createdAt||b.paidAt||0)-new Date(a.createdAt||a.paidAt||0));
+      const [esewaData, khaltiData] = await Promise.all([
+        fetchEsewaTransactions(),
+        fetchKhaltiTransactions(),
+      ]);
+
+      const allTransactions = [...esewaData, ...khaltiData].sort(
+        (a, b) =>
+          new Date(b.createdAt || b.paidAt || 0) - new Date(a.createdAt || a.paidAt || 0)
+      );
+
       setTransactions(allTransactions);
-      const total = allTransactions.filter(t => t.status==="COMPLETE"||t.status==="Completed"||t.status==="Success").reduce((sum,t)=>sum+(t.totalAmount||t.amount||0),0);
+
+      const total = allTransactions
+        .filter((t) => ["COMPLETE", "Completed", "Success"].includes(t.status))
+        .reduce((sum, t) => sum + (t.totalAmount || t.amount || 0), 0);
+
       setBalance(total);
-    } catch(e){
-      console.error(e);
+    } catch (error) {
+      console.error("Failed to fetch transactions:", error);
       toast.error("Failed to load transactions");
-    } finally { setIsLoadingData(false); }
+    } finally {
+      setIsLoadingData(false);
+    }
   };
 
+ 
   useEffect(() => {
-    setIsMounted(true);
     fetchAllTransactions();
   }, []);
 
+ 
+  useEffect(() => {
+    const data = searchParams.get("data");
+
+    if (!data) return;
+
+
+    if (sessionStorage.getItem("esewa_verified") === "true") return;
+
+    setIsVerifying(true);
+    toast.loading("Verifying eSewa payment...", { id: "esewa-verify" });
+
+    verifyEsewaPayment(data)
+      .then(() => {
+        sessionStorage.setItem("esewa_verified", "true");
+        toast.success("Payment successful! Balance updated.", { id: "esewa-verify" });
+        fetchAllTransactions(); 
+      })
+      .catch((error) => {
+        console.error("eSewa verification failed:", error);
+        toast.error(`Verification failed: ${error.message}`, { id: "esewa-verify" });
+      })
+      .finally(() => {
+        setIsVerifying(false);
+      });
+  }, [searchParams]);
+
   return (
     <div className="flex min-h-screen bg-slate-50">
-      {/* Sidebar */}
+     
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -81,15 +142,14 @@ export default function BalanceReportPage() {
         setActiveTab={setActiveTab}
       />
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <Header title="Balance Report" />
 
-        {/* Page Content */}
         <main className="p-4 sm:p-6 flex-1 overflow-y-auto">
           <Toaster position="top-center" richColors />
+
           <div className="max-w-7xl mx-auto">
+            
             <Filters
               filterDate={filterDate}
               setFilterDate={setFilterDate}
@@ -97,6 +157,7 @@ export default function BalanceReportPage() {
               setFilterType={setFilterType}
               onTopUpClick={() => setShowTopUp(true)}
             />
+
             <TransactionTable
               transactions={transactions}
               filterDate={filterDate}
@@ -105,6 +166,8 @@ export default function BalanceReportPage() {
               formatDate={formatDate}
               getPaymentMethodDisplay={getPaymentMethodDisplay}
             />
+
+          
             {showTopUp && (
               <TopUpModal
                 balance={balance}
@@ -117,7 +180,12 @@ export default function BalanceReportPage() {
                 setShowAmountInput={setShowAmountInput}
                 isProcessing={isProcessing}
                 setIsProcessing={setIsProcessing}
-                resetModal={() => { setShowTopUp(false); setShowAmountInput(false); setSelectedPayment(""); setTopUpAmount(""); }}
+                resetModal={() => {
+                  setShowTopUp(false);
+                  setShowAmountInput(false);
+                  setSelectedPayment("");
+                  setTopUpAmount("");
+                }}
                 initiateTopUp={initiateTopUp}
                 verifyKhaltiPayment={verifyKhaltiPayment}
                 verifyEsewaPayment={verifyEsewaPayment}

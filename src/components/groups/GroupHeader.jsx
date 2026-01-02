@@ -17,7 +17,7 @@ function GroupHeader({ searchTerm, setSearchTerm, openGroupModal }) {
       <button
         type="button"
         onClick={openGroupModal}
-        className="px-5 py-2 bg-teal-600 text-white rounded-xl shadow flex items-center gap-2 hover:bg-teal-700 hover:cursor-pointer"
+        className="px-5 py-2 bg-teal-500 text-white rounded-xl shadow flex items-center gap-2 hover:bg-teal-700 hover:cursor-pointer"
       >
         <Plus className="w-4 h-4" />
         Add Group

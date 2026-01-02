@@ -81,7 +81,7 @@ export const bulkAddContactsToGroup = async (token, groupId, contactIds) => {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        // ❌ DO NOT set Content-Type
+       
       },
       body: formData,
     }
@@ -90,4 +90,20 @@ export const bulkAddContactsToGroup = async (token, groupId, contactIds) => {
   return response.json();
 };
 
+// group.js
+
+
+export const removeContactFromGroup = async (token, groupId, contactId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/groups/delete/${groupId}/contacts/${contactId}`, // <- matches your backend
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.json();
+};
 
