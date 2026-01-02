@@ -1,34 +1,118 @@
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import Modal from "@/components/ui/Modal";
 
 export default function ContactModal({
   open,
   close,
-  data,
-  setData,
+  initialData = { name: "", mobile: "" },
+  editingId,
   onSave,
-  isEdit,
 }) {
+  const [localData, setLocalData] = useState(initialData);
+  const [errors, setErrors] = useState({ name: false, mobile: false });
+
+  const isEdit = !!editingId;
+
+  useEffect(() => {
+    setLocalData(initialData);
+    setErrors({ name: false, mobile: false });
+  }, [initialData]);
+
   if (!open) return null;
+
+  const handleMobileChange = (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 10) value = value.slice(0, 10);
+
+    // Block invalid prefixes early
+    if (value.length >= 2 && !value.startsWith("97") && !value.startsWith("98")) {
+      return;
+    }
+
+    // If first digit is not 9, clear it
+    if (value.length === 1 && value !== "9") {
+      value = "";
+    }
+
+    setLocalData({ ...localData, mobile: value });
+
+    // Real-time error feedback
+    const isInvalid =
+      value.length > 0 &&
+      (value.length < 10 || (!value.startsWith("97") && !value.startsWith("98")));
+
+    setErrors((prev) => ({ ...prev, mobile: isInvalid }));
+  };
+
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    setLocalData({ ...localData, name: value });
+    setErrors((prev) => ({ ...prev, name: value.trim() === "" && value !== "" }));
+  };
+
+  const handleSave = () => {
+    const trimmedName = localData.name?.trim();
+
+    // Validate Name
+    if (!trimmedName || trimmedName === "") {
+      toast.error("Name field is required");
+      setErrors((prev) => ({ ...prev, name: true }));
+      return;
+    }
+
+    // Validate Mobile
+    if (localData.mobile.length === 0) {
+      toast.error("Mobile number is required");
+      setErrors((prev) => ({ ...prev, mobile: true }));
+      return;
+    }
+
+    if (!/^(97|98)\d{8}$/.test(localData.mobile)) {
+      toast.error("Mobile must be 10 digits and start with 97 or 98");
+      setErrors((prev) => ({ ...prev, mobile: true }));
+      return;
+    }
+
+    // All valid → save
+    onSave({ name: trimmedName, mobile: localData.mobile });
+    close();
+  };
 
   return (
     <Modal title={isEdit ? "Edit Contact" : "Add Contact"} close={close}>
+      {/* Name Field */}
       <input
-        placeholder="Name"
-        value={data.name}
-        onChange={(e) => setData({ ...data, name: e.target.value })}
-        className="w-full border px-3 py-2 rounded mb-4"
+        placeholder="Name *"
+        value={localData.name || ""}
+        onChange={handleNameChange}
+        className={`w-full border px-4 py-3 rounded-lg mb-4 transition-colors ${
+          errors.name
+            ? "border-red-500 focus:ring-red-300"
+            : "border-gray-300 focus:ring-teal-500"
+        } focus:outline-none focus:ring-2`}
       />
+
+      {/* Mobile Field */}
       <input
-        placeholder="Mobile"
-        value={data.mobile}
-        onChange={(e) => setData({ ...data, mobile: e.target.value })}
-        className="w-full border px-3 py-2 rounded mb-4"
+        placeholder="Mobile * (e.g. 9812345678)"
+        value={localData.mobile || ""}
+        onChange={handleMobileChange}
+        inputMode="numeric"
+        maxLength={10}
+        className={`w-full border px-4 py-3 rounded-lg mb-6 transition-colors ${
+          errors.mobile
+            ? "border-red-500 focus:ring-red-300"
+            : "border-gray-300 focus:ring-teal-500"
+        } focus:outline-none focus:ring-2`}
       />
+
+      {/* Save Button */}
       <button
-        onClick={onSave}
-        className="w-full bg-teal-500 text-white py-2 rounded hover:bg-teal-700 hover:cursor-pointer"
+        onClick={handleSave}
+        className="w-full bg-teal-500 text-white font-medium py-3 rounded-lg hover:bg-teal-600 transition-colors"
       >
-        Save
+        {isEdit ? "Update" : "Add"} Contact
       </button>
     </Modal>
   );
