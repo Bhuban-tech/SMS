@@ -82,7 +82,7 @@ export default function FilesTable({
               >
                 <td className="p-4 text-gray-600">{index + 1}</td>
                 <td className="p-4 text-gray-700">{row.author || "admin college"}</td>
-                <td className="p-4 text-gray-800 font-medium">{row.fileName || "-"}</td>
+                <td className="p-4 text-gray-800 font-medium">{row.originalFileName || "-"}</td>
                 <td className="p-4 uppercase text-gray-600">{row.fileType || "-"}</td>
                 <td className="p-4 text-gray-700">{row.size || "-"}</td>
                 <td className="p-4 font-medium text-gray-800">{row.name || "-"}</td>

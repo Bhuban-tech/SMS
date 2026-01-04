@@ -1,9 +1,4 @@
-import { ENDPOINTS } from "../config/api";
-
-
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
-
+import { API_BASE_URL, ENDPOINTS } from "../config/api";
 export const getAuthToken = () => localStorage.getItem("token") || "";
 
 

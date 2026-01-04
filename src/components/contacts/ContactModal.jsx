@@ -10,48 +10,72 @@ export default function ContactModal({
   onSave,
 }) {
   const [localData, setLocalData] = useState(initialData);
-  const [errors, setErrors] = useState({ name: false, mobile: false });
+  const [errors, setErrors] = useState({
+    name: false,
+    mobile: false,
+    mobileMessage: "",
+  });
 
   const isEdit = !!editingId;
 
   useEffect(() => {
     setLocalData(initialData);
-    setErrors({ name: false, mobile: false });
+    setErrors({ name: false, mobile: false, mobileMessage: "" });
   }, [initialData]);
 
   if (!open) return null;
 
   const handleMobileChange = (e) => {
-    let value = e.target.value.replace(/\D/g, "");
+    let value = e.target.value.replace(/\D/g, ""); // Allow only digits
     if (value.length > 10) value = value.slice(0, 10);
-
-    if (value.length >= 2 && !value.startsWith("97") && !value.startsWith("98")) {
-      return;
-    }
-
-    if (value.length === 1 && value !== "9") {
-      value = "";
-    }
 
     setLocalData({ ...localData, mobile: value });
 
-    const isInvalid =
-      value.length > 0 &&
-      (value.length < 10 || (!value.startsWith("97") && !value.startsWith("98")));
+    let mobileError = false;
+    let errorMessage = "";
 
-    setErrors((prev) => ({ ...prev, mobile: isInvalid }));
+    if (value.length === 0) {
+      mobileError = true;
+      errorMessage = "Mobile number is required";
+    } else if (value.length < 10) {
+  
+      if (value.length >= 2 && !/^9[78]/.test(value)) {
+ 
+        mobileError = true;
+        errorMessage = "Must start with 97 or 98";
+      } else {
+        mobileError = true;
+        errorMessage = "Must be 10 digits";
+      }
+    } else {
+    
+      if (!/^9[78]\d{8}$/.test(value)) {
+        mobileError = true;
+        errorMessage = "Must start with 97 or 98";
+      }
+      // Valid → no error
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      mobile: mobileError,
+      mobileMessage: errorMessage,
+    }));
   };
 
   const handleNameChange = (e) => {
     const value = e.target.value;
     setLocalData({ ...localData, name: value });
-    setErrors((prev) => ({ ...prev, name: value.trim() === "" && value !== "" }));
+    setErrors((prev) => ({
+      ...prev,
+      name: value.trim() === "" && value !== "",
+    }));
   };
 
   const handleSave = () => {
     const trimmedName = localData.name?.trim();
 
-    if (!trimmedName || trimmedName === "") {
+    if (!trimmedName) {
       toast.error("Name field is required");
       setErrors((prev) => ({ ...prev, name: true }));
       return;
@@ -59,13 +83,26 @@ export default function ContactModal({
 
     if (localData.mobile.length === 0) {
       toast.error("Mobile number is required");
-      setErrors((prev) => ({ ...prev, mobile: true }));
+      setErrors((prev) => ({
+        ...prev,
+        mobile: true,
+        mobileMessage: "Mobile number is required",
+      }));
       return;
     }
 
     if (!/^(97|98)\d{8}$/.test(localData.mobile)) {
-      toast.error("Mobile must be 10 digits and start with 97 or 98");
-      setErrors((prev) => ({ ...prev, mobile: true }));
+      const msg =
+        localData.mobile.length < 10
+          ? "Must be 10 digits starting with 97 or 98"
+          : "Must start with 97 or 98";
+
+      toast.error("Invalid mobile number");
+      setErrors((prev) => ({
+        ...prev,
+        mobile: true,
+        mobileMessage: msg,
+      }));
       return;
     }
 
@@ -75,7 +112,7 @@ export default function ContactModal({
 
   return (
     <Modal title={isEdit ? "Edit Contact" : "Add Contact"} close={close}>
-      {/* Name Field */}
+    
       <div className="mb-4">
         <input
           placeholder="Name"
@@ -107,15 +144,11 @@ export default function ContactModal({
           } focus:outline-none focus:ring-2`}
         />
         {errors.mobile && (
-          <p className="mt-1 text-sm text-red-600">
-            {localData.mobile.length === 0
-              ? "Mobile number is required"
-              : "Must be 10 digits starting with 97 or 98"}
-          </p>
+          <p className="mt-1 text-sm text-red-600">{errors.mobileMessage}</p>
         )}
       </div>
 
-      {/* Save Button */}
+    
       <button
         onClick={handleSave}
         className="w-full bg-teal-500 text-white font-medium py-3 rounded-lg hover:bg-teal-600 transition-colors"

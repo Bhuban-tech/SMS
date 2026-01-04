@@ -9,24 +9,29 @@ import { fetchProfile, updateProfile } from '@/lib/profile';
 
 export default function Profile({ isModal = false }) {
   const router = useRouter();
+
   const [adminId, setAdminId] = useState(null);
   const [username, setUsername] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Fetch adminId from localStorage
   useEffect(() => {
     const storedId = localStorage.getItem('adminId');
     if (!storedId) router.push('/login');
     else setAdminId(storedId);
   }, [router]);
 
+  // Fetch profile data
   useEffect(() => {
     if (!adminId) return;
     fetchProfile(adminId)
@@ -38,6 +43,7 @@ export default function Profile({ isModal = false }) {
       });
   }, [adminId]);
 
+  // Handle form submission
   const handleSubmit = async () => {
     setMessage('');
     setLoading(true);
@@ -46,7 +52,8 @@ export default function Profile({ isModal = false }) {
 
     if (currentPassword || newPassword || confirmPassword) {
       if (!currentPassword) return setError('Current password is required');
-      if (newPassword.length < 8) return setError('New password must be at least 8 characters');
+      if (newPassword.length < 8)
+        return setError('New password must be at least 8 characters');
       if (newPassword !== confirmPassword) return setError('Passwords do not match');
     }
 
@@ -80,7 +87,7 @@ export default function Profile({ isModal = false }) {
   const handleCancel = () => {
     resetPasswords();
     setMessage('');
-    if (adminId) fetchProfile(adminId).then(data => setUsername(data.username || ''));
+    if (adminId) fetchProfile(adminId).then((data) => setUsername(data.username || ''));
   };
 
   const setError = (msg) => {
@@ -89,31 +96,102 @@ export default function Profile({ isModal = false }) {
     setLoading(false);
   };
 
-  if (!adminId) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
+  if (!adminId)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading profile...
+      </div>
+    );
 
   return (
-    <div className={`${isModal ? 'bg-transparent' : 'min-h-screen bg-linear-to-br from-slate-50 to-slate-100'} flex items-center justify-center p-4`}>
+    <div
+      className={`${
+        isModal
+          ? 'bg-transparent'
+          : 'min-h-screen bg-linear-to-br from-slate-50 to-slate-100'
+      } flex items-center justify-center p-4`}
+    >
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Header */}
         <div className="flex items-center gap-4 px-6 py-4 bg-teal-600">
-          <button onClick={() => router.back()} className="text-white hover:text-gray-200 transition cursor-pointer" aria-label="Back">
+          <button
+            onClick={() => router.back()}
+            className="text-white hover:text-gray-200 transition cursor-pointer"
+            aria-label="Back"
+          >
             <ArrowLeft className="h-6 w-6" />
           </button>
           <h1 className="text-2xl font-bold text-white">Edit Profile</h1>
         </div>
 
+        {/* Form */}
         <div className="p-8 space-y-6">
-          {message && <div className={`p-4 rounded-lg border ${messageType === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}>{message}</div>}
+          {/* Global message */}
+          {message && (
+            <div
+              className={`p-4 rounded-lg border ${
+                messageType === 'success'
+                  ? 'bg-green-50 text-green-800 border-green-200'
+                  : 'bg-red-50 text-red-800 border-red-200'
+              }`}
+            >
+              {message}
+            </div>
+          )}
 
-          <InputField label="Username" value={username} setValue={setUsername} Icon={User} placeholder="Enter username" />
-          <PasswordInput label="Current Password" value={currentPassword} setValue={setCurrentPassword} show={showCurrentPassword} setShow={setShowCurrentPassword} />
-          <PasswordInput label="New Password" value={newPassword} setValue={setNewPassword} show={showNewPassword} setShow={setShowNewPassword} />
-          <PasswordInput label="Confirm New Password" value={confirmPassword} setValue={setConfirmPassword} show={showConfirmPassword} setShow={setShowConfirmPassword} />
+          {/* Username */}
+          <InputField
+            label="Username"
+            value={username}
+            setValue={setUsername}
+            Icon={User}
+            placeholder="Enter username"
+          />
 
+          {/* Password fields */}
+          <PasswordInput
+            label="Current Password"
+            value={currentPassword}
+            setValue={setCurrentPassword}
+            show={showCurrentPassword}
+            setShow={setShowCurrentPassword}
+          />
+          <PasswordInput
+            label="New Password"
+            value={newPassword}
+            setValue={setNewPassword}
+            show={showNewPassword}
+            setShow={setShowNewPassword}
+          />
+          <PasswordInput
+            label="Confirm New Password"
+            value={confirmPassword}
+            setValue={setConfirmPassword}
+            show={showConfirmPassword}
+            setShow={setShowConfirmPassword}
+          />
+
+          {/* Inline validation for current password if changing */}
+          {(newPassword || confirmPassword) && !currentPassword && (
+            <p className="text-red-600 text-sm -mt-4">Current password is required to change password</p>
+          )}
+
+          {/* Action buttons */}
           <div className="flex gap-4 pt-6">
-            <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed transition">
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed transition"
+            >
               {loading ? 'Saving...' : 'Save Changes'}
             </button>
-            <button onClick={handleCancel} disabled={loading} className="flex-1 bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-400 transition">Cancel</button>
+            <button
+              onClick={handleCancel}
+              disabled={loading}
+              className="flex-1 bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-400 transition"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>
