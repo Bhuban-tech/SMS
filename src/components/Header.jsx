@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Users, LogOut, User } from "lucide-react";
-// import ProfileModal from "@/components/ProfileModal";
 import ProfileModal from "./profile/ProfileModal";
 
 const Header = ({
@@ -18,7 +17,6 @@ const Header = ({
   const dropdownRef = useRef(null);
   const router = useRouter();
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -34,12 +32,6 @@ const Header = ({
     setDropdownOpen(false);
   };
 
-  // const handleLogout = () => {
-  //   alert("Logged out");
-  //   setDropdownOpen(false);
-  //   // TODO: implement actual logout logic
-  //   router.push("/login");
-  // };
 
   const handleLogout = () => {
   // 1. Remove localStorage items
@@ -47,13 +39,12 @@ const Header = ({
   localStorage.removeItem("adminId");
   localStorage.removeItem("user");
 
-  // 2. Remove auth cookie (used by middleware)
+
   document.cookie = "token=; path=/; max-age=0";
 
-  // 3. Close dropdown
   setDropdownOpen(false);
 
-  // 4. Redirect to login
+
   router.replace("/login");
 };
 
@@ -81,7 +72,7 @@ const Header = ({
         </div>
 
         {dropdownOpen && (
-          <div className="absolute right-0 mt-2 bg-white shadow-md rounded-md w-40 z-50">
+          <div className="absolute right-6 mt-30 bg-white shadow-md rounded-md w-40 z-50">
             <ul>
               <li
                 className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 cursor-pointer"
