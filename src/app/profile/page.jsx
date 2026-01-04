@@ -20,6 +20,7 @@ export default function Profile({ isModal = false }) {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(true);
 
   useEffect(() => {
     const storedId = localStorage.getItem('adminId');
@@ -41,6 +42,7 @@ export default function Profile({ isModal = false }) {
   const handleSubmit = async () => {
     setMessage('');
     setLoading(true);
+    setShowProfileModal(false)
 
     // if (!username.trim()) return setError('Username is required');
 
