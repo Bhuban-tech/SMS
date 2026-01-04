@@ -101,7 +101,7 @@ export default function FilesTable({
                   <div className="flex justify-center gap-3">
                     <ActionButton color="blue" title="Download">
                       <Download size={16} />
-                    </ActionButton>
+                    </ActionButton>;
 
                     <ActionButton
                       color="green"
