@@ -33,6 +33,7 @@ export default function GroupPage() {
   const [editingGroup, setEditingGroup] = useState(null);
 
   const [showViewModal, setShowViewModal] = useState(false);
+ 
   const [groupContacts, setGroupContacts] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
 
@@ -98,6 +99,7 @@ const [showRemoveContactModal, setShowRemoveContactModal] = useState(false);
 const handleRemoveContact = (groupId, contact) => {
   setContactToRemove({ groupId, contact });
   setShowRemoveContactModal(true);
+  setShowViewModal(false);
 };
 
 
@@ -235,8 +237,8 @@ const confirmRemoveContact = async () => {
 
      
       {showDeleteModal && groupToDelete && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur bg-opacity-50 z-50">
-          <div className="bg-white rounded p-6 w-96">
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur bg-opacity-25 z-50">
+          <div className="bg-gray-200 rounded-xl p-6 w-96 shadow-lg">
             <h2 className="text-lg font-bold mb-4">Delete Group</h2>
             <p>Are you sure you want to delete "{groupToDelete.name}"?</p>
             <div className="mt-6 flex justify-end space-x-4">
