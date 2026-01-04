@@ -172,9 +172,9 @@ const TemplateSMS = ({
   return (
     <div className="p-6 bg-white rounded-xl shadow space-y-6">
 
-      {/* Template selection */}
+     
       <select
-        className="w-full p-2 border border-gray-300 rounded"
+        className="w-full p-2 border border-gray-300 rounded hover:cursor-pointer"
         value={selectedTemplateId || ""}
         onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
       >
@@ -184,13 +184,13 @@ const TemplateSMS = ({
         ))}
       </select>
 
-      {/* Buttons for template send type */}
+     
       <div className="flex gap-2 mt-2 mb-4">
         {["individual", "group", "bulk"].map((type) => (
           <button
             key={type}
             onClick={() => setTplSendType(type)}
-            className={`px-4 py-2 rounded hover:cursor-pointer ${tplSendType === type ? "bg-teal-600 text-white" : "bg-gray-200"}`}
+            className={`px-4 py-2 rounded hover:cursor-pointer ${tplSendType === type ? "bg-teal-600 text-white" : "bg-gray-200 hover:bg-gray-500 hover:text-white"}`}
           >
             {type.charAt(0).toUpperCase() + type.slice(1)}
           </button>
@@ -241,15 +241,14 @@ const TemplateSMS = ({
         </select>
       )}
 
-      {/* Bulk CSV upload */}
       {tplSendType === "bulk" && (
         <CsvUploader selectedFile={bulkFile} setSelectedFile={handleFileUpload} />
       )}
 
-      {/* Template preview */}
+    
       <TemplatePreview templateText={renderPreview()} mappedVariables={csvData[currentRowIndex] || {}} />
 
-      {/* Add / Manage Template buttons */}
+     
       <div className="flex justify-between mt-4">
         <button
           className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 hover:cursor-pointer"
@@ -271,7 +270,7 @@ const TemplateSMS = ({
         </button>
       </div>
 
-      {/* Add / Edit Modal */}
+   
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 space-y-4">
@@ -290,13 +289,13 @@ const TemplateSMS = ({
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-400"
+                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-400 hover:cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveTemplate}
-                className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
+                className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 hover:cursor-pointer"
               >
                 {editingTemplateId ? "Update" : "Create"}
               </button>
@@ -305,7 +304,7 @@ const TemplateSMS = ({
         </div>
       )}
 
-      {/* Manage Templates Modal */}
+   
       {showTemplatesModal && (
         <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 max-h-[80vh] overflow-y-auto space-y-2">
@@ -317,13 +316,13 @@ const TemplateSMS = ({
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setShowTemplatesModal(false); handleEditTemplate(t); }}
-                    className="px-2 py-1 bg-teal-600 rounded text-sm text-white"
+                    className="px-2 py-1 bg-teal-500 hover:bg-teal-700 rounded text-sm text-white hover:cursor-pointer"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => { setShowTemplatesModal(false); setTemplateToDelete(t); setShowDeleteConfirm(true); }}
-                    className="px-2 py-1 bg-red-500 text-white rounded text-sm"
+                    className="px-2 py-1 bg-red-500 hover:bg-red-700 text-white rounded text-sm hover:cursor-pointer"
                   >
                     Delete
                   </button>
@@ -331,13 +330,13 @@ const TemplateSMS = ({
               </div>
             ))}
             <div className="flex justify-end mt-4">
-              <button className="px-4 py-2 bg-gray-300 rounded" onClick={() => setShowTemplatesModal(false)}>Close</button>
+              <button className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-500 hover:cursor-pointer" onClick={() => setShowTemplatesModal(false)}>Close</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete confirmation */}
+     
       {showDeleteConfirm && templateToDelete && (
         <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 space-y-4">
@@ -345,13 +344,13 @@ const TemplateSMS = ({
             <p>Are you sure you want to delete "{templateToDelete.name}"?</p>
             <div className="flex justify-end gap-4 mt-4">
               <button
-                className="px-4 py-2 bg-gray-300 rounded"
+                className="px-4 py-2 bg-gray-300 rounded hover:cursor-pointer"
                 onClick={() => { setShowDeleteConfirm(false); setTemplateToDelete(null); }}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:cursor-pointer"
                 onClick={handleDeleteTemplate}
               >
                 Delete
