@@ -70,7 +70,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
                   : "text-slate-300 hover:bg-slate-800 hover:text-white hover:cursor-pointer"
               }`}
             >
-              {/* <Icon size={20} /> */}
+              <Icon size={20} />
               <span className="font-medium truncate">{item.label}</span>
             </button>
           </Link>
