@@ -84,6 +84,7 @@ if (newPassword || confirmPassword) {
     } finally {
       setLoading(false);
       setTimeout(() => setMessage(''), 6000);
+      
     }
   };
 
