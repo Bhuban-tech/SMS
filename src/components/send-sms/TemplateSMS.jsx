@@ -205,9 +205,9 @@ const TemplateSMS = ({
             placeholder="Search contacts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 border rounded mb-2"
+            className="w-full p-2 border border-gray-300 rounded mb-2"
           />
-          <div className="max-h-60 overflow-y-auto border p-2 rounded space-y-1">
+          <div className="max-h-60 overflow-y-auto border border-gray-300 p-2 rounded space-y-1">
             {filteredContacts.map((c) => (
               <div key={c.id} className="flex items-center gap-2">
                 <input

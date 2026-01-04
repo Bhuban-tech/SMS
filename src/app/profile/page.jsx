@@ -35,7 +35,7 @@ export default function Profile({ isModal = false }) {
   useEffect(() => {
     if (!adminId) return;
     fetchProfile(adminId)
-      .then((data) => setUsername(data.username || ''))
+      .then((data) => setUsername(data.username))
       .catch((err) => {
         console.error(err);
         setMessage('Failed to load profile');
@@ -48,14 +48,29 @@ export default function Profile({ isModal = false }) {
     setMessage('');
     setLoading(true);
 
+    // if (!username.trim()) return setError('Username is required');
+
+    // if (currentPassword || newPassword || confirmPassword) {
+    //   if (!currentPassword) return setError('Current password is required');
+    //   if (newPassword.length < 8) return setError('New password must be at least 8 characters');
+    //   if (newPassword !== confirmPassword) return setError('Passwords do not match');
+    // }
+
     if (!username.trim()) return setError('Username is required');
 
-    if (currentPassword || newPassword || confirmPassword) {
-      if (!currentPassword) return setError('Current password is required');
-      if (newPassword.length < 8)
-        return setError('New password must be at least 8 characters');
-      if (newPassword !== confirmPassword) return setError('Passwords do not match');
-    }
+
+if (!currentPassword) {
+  return setError('Current password is required');
+}
+
+
+if (newPassword || confirmPassword) {
+  if (newPassword.length < 8)
+    return setError('New password must be at least 8 characters');
+  if (newPassword !== confirmPassword)
+    return setError('Passwords do not match');
+}
+
 
     const payload = { username: username.trim() };
     if (currentPassword && newPassword) {
@@ -178,20 +193,10 @@ export default function Profile({ isModal = false }) {
 
           {/* Action buttons */}
           <div className="flex gap-4 pt-6">
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed transition"
-            >
+            <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 hover:cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed transition">
               {loading ? 'Saving...' : 'Save Changes'}
             </button>
-            <button
-              onClick={handleCancel}
-              disabled={loading}
-              className="flex-1 bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-400 transition"
-            >
-              Cancel
-            </button>
+            <button onClick={handleCancel} disabled={loading} className="flex-1 bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-400 hover:cursor-pointer transition">Cancel</button>
           </div>
         </div>
       </div>

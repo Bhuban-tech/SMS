@@ -67,7 +67,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
               className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive
                   ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30"
-                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white hover:cursor-pointer"
               }`}
             >
               <Icon size={20} />

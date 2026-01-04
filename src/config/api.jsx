@@ -1,5 +1,5 @@
 
-export const API_BASE_URL = "http://192.168.110.233:8080"; 
+export const API_BASE_URL = "http://192.168.110.144:8080"; 
 export const ENDPOINTS = {
   //auth
   LOGIN: "/api/auth/login",
@@ -25,6 +25,7 @@ export const ENDPOINTS = {
   CONTACTS_ADD_TO_GROUP: (id) => `/api/groups/${id}/contacts`,
   GET_GROUP_CONTACTS: (id) => `/api/groups/${id}`,
   BULK_ADD_CONTACTS_TO_GROUP: "/api/groups/contacts/bulk",
+  REMOVE_CONTACT_FROM_GROUP : (groupId, contactId) =>`/api/groups/delete/${groupId}/contacts/${contactId}`,
 
   
   //delivery reports

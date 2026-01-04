@@ -24,7 +24,7 @@ export default function EditGroupModal({ editModalOpen, setEditModalOpen, newGro
         />
         <button
           onClick={handleSaveEdit}
-          className="w-full bg-teal-500 text-white py-2 rounded-lg hover:bg-teal-600"
+          className="w-full bg-teal-500 text-white py-2 rounded-lg hover:bg-teal-700 hover:cursor-pointer"
         >
           Save Changes
         </button>

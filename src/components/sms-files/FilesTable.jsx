@@ -133,8 +133,8 @@ export default function FilesTable({
 function ActionButton({ children, onClick, color, title }) {
   const colors = {
     blue: "bg-blue-500 hover:bg-blue-600",
-    green: "bg-green-500 hover:bg-green-600",
-    red: "bg-red-500 hover:bg-red-600",
+    green: "bg-teal-500 hover:bg-teal-700",
+    red: "bg-red-500 hover:bg-red-700",
   };
 
   return (

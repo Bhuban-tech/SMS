@@ -8,15 +8,15 @@ function GroupRow ({group, index, onEdit, onDelete, onAddContact,  onViewContact
                 onClick={()=>onViewContacts(group)}>{group.name}</td>
             <td className="p-3">{group.contactCount ?? 0}</td>
             <td className="p-3 flex justify-center gap-3">
-                <button className="bg-teal-400 text-white p-2 rounded-full shadow hover:bg-teal-500 hover:cursor-pointer"
+                <button className="bg-teal-500 text-white p-2 rounded-full shadow hover:bg-teal-700 hover:cursor-pointer"
                         onClick={() => onEdit(group)}>
                             <Edit className="w-4 h-4"/>
                         </button>
-                <button className="bg-red-400 text-white p-2 rounded-full shadow hover:bg-red-500 hover:cursor-pointer"
+                <button className="bg-red-500 text-white p-2 rounded-full shadow hover:bg-red-700 hover:cursor-pointer"
                         onClick={()=> onDelete(group)}>
                             <Trash className="w-4 h-4"/>
                         </button>
-                <button className="bg-teal-500 text-white p-2 rounded-full shadow hover:bg-teal-600 hover:cursor-pointer"
+                <button className="bg-green-500 text-white p-2 rounded-full shadow hover:bg-green-700 hover:cursor-pointer"
                         onClick={()=>onAddContact(group)}>
                             <Plus className="w-4 h-4"/>
                         </button>

@@ -281,7 +281,7 @@ export default function SMSSendUI() {
             className={`w-full py-4 rounded-xl mt-4 font-semibold transition ${
               isSendDisabled
                 ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-teal-600 text-white hover:bg-teal-700"
+                : "bg-teal-600 text-white hover:bg-teal-700 hover:cursor-pointer"
             }`}
           >
             {getButtonText()}

@@ -96,8 +96,8 @@ export default function ContactsTable({
 
 function ActionBtn({ children, onClick, color }) {
   const colors = {
-    blue: "bg-blue-500 hover:bg-blue-600 text-white",
-    red: "bg-red-500 hover:bg-red-600 text-white",
+    blue: "bg-teal-500 hover:bg-teal-700 text-white hover:cursor-pointer",
+    red: "bg-red-500 hover:bg-red-700 text-white hover:cursor-pointer",
   };
 
   return (
