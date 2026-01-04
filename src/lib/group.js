@@ -93,9 +93,9 @@ export const bulkAddContactsToGroup = async (token, groupId, contactIds) => {
 // group.js
 
 
-export const removeContactFromGroup = async (token, groupId, contactId) => {
+export const removeContactFromGroup = async (token,groupId, contactId) => {
   const response = await fetch(
-    `${API_BASE_URL}/api/groups/delete/${groupId}/contacts/${contactId}`, // <- matches your backend
+    API_BASE_URL+ ENDPOINTS.REMOVE_CONTACT_FROM_GROUP(groupId,contactId), // <- matches your backend
     {
       method: "DELETE",
       headers: {

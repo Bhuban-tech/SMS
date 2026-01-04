@@ -41,6 +41,10 @@ export default function GroupPage() {
   const [groupToDelete, setGroupToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false); 
 
+  const [contactToRemove, setContactToRemove] = useState(null);
+const [showRemoveContactModal, setShowRemoveContactModal] = useState(false);
+
+
   useEffect(() => {
     const t = localStorage.getItem("token");
     if (t) setToken(t);
@@ -89,19 +93,40 @@ export default function GroupPage() {
     g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
- const handleRemoveContact = async (groupId, contactId) => {
-    try {
-      const res = await removeContactFromGroup(token, groupId, contactId);
-      if (res.success) {
-        setContacts(prev => prev.filter(c => c.id !== contactId));
-      } else {
-        alert(res.message || "Failed to remove contact");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error removing contact");
+
+
+const handleRemoveContact = (groupId, contact) => {
+  setContactToRemove({ groupId, contact });
+  setShowRemoveContactModal(true);
+};
+
+
+const confirmRemoveContact = async () => {
+  if (!contactToRemove) return;
+
+  const { groupId, contact } = contactToRemove;
+
+  try {
+    const res = await removeContactFromGroup(token, groupId, contact.id);
+
+    if (res.success) {
+      setGroupContacts(prev =>
+        prev.filter(c => c.id !== contact.id)
+      );
+      toast.success("Contact removed from group");
+    } else {
+      toast.error(res.message || "Failed to remove contact");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error("Error removing contact");
+  } finally {
+    setShowRemoveContactModal(false);
+    setContactToRemove(null);
+  }
+};
+
+
 
 
 
@@ -180,6 +205,33 @@ export default function GroupPage() {
           onSuccess={loadGroups}
         />
       )}
+
+{showRemoveContactModal && contactToRemove && (
+  <div className="fixed inset-0 flex items-center justify-center backdrop-blur bg-opacity-50 z-50">
+    <div className="bg-white rounded p-6 w-96">
+      <h2 className="text-lg font-bold mb-4">Remove Contact</h2>
+      <p>
+        Are you sure you want to remove{" "}
+        <strong>{contactToRemove.contact.name}</strong> from this group?
+      </p>
+
+      <div className="mt-6 flex justify-end space-x-4">
+        <button
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-500 hover:cursor-pointer"
+          onClick={() => setShowRemoveContactModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 hover:cursor-pointer"
+          onClick={confirmRemoveContact}
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
      
       {showDeleteModal && groupToDelete && (

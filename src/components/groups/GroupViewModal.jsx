@@ -1,4 +1,4 @@
-import { Cross, Trash2 } from "lucide-react";
+import { Cross, LucideCross, Trash2, X } from "lucide-react";
 import Modal from "./Modal";
 
 function GroupViewModal({ group, contacts = [], onClose, onRemoveContact }) {
@@ -20,11 +20,11 @@ function GroupViewModal({ group, contacts = [], onClose, onRemoveContact }) {
 
              
               <button
-                onClick={() => onRemoveContact(group.id, c.id)}
-                className="text-red-500 hover:text-red-700"
+                onClick={() => onRemoveContact(group.id, c)}
+                className="text-red-500 hover:text-red-700 hover:cursor-pointer"
                 title="Remove contact"
               >
-                <Trash2 />
+                <X/>
               </button>
 
             </li>

@@ -25,7 +25,7 @@ export const ENDPOINTS = {
   CONTACTS_ADD_TO_GROUP: (id) => `/api/groups/${id}/contacts`,
   GET_GROUP_CONTACTS: (id) => `/api/groups/${id}`,
   BULK_ADD_CONTACTS_TO_GROUP: "/api/groups/contacts/bulk",
-  REMOVE_CONTACT_FROM_GROUP : (groupId, contactId) =>`/api/groups/${groupId}/contacts/${contactId}`,
+  REMOVE_CONTACT_FROM_GROUP : (groupId, contactId) =>`/api/groups/delete/${groupId}/contacts/${contactId}`,
 
   
   //delivery reports
