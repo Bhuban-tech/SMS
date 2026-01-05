@@ -33,7 +33,6 @@ export default function SMSFilesPage() {
   const [token, setToken] = useState("");
   const [adminId, setAdminId] = useState(0);
 
-  // Load token & adminId
   useEffect(() => {
     if (typeof window !== "undefined") {
       setToken(localStorage.getItem("token") || "");
@@ -41,7 +40,6 @@ export default function SMSFilesPage() {
     }
   }, []);
 
-  // Fetch all groups
   const fetchFiles = async () => {
     setLoading(true);
     try {
@@ -60,7 +58,6 @@ export default function SMSFilesPage() {
     if (token) fetchFiles();
   }, [token]);
 
-  // Upload file
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -94,7 +91,6 @@ export default function SMSFilesPage() {
     }
   };
 
-  // Edit modal
   const openEditModal = (file) => {
     setSelectedFile(file);
     setNewGroupName(file.name || "");
@@ -120,7 +116,6 @@ export default function SMSFilesPage() {
     }
   };
 
-  // Delete modal
   const handleDeleteClick = (file) => {
     setFileToDelete(file);
     setDeleteModalOpen(true);
@@ -157,22 +152,31 @@ export default function SMSFilesPage() {
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="SMS-Files" />
-        <main className="flex-1 overflow-auto p-6">
-          <SearchUploadBar
-            search={search}
-            setSearch={setSearch}
-            bulkGroupName={bulkGroupName}
-            setBulkGroupName={setBulkGroupName}
-            handleUpload={handleUpload}
-            uploading={uploading}
-          />
-          <FilesTable
-            files={files}
-            filteredFiles={filteredFiles}
-            loading={loading}
-            openEditModal={openEditModal}
-            handleDeleteClick={handleDeleteClick}
-          />
+        <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6">
+          {/* Search & Upload Bar */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <SearchUploadBar
+              search={search}
+              setSearch={setSearch}
+              bulkGroupName={bulkGroupName}
+              setBulkGroupName={setBulkGroupName}
+              handleUpload={handleUpload}
+              uploading={uploading}
+            />
+          </div>
+
+          {/* Files Table */}
+          <div className="overflow-x-auto">
+            <FilesTable
+              files={files}
+              filteredFiles={filteredFiles}
+              loading={loading}
+              openEditModal={openEditModal}
+              handleDeleteClick={handleDeleteClick}
+            />
+          </div>
+
+          {/* Edit Group Modal */}
           <EditGroupModal
             editModalOpen={editModalOpen}
             setEditModalOpen={setEditModalOpen}
@@ -180,6 +184,8 @@ export default function SMSFilesPage() {
             setNewGroupName={setNewGroupName}
             handleSaveEdit={handleSaveEdit}
           />
+
+          {/* Delete Group Modal */}
           <DeleteGroupModal
             deleteModalOpen={deleteModalOpen}
             setDeleteModalOpen={setDeleteModalOpen}

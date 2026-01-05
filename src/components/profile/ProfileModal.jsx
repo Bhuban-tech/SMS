@@ -15,12 +15,7 @@ export default function ProfileModal({ open, onClose }) {
 
     
       <div className="relative w-full max-w-2xl mx-4 animate-scaleIn">
-        {/* <button
-          onClick={onClose}
-          className="absolute right-3 top-8 z-10 text-gray-500 hover:text-gray-800"
-        >
-          <X className="h-6 w-6  text-white" />
-        </button> */}
+       
 
         <button
             onClick={onClose}

@@ -11,12 +11,11 @@ import GroupModal from "@/components/groups/GroupModal";
 import GroupViewModal from "@/components/groups/GroupViewModal";
 import GroupAddContactModal from "@/components/groups/GroupAddContactModal";
 
-
 import {
   fetchGroups,
   deleteGroup,
   getGroupContacts,
-  removeContactFromGroup
+  removeContactFromGroup,
 } from "@/lib/group";
 
 export default function GroupPage() {
@@ -33,18 +32,16 @@ export default function GroupPage() {
   const [editingGroup, setEditingGroup] = useState(null);
 
   const [showViewModal, setShowViewModal] = useState(false);
- 
   const [groupContacts, setGroupContacts] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
 
   const [showAddContactModal, setShowAddContactModal] = useState(false);
 
   const [groupToDelete, setGroupToDelete] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [contactToRemove, setContactToRemove] = useState(null);
-const [showRemoveContactModal, setShowRemoveContactModal] = useState(false);
-
+  const [showRemoveContactModal, setShowRemoveContactModal] = useState(false);
 
   useEffect(() => {
     const t = localStorage.getItem("token");
@@ -94,48 +91,38 @@ const [showRemoveContactModal, setShowRemoveContactModal] = useState(false);
     g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleRemoveContact = (groupId, contact) => {
+    setContactToRemove({ groupId, contact });
+    setShowRemoveContactModal(true);
+    setShowViewModal(false);
+  };
 
+  const confirmRemoveContact = async () => {
+    if (!contactToRemove) return;
 
-const handleRemoveContact = (groupId, contact) => {
-  setContactToRemove({ groupId, contact });
-  setShowRemoveContactModal(true);
-  setShowViewModal(false);
-};
+    const { groupId, contact } = contactToRemove;
 
+    try {
+      const res = await removeContactFromGroup(token, groupId, contact.id);
 
-const confirmRemoveContact = async () => {
-  if (!contactToRemove) return;
-
-  const { groupId, contact } = contactToRemove;
-
-  try {
-    const res = await removeContactFromGroup(token, groupId, contact.id);
-
-    if (res.success) {
-      setGroupContacts(prev =>
-        prev.filter(c => c.id !== contact.id)
-      );
-      toast.success("Contact removed from group");
-    } else {
-      toast.error(res.message || "Failed to remove contact");
+      if (res.success) {
+        setGroupContacts((prev) => prev.filter((c) => c.id !== contact.id));
+        toast.success("Contact removed from group");
+      } else {
+        toast.error(res.message || "Failed to remove contact");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error removing contact");
+    } finally {
+      setShowRemoveContactModal(false);
+      setContactToRemove(null);
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Error removing contact");
-  } finally {
-    setShowRemoveContactModal(false);
-    setContactToRemove(null);
-  }
-};
-
-
-
-
-
-
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-50">
+      {/* Sidebar */}
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -143,12 +130,15 @@ const confirmRemoveContact = async () => {
         setActiveTab={setActiveTab}
       />
 
+      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
         <div className="sticky top-0 z-30 bg-gray-50 shadow">
           <Header title="Group Contacts" />
         </div>
 
-        <main className="flex-1 overflow-auto p-6 space-y-6">
+        {/* Main Area */}
+        <main className="flex-1 overflow-auto p-4 sm:p-6 space-y-6">
           <GroupHeader
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -177,7 +167,7 @@ const confirmRemoveContact = async () => {
         </main>
       </div>
 
-     
+      {/* Modals */}
       {showGroupModal && (
         <GroupModal
           token={token}
@@ -187,18 +177,15 @@ const confirmRemoveContact = async () => {
         />
       )}
 
-     
       {showViewModal && (
         <GroupViewModal
           group={selectedGroup}
           contacts={groupContacts}
           onClose={() => setShowViewModal(false)}
           onRemoveContact={handleRemoveContact}
-          
         />
       )}
 
-   
       {showAddContactModal && (
         <GroupAddContactModal
           token={token}
@@ -208,48 +195,47 @@ const confirmRemoveContact = async () => {
         />
       )}
 
-{showRemoveContactModal && contactToRemove && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-    <div className="bg-white rounded p-6 w-96">
-      <h2 className="text-lg font-bold mb-4">Remove Contact</h2>
-      <p>
-        Are you sure you want to remove{" "}
-        <strong>{contactToRemove.contact.name}</strong> from this group?
-      </p>
+      {showRemoveContactModal && contactToRemove && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Remove Contact</h2>
+            <p>
+              Are you sure you want to remove{" "}
+              <strong>{contactToRemove.contact.name}</strong> from this group?
+            </p>
 
-      <div className="mt-6 flex justify-end space-x-4">
-        <button
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-500 hover:cursor-pointer"
-          onClick={() => setShowRemoveContactModal(false)}
-        >
-          Cancel
-        </button>
-        <button
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 hover:cursor-pointer"
-          onClick={confirmRemoveContact}
-        >
-          Remove
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-     
-      {showDeleteModal && groupToDelete && (
-        <div className="fixed inset-0 flex items-center justify-center  bg-black/40 z-50">
-          <div className="bg-gray-100 rounded-xl p-6 w-96 shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Delete Group</h2>
-            <p>Are you sure you want to delete "{groupToDelete.name}"?</p>
-            <div className="mt-6 flex justify-end space-x-4">
+            <div className="mt-6 flex justify-end space-x-4 flex-wrap gap-2">
               <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-500 hover:cursor-pointer"
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                onClick={() => setShowRemoveContactModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                onClick={confirmRemoveContact}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && groupToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
+          <div className="bg-gray-100 rounded-xl p-6 w-full max-w-md shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Delete Group</h2>
+            <p>Are you sure you want to delete "{groupToDelete.name}"?</p>
+            <div className="mt-6 flex justify-end space-x-4 flex-wrap gap-2">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
                 onClick={() => setShowDeleteModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 hover:cursor-pointer"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                 onClick={handleDelete}
               >
                 Delete

@@ -174,7 +174,7 @@ export default function DeliveryReports() {
               className="border border-gray-300 bg-white px-4 py-2 rounded-xl shadow-sm outline-none w-full md:w-96 focus:ring-2 focus:ring-blue-500 transition-all"
             />
 
-            <select
+            {/* <select
               value={filterType}
               onChange={(e) => {
                 setFilterType(e.target.value);
@@ -186,7 +186,22 @@ export default function DeliveryReports() {
               <option value="delivered">Delivered</option>
               <option value="failed">Failed</option>
               <option value="pending">Pending</option>
-            </select>
+            </select> */}
+
+            <select
+  value={filterType}
+  onChange={(e) => {
+    setFilterType(e.target.value);
+    setCurrentPage(1);
+  }}
+  className="w-full sm:w-auto md:w-48 min-w-0 max-w-full flex-shrink-0 border border-gray-300 bg-white px-3 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer text-sm">
+  <option value="all">All</option>
+  <option value="delivered">Delivered</option>
+  <option value="failed">Failed</option>
+  <option value="pending">Pending</option>
+</select>
+
+
 
             <button
               onClick={fetchDeliveryReports}

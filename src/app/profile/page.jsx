@@ -6,6 +6,8 @@ import { User, ArrowLeft } from 'lucide-react';
 import InputField from '@/components/profile/InputField';
 import PasswordInput from '@/components/profile/PasswordInput';
 import { fetchProfile, updateProfile } from '@/lib/profile';
+import Router from 'next/router';
+import ProfileModal from '@/components/profile/ProfileModal';
 
 export default function Profile({ isModal = false }) {
   const router = useRouter();
@@ -23,16 +25,21 @@ export default function Profile({ isModal = false }) {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(true);
+  const isNewPasswordSet = newPassword || confirmPassword;
+const isNewPasswordValid = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+=[\]{};':"\\|,.<>/?]).{6,}$/.test(newPassword);
+const isConfirmPasswordValid = newPassword === confirmPassword;
 
-  // Fetch adminId from localStorage
+const isFormValid = !isNewPasswordSet || (currentPassword && isNewPasswordValid && isConfirmPasswordValid);
+
+
+ 
   useEffect(() => {
     const storedId = localStorage.getItem('adminId');
     if (!storedId) router.push('/login');
     else setAdminId(storedId);
   }, [router]);
 
-  // Fetch profile data
+ 
   useEffect(() => {
     if (!adminId) return;
     fetchProfile(adminId)
@@ -45,56 +52,60 @@ export default function Profile({ isModal = false }) {
   }, [adminId]);
 
   // Handle form submission
-  const handleSubmit = async () => {
-    setMessage('');
-    setLoading(true);
-    setShowProfileModal(false)
+const handleSubmit = async () => {
+  setMessage('');
+  setLoading(true);
 
-    // if (!username.trim()) return setError('Username is required');
+  // --- Validation ---
+  if (!username.trim()) {
+    setError('Username is required');
+    return;
+  }
 
-    // if (currentPassword || newPassword || confirmPassword) {
-    //   if (!currentPassword) return setError('Current password is required');
-    //   if (newPassword.length < 8) return setError('New password must be at least 8 characters');
-    //   if (newPassword !== confirmPassword) return setError('Passwords do not match');
-    // }
+  if (!currentPassword && (newPassword || confirmPassword)) {
+    setError('Current password is required');
+    return;
+  }
 
-    if (!username.trim()) return setError('Username is required');
-
-
-if (!currentPassword) {
-  return setError('Current password is required');
-}
-
-
-if (newPassword || confirmPassword) {
-  if (newPassword.length < 8)
-    return setError('New password must be at least 8 characters');
-  if (newPassword !== confirmPassword)
-    return setError('Passwords do not match');
-}
-
-
-    const payload = { username: username.trim() };
-    if (currentPassword && newPassword) {
-      payload.currentPassword = currentPassword;
-      payload.newPassword = newPassword;
+  if (newPassword || confirmPassword) {
+    if (newPassword.length < 8) {
+      setError('New password must be at least 8 characters');
+      return;
     }
-
-    try {
-      const result = await updateProfile(adminId, payload);
-      setMessage(result.message || 'Profile updated successfully');
-      setMessageType('success');
-      resetPasswords();
-    } catch (err) {
-      console.error(err);
-      setMessage(err.message || 'Failed to update profile');
-      setMessageType('error');
-    } finally {
-      setLoading(false);
-      setTimeout(() => setMessage(''), 6000);
-      
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
     }
-  };
+  }
+
+  // --- Prepare payload ---
+  const payload = { username: username.trim() };
+  if (currentPassword && newPassword) {
+    payload.currentPassword = currentPassword;
+    payload.newPassword = newPassword;
+  }
+
+  // --- Submit ---
+  try {
+    const result = await updateProfile(adminId, payload);
+    setMessage(result.message || 'Profile updated successfully');
+    setMessageType('success');
+    resetPasswords();
+
+    // Redirect to login after successful save
+    setTimeout(() => {
+      localStorage.removeItem('adminId'); // optional: log out user
+      router.push('/login');
+    }, 1000);
+  } catch (err) {
+    console.error(err);
+    setMessage(err.message || 'Failed to update profile');
+    setMessageType('error');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const resetPasswords = () => {
     setCurrentPassword('');
@@ -167,27 +178,38 @@ if (newPassword || confirmPassword) {
           />
 
           {/* Password fields */}
-          <PasswordInput
-            label="Current Password"
-            value={currentPassword}
-            setValue={setCurrentPassword}
-            show={showCurrentPassword}
-            setShow={setShowCurrentPassword}
-          />
-          <PasswordInput
-            label="New Password"
-            value={newPassword}
-            setValue={setNewPassword}
-            show={showNewPassword}
-            setShow={setShowNewPassword}
-          />
-          <PasswordInput
-            label="Confirm New Password"
-            value={confirmPassword}
-            setValue={setConfirmPassword}
-            show={showConfirmPassword}
-            setShow={setShowConfirmPassword}
-          />
+        {/* Current Password */}
+<PasswordInput
+  label="Current Password"
+  value={currentPassword}
+  setValue={setCurrentPassword}
+  show={showCurrentPassword}
+  setShow={setShowCurrentPassword}
+  required={isNewPasswordSet} // only required if user wants to change password
+/>
+
+{/* New Password */}
+<PasswordInput
+  label="New Password"
+  value={newPassword}
+  setValue={setNewPassword}
+  show={showNewPassword}
+  setShow={setShowNewPassword}
+  validate={true}
+  errorMessage="Password must be at least 6 characters, include a letter, a number, and a special character."
+/>
+
+{/* Confirm Password */}
+<PasswordInput
+  label="Confirm New Password"
+  value={confirmPassword}
+  setValue={setConfirmPassword}
+  show={showConfirmPassword}
+  setShow={setShowConfirmPassword}
+  validate={true}
+  errorMessage={newPassword !== confirmPassword ? "Passwords do not match" : ""}
+ />
+
 
           {/* Inline validation for current password if changing */}
           {(newPassword || confirmPassword) && !currentPassword && (
@@ -196,9 +218,12 @@ if (newPassword || confirmPassword) {
 
           {/* Action buttons */}
           <div className="flex gap-4 pt-6">
-            <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 hover:cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed transition">
-              {loading ? 'Saving...' : 'Save Changes'}
+           <button onClick={handleSubmit}
+            disabled={!isFormValid || loading}
+            className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 hover:cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed transition">
+            {loading ? 'Saving...' : 'Save Changes'}
             </button>
+
             <button onClick={handleCancel} disabled={loading} className="flex-1 bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-400 hover:cursor-pointer transition">Cancel</button>
           </div>
         </div>
