@@ -7,7 +7,6 @@ import { Eye, X, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config/api";
 
-
 const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem("token");
   if (!token) {

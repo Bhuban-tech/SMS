@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { Download, Edit, Trash2 } from "lucide-react";
+import React from "react";
+import { Eye, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export default function FilesTable({
   files = [],
@@ -8,6 +9,7 @@ export default function FilesTable({
   loading,
   openEditModal,
   handleDeleteClick,
+  handleViewClick, 
 }) {
   const [sortOrder, setSortOrder] = useState("asc"); // 'asc' or 'desc'
 
@@ -75,50 +77,42 @@ export default function FilesTable({
               </td>
             </tr>
           ) : (
-            sortedFiles.map((row, index) => (
-              <tr
-                key={row.id}
-                className="hover:bg-gray-50 transition-colors duration-150"
-              >
-                <td className="p-4 text-gray-600">{index + 1}</td>
-                <td className="p-4 text-gray-700">{row.author || "admin college"}</td>
-                <td className="p-4 text-gray-800 font-medium">{row.originalFileName || "-"}</td>
-                <td className="p-4 uppercase text-gray-600">{row.contentType || "-"}</td>
-                <td className="p-4 text-gray-700">{row.fileSizeBytes || "-"}</td>
-                <td className="p-4 font-medium text-gray-800">{row.name || "-"}</td>
-                <td className="p-4 text-gray-600">
-                  {row.createdAt
-                    ? new Date(row.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "-"}
+            filteredFiles.map((row, index) => (
+              <tr key={row.id} className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}>
+                <td className="p-3">{index + 1}</td>
+                <td className="p-3">{row.author || "admin college"}</td>
+                <td className="p-3">{row.originalFileName || "-"}</td>
+                <td className="p-3">{row.contentType || "-"}</td>
+                <td className="p-3">{row.fileSizeBytes || "-"}</td>
+                <td className="p-3 font-medium">{row.name || "-"}</td>
+                <td className="p-3">
+                  {row.createdAt ? new Date(row.createdAt).toLocaleString() : "-"}
                 </td>
-                <td className="p-4">
-                  <div className="flex justify-center gap-3">
-                    <ActionButton color="blue" title="Download">
-                      <Download size={16} />
-                    </ActionButton>
+                <td className="p-3 flex gap-3 justify-center">
+                  {/* View button (replaces Download) */}
+                  <button
+                    onClick={() => handleViewClick?.(row)}
+                    className="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600 hover:cursor-pointer"
+                    title="View file"
+                  >
+                    <Eye size={16} />
+                  </button>
 
-                    <ActionButton
-                      color="green"
-                      onClick={() => openEditModal(row)}
-                      title="Edit"
-                    >
-                      <Edit size={16} />
-                    </ActionButton>
+                  <button
+                    onClick={() => openEditModal(row)}
+                    className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 hover:cursor-pointer"
+                    title="Edit file"
+                  >
+                    <Edit size={16} />
+                  </button>
 
-                    <ActionButton
-                      color="red"
-                      onClick={() => handleDeleteClick(row)}
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </ActionButton>
-                  </div>
+                  <button
+                    onClick={() => handleDeleteClick(row)}
+                    className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 hover:cursor-pointer"
+                    title="Delete file"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               </tr>
             ))
@@ -126,26 +120,5 @@ export default function FilesTable({
         </tbody>
       </table>
     </div>
-  );
-}
-
-// Reusable styled action button
-function ActionButton({ children, onClick, color, title }) {
-  const colors = {
-    blue: "bg-blue-500 hover:bg-blue-600",
-    green: "bg-teal-500 hover:bg-teal-700",
-    red: "bg-red-500 hover:bg-red-700",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      className={`p-2.5 rounded-lg text-white shadow-sm transition-all duration-200 hover:shadow-md ${colors[color]} ${
-        onClick ? "cursor-pointer" : "cursor-not-allowed opacity-70"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

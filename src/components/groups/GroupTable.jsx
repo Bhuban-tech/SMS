@@ -1,27 +1,34 @@
+"use client";
 import { useState } from "react";
 import GroupRow from "./GroupRow";
 
 function GroupTable({
   groups = [],
-  onEdit,
   onDelete,
   onAddContact,
   onViewContacts,
+  onEditGroupName, 
+  editingGroupId,   
+  setEditingGroupId 
 }) {
-  const [sortOrder, setSortOrder] = useState("asc"); 
+  const [sortOrder, setSortOrder] = useState("asc");
 
-  const toggleSort = () => {
+  const toggleSort = () =>
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-  };
-
 
   const sortedGroups = [...groups].sort((a, b) => {
     const nameA = (a.name || "").toLowerCase();
     const nameB = (b.name || "").toLowerCase();
-    return sortOrder === "asc"
-      ? nameA.localeCompare(nameB)
-      : nameB.localeCompare(nameA);
+    return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
   });
+
+  const handleSaveName = (groupId, newName) => {
+    if (!newName.trim()) return;
+    onEditGroupName(groupId, newName);
+    setEditingGroupId(null);
+  };
+
+  const handleCancelEdit = () => setEditingGroupId(null);
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 overflow-x-auto">
@@ -36,12 +43,8 @@ function GroupTable({
               >
                 Group Name
                 <span className="flex flex-col text-xs leading-tight opacity-70 group-hover:opacity-100 transition-opacity">
-                  <span className={sortOrder === "asc" ? "font-bold text-white opacity-100" : "opacity-40"}>
-                    ▲
-                  </span>
-                  <span className={sortOrder === "desc" ? "font-bold text-white opacity-100 -mt-1" : "opacity-40 -mt-1"}>
-                    ▼
-                  </span>
+                  <span className={sortOrder === "asc" ? "font-bold text-white opacity-100" : "opacity-40"}>▲</span>
+                  <span className={sortOrder === "desc" ? "font-bold text-white opacity-100 -mt-1" : "opacity-40 -mt-1"}>▼</span>
                 </span>
               </button>
             </th>
@@ -63,10 +66,13 @@ function GroupTable({
                 key={group.id}
                 group={group}
                 index={index}
-                onEdit={onEdit}
-                onDelete={onDelete}
                 onAddContact={onAddContact}
+                onDelete={onDelete}
                 onViewContacts={onViewContacts}
+                isEditing={editingGroupId === group.id}
+                onSaveName={handleSaveName}
+                onCancelEdit={handleCancelEdit}
+                onEditClick={() => setEditingGroupId(group.id)}
               />
             ))
           )}

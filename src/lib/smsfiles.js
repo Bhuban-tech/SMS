@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/config/api";
+import { API_BASE_URL, ENDPOINTS } from "@/config/api";
 
 // Fetch all groups/files
 export const fetchGroups = async (token) => {
@@ -43,13 +43,17 @@ export const uploadGroupFile = async (token, adminId, file, groupName) => {
 };
 
 // Update group/file details
-export const updateGroup = async (token, fileId, newFile) => {
+export const updateGroup = async (token, groupId, newData) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/groups/update/${fileId}`, {
+    const res = await fetch(`${API_BASE_URL}${ENDPOINTS.UPDATE_GROUP(groupId)}`, {
       method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify(newFile),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(newData),
     });
+
     const result = await res.json();
     if (!res.ok) throw new Error(result.message || "Failed to update group");
     return result;
@@ -57,6 +61,8 @@ export const updateGroup = async (token, fileId, newFile) => {
     throw err;
   }
 };
+
+
 
 // Delete group/file
 export const deleteGroup = async (token, fileId) => {

@@ -175,7 +175,7 @@ const SMSDashboard = () => {
                       className={`px-6 py-3 rounded-xl font-semibold shadow-md transition whitespace-nowrap ${
                         viewMode === "daily-report"
                           ? "bg-teal-600 text-white hover:bg-teal-700"
-                          : "bg-gray-200 text-slate-700 border border-gray-300 hover:bg-gray-300 cursor-pointer"
+                          : "bg-gray-200 text-slate-700 border border-gray-300 hover:bg-gray-300"
                       }`}
                     >
                       Daily Report
@@ -185,7 +185,7 @@ const SMSDashboard = () => {
                       className={`px-6 py-3 rounded-xl font-semibold shadow-md transition whitespace-nowrap ${
                         viewMode === "monthly-report"
                           ? "bg-teal-600 text-white hover:bg-teal-700"
-                          : "bg-gray-200 text-slate-700 border border-gray-300 hover:bg-gray-300 hover:cursor-pointer"
+                          : "bg-gray-200 text-slate-700 border border-gray-300 hover:bg-gray-300"
                       }`}
                     >
                       Monthly Report

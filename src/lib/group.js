@@ -18,7 +18,7 @@ export const createGroup = async (token,name) => {
         method:"POST",
         headers: getHeaders(token),
         body: JSON.stringify({name}),
-    })// Group SMS
+    })
     return response.json();
 }
 

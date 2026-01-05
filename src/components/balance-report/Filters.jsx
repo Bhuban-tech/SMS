@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
 import { Calendar, Filter, Upload, Wallet } from "lucide-react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 export default function Filters({
   filterDate,
@@ -8,7 +10,37 @@ export default function Filters({
   filterType,
   setFilterType,
   onTopUpClick,
+  transactions = [],            // Pass transactions
+  formatDate,
+  getPaymentMethodDisplay,
+  getTransactionType,
+  getAmountDisplay,
+  getStatusColor
 }) {
+  const handleExport = () => {
+    if (!transactions || transactions.length === 0) return;
+
+    // Map filtered transactions into exportable format
+    const dataToExport = transactions.map((t) => ({
+      Date: formatDate(t),
+      Method: getTransactionType(t) === "debit"
+        ? "SMS Sent / Deduction"
+        : getPaymentMethodDisplay(t.paymentMethod),
+      Amount: getAmountDisplay(t).props.children.join(""), // extract display text
+      Status: t.status || "Pending",
+    }));
+
+    // Create worksheet and workbook
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+
+    // Generate Excel file
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "transactions.xlsx");
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
       <div className="flex flex-col sm:flex-row sm:items-end gap-4">
@@ -52,7 +84,10 @@ export default function Filters({
         </button>
 
         {/* Export Button */}
-        <button className="w-full sm:w-auto bg-white border-2 border-gray-300 hover:bg-gray-50 px-6 py-3 rounded-xl shadow-sm transition-colors font-medium flex items-center justify-center gap-2 hover:cursor-pointer">
+        <button
+          onClick={handleExport}
+          className="w-full sm:w-auto bg-white border-2 border-gray-300 hover:bg-gray-50 px-6 py-3 rounded-xl shadow-sm transition-colors font-medium flex items-center justify-center gap-2 hover:cursor-pointer"
+        >
           <Upload className="w-5 h-5" />
           Export
         </button>

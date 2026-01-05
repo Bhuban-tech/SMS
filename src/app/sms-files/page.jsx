@@ -152,31 +152,26 @@ export default function SMSFilesPage() {
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="SMS-Files" />
-        <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6">
-          {/* Search & Upload Bar */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-            <SearchUploadBar
-              search={search}
-              setSearch={setSearch}
-              bulkGroupName={bulkGroupName}
-              setBulkGroupName={setBulkGroupName}
-              handleUpload={handleUpload}
-              uploading={uploading}
-            />
-          </div>
-
-          {/* Files Table */}
-          <div className="overflow-x-auto">
-            <FilesTable
-              files={files}
-              filteredFiles={filteredFiles}
-              loading={loading}
-              openEditModal={openEditModal}
-              handleDeleteClick={handleDeleteClick}
-            />
-          </div>
-
-          {/* Edit Group Modal */}
+        <main className="flex-1 overflow-auto p-6">
+          <SearchUploadBar
+            search={search}
+            setSearch={setSearch}
+            bulkGroupName={bulkGroupName}
+            setBulkGroupName={setBulkGroupName}
+            handleUpload={handleUpload}
+            uploading={uploading}
+          />
+        <FilesTable
+  files={files}
+  filteredFiles={filteredFiles}
+  loading={loading}
+  openEditModal={openEditModal}
+  handleDeleteClick={handleDeleteClick} 
+  handleViewClick={(file) => {
+    console.log("Viewing file:", file);
+    alert(`Viewing contacts from: ${file.originalFileName}\nGroup: ${file.name}`);
+  }}
+/>
           <EditGroupModal
             editModalOpen={editModalOpen}
             setEditModalOpen={setEditModalOpen}
@@ -185,7 +180,7 @@ export default function SMSFilesPage() {
             handleSaveEdit={handleSaveEdit}
           />
 
-          {/* Delete Group Modal */}
+          
           <DeleteGroupModal
             deleteModalOpen={deleteModalOpen}
             setDeleteModalOpen={setDeleteModalOpen}
