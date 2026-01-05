@@ -4,14 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { API_BASE_URL, ENDPOINTS } from "@/config/api";
-import { Eye, EyeOff } from "lucide-react"; // <-- added for password toggle
+import { Eye, EyeOff } from "lucide-react"; 
 
 export default function LoginPage() {
   const router = useRouter();
 
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // <-- added state
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 

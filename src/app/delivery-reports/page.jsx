@@ -194,7 +194,7 @@ export default function DeliveryReports() {
     setFilterType(e.target.value);
     setCurrentPage(1);
   }}
-  className="w-full sm:w-auto md:w-48 min-w-0 max-w-full flex-shrink-0 border border-gray-300 bg-white px-3 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer text-sm">
+  className="w-full sm:w-auto md:w-48 min-w-0 max-w-full shrink-0 border border-gray-300 bg-white px-3 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer text-sm">
   <option value="all">All</option>
   <option value="delivered">Delivered</option>
   <option value="failed">Failed</option>

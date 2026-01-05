@@ -8,20 +8,6 @@ export const metadata = {
   description: "Dashboard System",
 };
 
-// export default function RootLayout({ children }) {
-//   return (
-//     <html lang="en">
-//       <body>  
-
-//     <Toaster position="top-right" richColors closeButton />
-//         <main>{children}</main>
-
-
-//       </body>
-//     </html>
-//   );
-// }
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
