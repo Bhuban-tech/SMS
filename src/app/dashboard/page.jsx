@@ -88,7 +88,7 @@ const SMSDashboard = () => {
     fetchDashboardData();
   }, [adminId]);
 
-  // Daily Report
+
   useEffect(() => {
     if (viewMode === "daily-report" && adminId && selectedDate) {
       const loadDailyReport = async () => {
@@ -112,7 +112,7 @@ const SMSDashboard = () => {
     }
   }, [viewMode, selectedDate, adminId]);
 
-  // Monthly Report - filtered to selected month
+
   useEffect(() => {
     if (viewMode === "monthly-report" && adminId && selectedMonth) {
       const loadMonthlyReport = async () => {
@@ -182,7 +182,7 @@ const SMSDashboard = () => {
     : 'Monthly Report';
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
       <button
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -441,7 +441,7 @@ const SMSDashboard = () => {
                   </div>
                   <button
                     onClick={handleSendSMS}
-                    className="w-full py-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold rounded-xl hover:from-teal-600 hover:to-teal-700 transition shadow-lg"
+                    className="w-full py-4 bg-linear-to-r from-teal-500 to-teal-600 text-white font-bold rounded-xl hover:from-teal-600 hover:to-teal-700 transition shadow-lg"
                   >
                     Send SMS Now
                   </button>

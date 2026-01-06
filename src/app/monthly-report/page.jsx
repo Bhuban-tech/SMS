@@ -81,11 +81,6 @@ const MonthlyReport = () => {
        
         <div className="p-6 lg:p-8 overflow-y-auto h-[calc(100vh-80px)] space-y-6">
        
-          {/* <div>
-            
-            <p className="text-gray-600 mt-1">SMS delivery performance overview for the month</p>
-          </div> */}
-
           <div className="space-y-4">
   <button
     onClick={handleBack}

@@ -7,36 +7,30 @@ import { Eye, X, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config/api";
 
-
 const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem("token");
   if (!token) {
     toast.error("Please login again");
     return null;
   }
-
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
     ...options.headers,
   };
-
   const response = await fetch(url, { ...options, headers });
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`API error: ${response.status} - ${errorText}`);
   }
-
   return response.json();
 };
 
 export default function DeliveryReports() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("delivery-reports");
-
   const [smsData, setSmsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewSMS, setViewSMS] = useState(null);
@@ -44,24 +38,20 @@ export default function DeliveryReports() {
 
   const itemsPerPage = 10;
 
- 
   const fetchDeliveryReports = async () => {
     setLoading(true);
     try {
       const url = `${API_BASE_URL}/api/delivery-reports`;
       const response = await fetchWithAuth(url, { method: "GET" });
-
       if (!response || !response.success) {
         throw new Error(response?.message || "Invalid response");
       }
-
       const reports = Array.isArray(response.data) ? response.data : [];
       setSmsData(reports);
-
       if (reports.length === 0) {
         toast.info("No delivery reports found.");
       } else {
-        toast.success(`Loaded ${reports.length} delivery report`);
+        toast.success(`Loaded ${reports.length} delivery report${reports.length > 1 ? "s" : ""}`);
       }
     } catch (error) {
       console.error(error);
@@ -83,11 +73,9 @@ export default function DeliveryReports() {
     try {
       const url = `${API_BASE_URL}/api/delivery_reports/${reportId}`;
       const response = await fetchWithAuth(url, { method: "GET" });
-
       if (!response || !response.success) {
         throw new Error(response?.message || "Failed to fetch report details");
       }
-
       setViewSMS(response.data);
       toast.success("Report details loaded");
     } catch (error) {
@@ -107,22 +95,10 @@ export default function DeliveryReports() {
     fetchDeliveryReports();
   }, []);
 
-
+  // Filtering only by status now (search removed)
   const filteredData = smsData.filter((item) => {
-    const search = searchTerm.toLowerCase();
-    const recipientId = item.messageRecipientId?.toString() || "";
     const status = (item.status || "").toLowerCase();
-    const description = (item.description || "").toLowerCase();
-
-    const searchMatch =
-      recipientId.includes(search) ||
-      status.includes(search) ||
-      description.includes(search);
-
-    const statusMatch =
-      filterType === "all" || status === filterType.toLowerCase();
-
-    return searchMatch && statusMatch;
+    return filterType === "all" || status === filterType.toLowerCase();
   });
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -149,12 +125,10 @@ export default function DeliveryReports() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
-
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="sticky top-0 z-30 bg-gray-50 shadow">
           <Header title="Delivery Reports" />
         </div>
-
         <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6">
           {loading && (
             <p className="text-center text-blue-600 font-medium">
@@ -162,58 +136,33 @@ export default function DeliveryReports() {
             </p>
           )}
 
-          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-            <input
-              type="text"
-              placeholder="Search by recipient ID, status, or description..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="border border-gray-300 bg-white px-4 py-2 rounded-xl shadow-sm outline-none w-full md:w-96 focus:ring-2 focus:ring-blue-500 transition-all"
-            />
-
-            {/* <select
+          {/* Controls: Only status filter + reload button */}
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            <select
               value={filterType}
               onChange={(e) => {
                 setFilterType(e.target.value);
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 bg-white px-4 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer"
+              className="w-full sm:w-auto md:w-48 min-w-0 max-w-full shrink-0 border border-gray-300 bg-white px-3 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer text-sm"
             >
-              <option value="all">All Status</option>
+              <option value="all">All</option>
               <option value="delivered">Delivered</option>
               <option value="failed">Failed</option>
               <option value="pending">Pending</option>
-            </select> */}
-
-            <select
-  value={filterType}
-  onChange={(e) => {
-    setFilterType(e.target.value);
-    setCurrentPage(1);
-  }}
-  className="w-full sm:w-auto md:w-48 min-w-0 max-w-full shrink-0 border border-gray-300 bg-white px-3 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer text-sm">
-  <option value="all">All</option>
-  <option value="delivered">Delivered</option>
-  <option value="failed">Failed</option>
-  <option value="pending">Pending</option>
-</select>
-
-
+            </select>
 
             <button
               onClick={fetchDeliveryReports}
               disabled={loading}
               title="Reload reports"
-              className="flex items-center justify-center px-4 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700 disabled:opacity-70 transition-colors hover:cursor-pointer" 
+              className="flex items-center justify-center px-4 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700 disabled:opacity-70 transition-colors hover:cursor-pointer"
             >
               <RotateCw size={20} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
 
-   
+          {/* Table */}
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-center">
@@ -236,7 +185,6 @@ export default function DeliveryReports() {
                       </td>
                     </tr>
                   )}
-
                   {currentData.map((report, idx) => (
                     <tr
                       key={report.id}
@@ -264,9 +212,7 @@ export default function DeliveryReports() {
                       >
                         {report.description || "-"}
                       </td>
-                      <td className="p-4">
-                        {formatDate(report.createdAt)}
-                      </td>
+                      <td className="p-4">{formatDate(report.createdAt)}</td>
                       <td className="p-4">
                         <div className="flex justify-center">
                           <button
@@ -285,7 +231,7 @@ export default function DeliveryReports() {
             </div>
           </div>
 
-          
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-end gap-3 mt-6">
               <button
@@ -310,7 +256,7 @@ export default function DeliveryReports() {
         </main>
       </div>
 
-    
+      {/* View Modal */}
       {viewSMS && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
@@ -320,11 +266,9 @@ export default function DeliveryReports() {
             >
               <X size={28} />
             </button>
-
             <h2 className="text-2xl font-bold mb-6 text-gray-800">
               Delivery Report Details
             </h2>
-
             {viewLoading ? (
               <p className="text-center text-blue-600">Loading details...</p>
             ) : (
@@ -356,8 +300,7 @@ export default function DeliveryReports() {
                   </p>
                 </div>
                 <p>
-                  <strong>Reported At:</strong>{" "}
-                  {formatDate(viewSMS.createdAt)}
+                  <strong>Reported At:</strong> {formatDate(viewSMS.createdAt)}
                 </p>
               </div>
             )}

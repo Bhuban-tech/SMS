@@ -28,22 +28,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
         />
       )}
 
-      {/* Sidebar */}
+   
       <aside
         className={`
-          fixed lg:relative top-0 left-0 h-screen w-64 z-40 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+          fixed lg:relative top-0 left-0 h-screen w-64 z-40 bg-linear-to-b from-slate-900 via-slate-800 to-slate-900
           p-6 flex flex-col justify-between transform transition-transform duration-300 ease-in-out shadow-2xl
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
           lg:translate-x-0
         `}
       >
-        {/* Top */}
+        
         <div>
           <div className="mb-12">
-            <h1 className="text-white text-4xl sm:text-5xl font-bold tracking-tight">sms</h1>
+            <h1 className="text-white text-2xl sm:text-2xl font-bold tracking-tight">KritimSMS</h1>
           </div>
 
-          {/* Menu */}
+         
           <nav className="flex-1 px-2 space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -80,7 +80,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
         </div>
       </aside>
 
-      {/* Hamburger */}
+    
       {isMobile && !sidebarOpen && (
         <div className="fixed top-4 left-4 z-50">
           <button

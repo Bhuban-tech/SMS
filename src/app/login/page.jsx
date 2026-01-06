@@ -59,8 +59,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-teal-50 p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-10 border border-teal-100 hover:scale-105 transition-transform duration-500">
         <h1 className="text-3xl font-bold mb-8 text-center">
-          <span className="text-teal-600">SMS Portal</span>{" "}
-          <span className="text-gray-700">Login</span>
+          <span className="text-teal-600"> KritimSMS</span>{" "}
+         
         </h1>
 
         {error && (
@@ -85,12 +85,13 @@ export default function LoginPage() {
             <label className="block text-gray-600 font-bold mb-2">Password</label>
             <input
               type={showPassword ? "text" : "password"} 
+              placeholder="Enter the Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-3 rounded-xl border border-teal-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 focus:outline-none text-gray-700 placeholder-gray-400 transition pr-12"
             />
             <span
-              className="absolute right-3 top-9.5 cursor-pointer text-gray-500"
+              className="absolute right-3 top-12 cursor-pointer text-gray-500"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
