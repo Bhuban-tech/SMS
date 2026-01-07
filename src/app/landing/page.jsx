@@ -112,7 +112,7 @@ const Landing = () => {
                   />
                   <Image
                     src="/iphone-frame.png"
-                  
+                    alt="image"
                     width={800}
                     height={800}
                     className="relative z-10 pointer-events-none"

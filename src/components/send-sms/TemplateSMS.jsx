@@ -44,13 +44,13 @@ const TemplateSMS = ({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  /** Load token */
+ 
   useEffect(() => {
     const t = localStorage.getItem("token");
     if (t) setToken(t);
   }, []);
 
-  /** Load templates */
+  
   useEffect(() => {
     if (!token) return;
     const loadTemplates = async () => {
@@ -61,7 +61,7 @@ const TemplateSMS = ({
     loadTemplates();
   }, [token]);
 
-  /** CSV upload */
+
   const handleFileUpload = (file) => {
     setBulkFile(file);
     Papa.parse(file, {
@@ -102,12 +102,17 @@ const TemplateSMS = ({
     });
   }, [selectedTemplate, csvData, selectedContacts, selectedGroup, tplSendType]);
 
-  /** Filter contacts for search */
-  const filteredContacts = (contacts || []).filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.phone.includes(searchTerm)
+
+  const filteredContacts = (contacts || []).filter((c) => {
+  const name = (c.name || "").toLowerCase();
+  const phone = (c.phone || "").toString();
+
+  return (
+    name.includes(searchTerm.toLowerCase()) ||
+    phone.includes(searchTerm)
   );
+});
+
 
   /** Handle add/update template */
   const handleSaveTemplate = async () => {
@@ -147,7 +152,7 @@ const TemplateSMS = ({
     }
   };
 
-  /** Delete template */
+ 
   const handleDeleteTemplate = async () => {
     if (!templateToDelete) return;
     const res = await deleteTemplate(token, templateToDelete.id);
@@ -161,7 +166,7 @@ const TemplateSMS = ({
     setTemplateToDelete(null);
   };
 
-  /** Edit template */
+ 
   const handleEditTemplate = (template) => {
     setEditingTemplateId(template.id);
     setNewTemplateName(template.name);
@@ -197,7 +202,7 @@ const TemplateSMS = ({
         ))}
       </div>
 
-      {/* Individual contacts selection */}
+     
       {tplSendType === "individual" && (
         <div>
           <input
@@ -272,7 +277,7 @@ const TemplateSMS = ({
 
    
       {showModal && (
-        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 space-y-4">
             <input
               className="w-full p-2 border rounded"
@@ -306,7 +311,7 @@ const TemplateSMS = ({
 
    
       {showTemplatesModal && (
-        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96 max-h-[80vh] overflow-y-auto space-y-2">
             <h2 className="text-lg font-bold mb-4">Existing Templates</h2>
             {templates.length === 0 && <p>No templates available</p>}
@@ -338,19 +343,19 @@ const TemplateSMS = ({
 
      
       {showDeleteConfirm && templateToDelete && (
-        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-96 space-y-4">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-200 p-6 rounded-xl w-96 space-y-4">
             <h2 className="text-lg font-bold">Delete Template</h2>
             <p>Are you sure you want to delete "{templateToDelete.name}"?</p>
             <div className="flex justify-end gap-4 mt-4">
               <button
-                className="px-4 py-2 bg-gray-300 rounded hover:cursor-pointer"
+                className="px-4 py-2 bg-gray-300 rounded hover:cursor-pointer hover:bg-gray-500"
                 onClick={() => { setShowDeleteConfirm(false); setTemplateToDelete(null); }}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:cursor-pointer"
+                className="px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded hover:cursor-pointer"
                 onClick={handleDeleteTemplate}
               >
                 Delete

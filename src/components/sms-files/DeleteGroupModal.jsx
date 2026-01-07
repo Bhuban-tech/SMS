@@ -14,13 +14,13 @@ export default function DeleteGroupModal({ deleteModalOpen, setDeleteModalOpen, 
         <div className="flex justify-end gap-4">
           <button
             onClick={() => setDeleteModalOpen(false)}
-            className="px-4 py-2 rounded-lg border hover:bg-gray-100"
+            className="px-4 py-2 rounded-lg border hover:bg-gray-200 hover:cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={confirmDelete}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+            className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 hover:cursor-pointer"
           >
             Delete
           </button>

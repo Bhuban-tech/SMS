@@ -35,6 +35,7 @@ export default function DeliveryReports() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewSMS, setViewSMS] = useState(null);
   const [viewLoading, setViewLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const itemsPerPage = 10;
 
@@ -304,6 +305,13 @@ export default function DeliveryReports() {
                 </p>
               </div>
             )}
+
+            <div className="flex justify-between items-center pt-4 border-t">
+              <span className="font-semibold text-gray-500">Reported At</span>
+              <span className="text-gray-800">
+                {formatDate(viewSMS.createdAt)}
+              </span>
+            </div>
           </div>
         </div>
       )}

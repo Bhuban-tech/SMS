@@ -34,7 +34,7 @@ const Header = ({
 
 
   const handleLogout = () => {
-  // 1. Remove localStorage items
+
   localStorage.removeItem("token");
   localStorage.removeItem("adminId");
   localStorage.removeItem("user");

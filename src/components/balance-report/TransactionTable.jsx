@@ -3,14 +3,13 @@ import React from "react";
 import { AlertCircle, Loader } from "lucide-react";
 
 export default function TransactionTable({
-  transactions = [],
+  transactions,
   filterDate,
   filterType,
   isLoading,
   formatDate,
   getPaymentMethodDisplay,
 }) {
-
   const filteredTransactions = transactions.filter((t) => {
     let matchesDate = true;
     let matchesType = true;
@@ -29,9 +28,9 @@ export default function TransactionTable({
 
     if (filterType === "top up") {
       matchesType =
-        ["complete", "completed", "success"].includes(
-          t.status?.toLowerCase()
-        ) ||
+        t.status === "COMPLETE" ||
+        t.status === "Completed" ||
+        t.status === "Success" ||
         ["esewa", "khalti"].includes(t.paymentMethod?.toLowerCase());
     }
 
@@ -42,37 +41,35 @@ export default function TransactionTable({
     const status = t.status?.toLowerCase();
     const method = t.paymentMethod?.toLowerCase();
 
-    const isCredit =
-      ["complete", "completed", "success"].includes(status) ||
-      ["esewa", "khalti"].includes(method) ||
-      t.type === "credit" ||
-      Number(t.amount) > 0;
+    
+    const isTopUp =
+      status === "complete" ||
+      status === "completed" ||
+      status === "success" ||
+      method === "esewa" ||
+      method === "khalti" ||
+      t.type === "credit" ||  
+      t.amount > 0;          
 
-    return isCredit ? "credit" : "debit";
+    return isTopUp ? "credit" : "debit";
   };
 
   const getAmountDisplay = (t) => {
     const amount = t.totalAmount || t.amount || 0;
     const type = getTransactionType(t);
+    const sign = type === "credit" ? "+" : "–";
+    const colorClass = type === "credit" ? "text-emerald-700" : "text-rose-700";
 
     return (
-      <span
-        className={`text-lg font-bold ${
-          type === "credit"
-            ? "text-emerald-700"
-            : "text-rose-700"
-        }`}
-      >
-        {type === "credit" ? "+" : "–"} Rs.{" "}
-        {Math.abs(Number(amount)).toFixed(2)}
+      <span className={`text-lg font-bold ${colorClass}`}>
+        {sign} Rs. {Math.abs(amount).toFixed(2)}
       </span>
     );
   };
 
   const getStatusColor = (status) => {
     const s = status?.toLowerCase();
-
-    if (["complete", "completed", "success"].includes(s)) {
+    if (s === "complete" || s === "completed" || s === "success") {
       return "bg-emerald-100 text-emerald-800 border border-emerald-200";
     }
     if (s?.includes("pending")) {
@@ -87,7 +84,7 @@ export default function TransactionTable({
         return "bg-emerald-100 text-emerald-800 border border-emerald-200";
       case "khalti":
         return "bg-indigo-100 text-indigo-800 border border-indigo-200";
-      case "system":
+      case "system": 
       case "deduction":
         return "bg-rose-100 text-rose-800 border border-rose-200";
       default:
@@ -95,15 +92,12 @@ export default function TransactionTable({
     }
   };
 
-
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
       {isLoading ? (
         <div className="text-center py-20">
           <Loader className="w-14 h-14 text-teal-600 mx-auto mb-4 animate-spin" />
-          <p className="text-lg text-gray-600 font-medium">
-            Loading transactions...
-          </p>
+          <p className="text-lg text-gray-600 font-medium">Loading transactions...</p>
         </div>
       ) : filteredTransactions.length === 0 ? (
         <div className="text-center py-20">
@@ -111,7 +105,7 @@ export default function TransactionTable({
           <p className="text-lg font-semibold text-gray-700 mb-2">
             No transactions found
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 max-w-sm mx-auto">
             {filterDate
               ? "There are no transactions on the selected date."
               : "Your transactions will appear here."}
@@ -120,58 +114,54 @@ export default function TransactionTable({
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-teal-600 border-b-2 border-teal-200">
+            <thead className="bg-linear-to-r from-teal-50 to-cyan-50 border-b-2 border-teal-200">
               <tr>
-                <th className="px-8 py-5 text-left text-xs font-bold text-white uppercase">
+                <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-white uppercase">
+                <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
                   Method
                 </th>
-                <th className="px-8 py-5 text-right text-xs font-bold text-white uppercase">
+                <th className="px-8 py-5 text-right text-xs font-bold text-teal-800 uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-8 py-5 text-center text-xs font-bold text-white uppercase">
+                <th className="px-8 py-5 text-center text-xs font-bold text-teal-800 uppercase tracking-wider">
                   Status
                 </th>
               </tr>
             </thead>
-
-            <tbody className="divide-y divide-gray-100">
-              {filteredTransactions.map((t) => (
+            <tbody className="bg-white divide-y divide-gray-100">
+              {filteredTransactions.map((transaction) => (
                 <tr
-                  key={t.id || t.pidx || t.transactionUuid}
-                  className="hover:bg-teal-50/50 transition"
+                  key={transaction.id || transaction.pidx || transaction.transactionUuid}
+                  className="hover:bg-teal-50/50 transition-all duration-200"
                 >
-                  <td className="px-8 py-5 text-sm font-medium text-gray-900">
-                    {formatDate(t)}
+                  <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {formatDate(transaction)}
                   </td>
-
-                  <td className="px-8 py-5">
+                  <td className="px-8 py-5 whitespace-nowrap">
                     <span
-                      className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getPaymentMethodColor(
-                        getTransactionType(t) === "debit"
-                          ? "system"
-                          : t.paymentMethod
-                      )}`}
+                      className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${
+                        getPaymentMethodColor(
+                          transaction.paymentMethod || (getTransactionType(transaction) === "debit" ? "system" : "")
+                        )
+                      }`}
                     >
-                      {getTransactionType(t) === "debit"
+                      {getTransactionType(transaction) === "debit"
                         ? "SMS Sent / Deduction"
-                        : getPaymentMethodDisplay(t.paymentMethod)}
+                        : getPaymentMethodDisplay(transaction.paymentMethod)}
                     </span>
                   </td>
-
-                  <td className="px-8 py-5 text-right">
-                    {getAmountDisplay(t)}
+                  <td className="px-8 py-5 whitespace-nowrap text-right">
+                    {getAmountDisplay(transaction)}
                   </td>
-
-                  <td className="px-8 py-5 text-center">
+                  <td className="px-8 py-5 whitespace-nowrap text-center">
                     <span
                       className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getStatusColor(
-                        t.status
+                        transaction.status
                       )}`}
                     >
-                      {t.status || "Pending"}
+                      {transaction.status || "Pending"}
                     </span>
                   </td>
                 </tr>

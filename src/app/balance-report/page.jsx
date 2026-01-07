@@ -42,7 +42,7 @@ export default function BalanceReportPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("balance-report");
 
-
+  // Helper Functions
   const formatDate = (transaction) => {
     const dateValue =
       transaction.paidAt ||
@@ -70,6 +70,44 @@ export default function BalanceReportPage() {
 
   const getPaymentMethodDisplay = (method) =>
     method === "esewa" ? "eSewa" : method === "khalti" ? "Khalti" : method || "-";
+
+  const getTransactionType = (t) => {
+    const status = t.status?.toLowerCase();
+    const method = t.paymentMethod?.toLowerCase();
+    const isTopUp =
+      status === "complete" ||
+      status === "completed" ||
+      status === "success" ||
+      method === "esewa" ||
+      method === "khalti" ||
+      t.type === "credit" ||
+      t.amount > 0;
+    return isTopUp ? "credit" : "debit";
+  };
+
+  const getAmountDisplay = (t) => {
+    const amount = t.totalAmount || t.amount || 0;
+    const type = getTransactionType(t);
+    const sign = type === "credit" ? "+" : "–";
+    const colorClass = type === "credit" ? "text-emerald-700" : "text-rose-700";
+
+    return (
+      <span className={`text-lg font-bold ${colorClass}`}>
+        {sign} Rs. {Math.abs(amount).toFixed(2)}
+      </span>
+    );
+  };
+
+  const getStatusColor = (status) => {
+    const s = status?.toLowerCase();
+    if (s === "complete" || s === "completed" || s === "success") {
+      return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+    }
+    if (s?.includes("pending")) {
+      return "bg-amber-100 text-amber-800 border border-amber-200";
+    }
+    return "bg-rose-100 text-rose-800 border border-rose-200";
+  };
 
   // Fetch all transactions
   const fetchAllTransactions = async () => {
@@ -100,18 +138,71 @@ export default function BalanceReportPage() {
     }
   };
 
- 
+  // Handle Export to CSV
+  const handleExportCSV = () => {
+    if (transactions.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
+
+    const filtered = transactions.filter((t) => {
+      let matchesDate = true;
+      let matchesType = true;
+
+      if (filterDate) {
+        const transactionDate = new Date(t.paidAt || t.createdAt || t.created_at || 0);
+        const filterDateObj = new Date(filterDate);
+        matchesDate =
+          transactionDate.getFullYear() === filterDateObj.getFullYear() &&
+          transactionDate.getMonth() === filterDateObj.getMonth() &&
+          transactionDate.getDate() === filterDateObj.getDate();
+      }
+
+      if (filterType === "top up") {
+        matchesType =
+          t.status === "COMPLETE" ||
+          t.status === "Completed" ||
+          t.status === "Success" ||
+          ["esewa", "khalti"].includes(t.paymentMethod?.toLowerCase());
+      }
+
+      return matchesDate && matchesType;
+    });
+
+    const csvRows = [];
+    const headers = ["Date", "Payment Method", "Amount", "Status"];
+    csvRows.push(headers.join(","));
+
+    filtered.forEach((t) => {
+      const row = [
+        `"${formatDate(t)}"`,
+        `"${getPaymentMethodDisplay(t.paymentMethod)}"`,
+        `"${t.amount || t.totalAmount || 0}"`,
+        `"${t.status || "Pending"}"`,
+      ];
+      csvRows.push(row.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transactions_${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Initial Fetch
   useEffect(() => {
     fetchAllTransactions();
   }, []);
 
- 
   useEffect(() => {
     const data = searchParams.get("data");
-
     if (!data) return;
-
-
     if (sessionStorage.getItem("esewa_verified") === "true") return;
 
     setIsVerifying(true);
@@ -121,7 +212,7 @@ export default function BalanceReportPage() {
       .then(() => {
         sessionStorage.setItem("esewa_verified", "true");
         toast.success("Payment successful! Balance updated.", { id: "esewa-verify" });
-        fetchAllTransactions(); 
+        fetchAllTransactions();
       })
       .catch((error) => {
         console.error("eSewa verification failed:", error);
@@ -134,7 +225,6 @@ export default function BalanceReportPage() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-     
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -149,13 +239,19 @@ export default function BalanceReportPage() {
           <Toaster position="top-center" richColors />
 
           <div className="max-w-7xl mx-auto">
-            
             <Filters
               filterDate={filterDate}
               setFilterDate={setFilterDate}
               filterType={filterType}
               setFilterType={setFilterType}
               onTopUpClick={() => setShowTopUp(true)}
+              transactions={transactions}
+              formatDate={formatDate}
+              getPaymentMethodDisplay={getPaymentMethodDisplay}
+              getTransactionType={getTransactionType}
+              getAmountDisplay={getAmountDisplay}
+              getStatusColor={getStatusColor}
+              onExport={handleExportCSV} // Export button
             />
 
             <TransactionTable
@@ -167,7 +263,6 @@ export default function BalanceReportPage() {
               getPaymentMethodDisplay={getPaymentMethodDisplay}
             />
 
-          
             {showTopUp && (
               <TopUpModal
                 balance={balance}

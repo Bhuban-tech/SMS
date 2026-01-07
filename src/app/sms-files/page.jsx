@@ -3,18 +3,12 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { toast } from "sonner";
-
 import SearchUploadBar from "@/components/sms-files/SearchUploadBar";
 import FilesTable from "@/components/sms-files/FilesTable";
 import EditGroupModal from "@/components/sms-files/EditGroupModal";
 import DeleteGroupModal from "@/components/sms-files/DeleteGroupModal";
-
-import {
-  fetchGroups,
-  uploadGroupFile,
-  updateGroup,
-  deleteGroup,
-} from "@/lib/smsfiles";
+import { fetchGroups, uploadGroupFile, updateGroup, deleteGroup } from "@/lib/smsfiles";
+import { getGroupContacts } from "@/lib/group";
 
 export default function SMSFilesPage() {
   const [search, setSearch] = useState("");
@@ -24,6 +18,9 @@ export default function SMSFilesPage() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+const [editingName, setEditingName] = useState("");
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [bulkGroupName, setBulkGroupName] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -32,6 +29,12 @@ export default function SMSFilesPage() {
 
   const [token, setToken] = useState("");
   const [adminId, setAdminId] = useState(0);
+
+  // Contacts modal state
+  const [showContacts, setShowContacts] = useState(false);
+  const [contacts, setContacts] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [loadingContacts, setLoadingContacts] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -79,7 +82,7 @@ export default function SMSFilesPage() {
     setUploading(true);
     try {
       await uploadGroupFile(token, adminId, file, bulkGroupName);
-      toast.success("File uploaded and contacts added successfully!");
+      toast.success("File uploaded successfully!");
       setBulkGroupName("");
       e.target.value = null;
       await fetchFiles();
@@ -97,24 +100,50 @@ export default function SMSFilesPage() {
     setEditModalOpen(true);
   };
 
-  const handleSaveEdit = async () => {
-    if (!selectedFile?.id) return;
+  // const handleSaveEdit = async () => {
+  //   if (!selectedFile?.id) return;
 
-    const trimmedName = newGroupName.trim();
-    if (!trimmedName) return toast.warning("Group name cannot be empty");
+  //   const trimmedName = newGroupName.trim();
+  //   if (!trimmedName) return toast.warning("Group name cannot be empty");
 
-    try {
-      await updateGroup(token, selectedFile.id, { name: trimmedName });
-      toast.success("Group name updated successfully!");
-      setEditModalOpen(false);
-      setNewGroupName("");
-      await fetchFiles();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Failed to update group");
-      await fetchFiles();
-    }
-  };
+  //   try {
+  //     await updateGroup(token, selectedFile.id, { name: trimmedName });
+  //     toast.success("Group name updated successfully!");
+  //     setEditModalOpen(false);
+  //     setNewGroupName("");
+  //     await fetchFiles();
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error(err.message || "Failed to update group");
+  //     await fetchFiles();
+  //   }
+  // };
+
+  const onEditStart = (file) => {
+  setEditingId(file.id);
+  setEditingName(file.name || "");
+};
+
+const onEditCancel = () => {
+  setEditingId(null);
+  setEditingName("");
+};
+
+const onEditSave = async (id) => {
+  const trimmedName = editingName.trim();
+  if (!trimmedName) return toast.warning("Group name cannot be empty");
+
+  try {
+    await updateGroup(token, id, { name: trimmedName });
+    toast.success("Group name updated");
+    setEditingId(null);
+    setEditingName("");
+    await fetchFiles();
+  } catch (err) {
+    toast.error("Failed to update group");
+  }
+};
+
 
   const handleDeleteClick = (file) => {
     setFileToDelete(file);
@@ -142,56 +171,134 @@ export default function SMSFilesPage() {
     (f.fileName || "").toLowerCase().includes(search.toLowerCase())
   );
 
+  
+  const handleViewContacts = async (row) => {
+  if (!token) return toast.error("Token not available");
+
+  try {
+    setLoadingContacts(true);
+    const res = await getGroupContacts(token, row.id);
+
+    if (res.success && res.data) {
+      // Remove first row (CSV header) before setting contacts
+      const allContacts = res.data.contacts || [];
+      const contactsWithoutHeader = allContacts.slice(1);
+
+      setContacts(contactsWithoutHeader);
+      setSelectedGroup(res.data); 
+      setShowContacts(true);
+    } else {
+      setContacts([]);
+      toast.error("No contacts found");
+      setShowContacts(false);
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load contacts");
+    setContacts([]);
+    setShowContacts(false);
+  } finally {
+    setLoadingContacts(false);
+  }
+};
+
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="SMS-Files" />
-        <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6">
-          {/* Search & Upload Bar */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-            <SearchUploadBar
-              search={search}
-              setSearch={setSearch}
-              bulkGroupName={bulkGroupName}
-              setBulkGroupName={setBulkGroupName}
-              handleUpload={handleUpload}
-              uploading={uploading}
-            />
-          </div>
+        <main className="flex-1 overflow-auto p-6">
+          <SearchUploadBar
+            search={search}
+            setSearch={setSearch}
+            bulkGroupName={bulkGroupName}
+            setBulkGroupName={setBulkGroupName}
+            handleUpload={handleUpload}
+            uploading={uploading}
+          />
 
-          {/* Files Table */}
-          <div className="overflow-x-auto">
-            <FilesTable
-              files={files}
-              filteredFiles={filteredFiles}
-              loading={loading}
-              openEditModal={openEditModal}
-              handleDeleteClick={handleDeleteClick}
-            />
-          </div>
+          {/* <FilesTable
+            files={files}
+            filteredFiles={filteredFiles}
+            loading={loading}
+            openEditModal={openEditModal}
+            handleDeleteClick={handleDeleteClick}
+            handleViewClick={handleViewContacts} // <-- Eye icon triggers this
+          /> */}
 
-          {/* Edit Group Modal */}
-          <EditGroupModal
+          <FilesTable
+  files={files}
+  filteredFiles={filteredFiles}
+  loading={loading}
+  editingId={editingId}
+  editingName={editingName}
+  setEditingName={setEditingName}
+  onEditStart={onEditStart}
+  onEditCancel={onEditCancel}
+  onEditSave={onEditSave}
+  handleDeleteClick={handleDeleteClick}
+  handleViewClick={handleViewContacts}
+/>
+
+
+          {/* <EditGroupModal
             editModalOpen={editModalOpen}
             setEditModalOpen={setEditModalOpen}
             newGroupName={newGroupName}
             setNewGroupName={setNewGroupName}
             handleSaveEdit={handleSaveEdit}
-          />
+          /> */}
 
-          {/* Delete Group Modal */}
           <DeleteGroupModal
             deleteModalOpen={deleteModalOpen}
             setDeleteModalOpen={setDeleteModalOpen}
             fileToDelete={fileToDelete}
             confirmDelete={confirmDelete}
           />
+
+        
+          {showContacts && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white w-full max-w-lg rounded-xl p-6 shadow-xl">
+                <h2 className="text-xl font-bold mb-4 text-teal-700">
+                  {selectedGroup?.name} — Contacts
+                </h2>
+
+                {loadingContacts ? (
+                  <p className="text-center py-10">Loading contacts...</p>
+                ) : contacts.length === 0 ? (
+                  <p className="text-center text-gray-500">No contacts found</p>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto border rounded-lg">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-100 sticky top-0">
+                        <tr>
+                          <th className="p-3 text-left">Name</th>
+                          <th className="p-3 text-left">Contact</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {contacts.map((c, i) => (
+                          <tr key={i} className="border-t">
+                            <td className="p-3">{c.name || "-"}</td>
+                            <td className="p-3">{c.phoneNo || c.contact || "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setShowContacts(false)}
+                  className="mt-4 w-full py-2 text-white bg-teal-500 rounded-lg hover:bg-teal-700 hover:cursor-pointer text-center"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

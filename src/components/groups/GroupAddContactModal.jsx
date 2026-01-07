@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Modal from "./Modal";
 import { toast } from "sonner";
-import { addContactsToGroup, bulkAddContactsToGroup } from "@/lib/group";
+import { addContactsToGroup } from "@/lib/group";
 import { fetchContacts as fetchContactsAPI } from "@/lib/contacts";
 
 function GroupAddContactModal({ token, group, onClose, onSuccess }) {
   const [contactIds, setContactIds] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState(""); // New state for search input
 
   useEffect(() => {
     if (!token) return;
@@ -53,6 +54,14 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
     onClose();
   };
 
+  // Filter contacts by search term (case-insensitive)
+  const filteredContacts = useMemo(() => {
+    if (!search) return contacts;
+    return contacts.filter((c) =>
+      c.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [contacts, search]);
+
   return (
     <Modal title={`Add contacts to ${group.name}`} close={onClose}>
       {loading ? (
@@ -60,24 +69,40 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
       ) : contacts.length === 0 ? (
         <p className="text-center text-gray-500">No contacts found</p>
       ) : (
-        <div className="max-h-64 overflow-y-auto space-y-2">
-          {contacts.map((contact) => (
-            <label
-              key={contact.id}
-              className="flex items-center gap-3 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
-            >
-              <input
-                type="checkbox"
-                checked={contactIds.includes(contact.id)}
-                onChange={() => toggle(contact.id)}
-              />
-              <div>
-                <p className="font-medium">{contact.name}</p>
-                <p className="text-sm text-gray-500">{contact.email}</p>
-              </div>
-            </label>
-          ))}
-        </div>
+        <>
+          {/* Search Field */}
+          <input
+            type="text"
+            placeholder="Search contacts by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full mb-2 px-4 py-2 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+
+          {/* Contact list */}
+          <div className="max-h-64 overflow-y-auto space-y-2">
+            {filteredContacts.length === 0 ? (
+              <p className="text-center text-gray-500">No contacts found</p>
+            ) : (
+              filteredContacts.map((contact) => (
+                <label
+                  key={contact.id}
+                  className="flex items-center gap-3 p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={contactIds.includes(contact.id)}
+                    onChange={() => toggle(contact.id)}
+                  />
+                  <div>
+                    <p className="font-medium">{contact.name}</p>
+                    <p className="text-sm text-gray-500">{contact.email}</p>
+                  </div>
+                </label>
+              ))
+            )}
+          </div>
+        </>
       )}
 
       <button
