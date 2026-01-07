@@ -1,12 +1,5 @@
 import { API_BASE_URL } from "@/config/api";
 
-/**
- * Fetch Daily Report Data
- * @param {string|number} adminId 
- * @param {string} startDate   // Format: YYYY-MM-DD
- * @param {string} endDate     // Format: YYYY-MM-DD
- * @returns {Promise<Object>}
- */
 export const fetchDailyReport = async (adminId, startDate, endDate) => {
   const token = localStorage.getItem('token');
   if (!token) throw new Error("Authentication required");
@@ -17,7 +10,6 @@ export const fetchDailyReport = async (adminId, startDate, endDate) => {
     end_date: endDate,
   });
 
-  // Correct endpoint: /api/reports/daily
   const response = await fetch(`${API_BASE_URL}/api/reports/daily?${params}`, {
     method: 'GET',
     headers: {
@@ -41,12 +33,6 @@ export const fetchDailyReport = async (adminId, startDate, endDate) => {
   return response.json();
 };
 
-/**
- * Fetch Monthly Report Data
- * @param {string|number} adminId 
- * @param {number} year           // e.g. 2026
- * @returns {Promise<Object>}
- */
 export const fetchMonthlyReport = async (adminId, year) => {
   const token = localStorage.getItem('token');
   if (!token) throw new Error("Authentication required");
@@ -56,7 +42,6 @@ export const fetchMonthlyReport = async (adminId, year) => {
     year: year,
   });
 
-  // Correct endpoint: /api/reports/monthly
   const response = await fetch(`${API_BASE_URL}/api/reports/monthly?${params}`, {
     method: 'GET',
     headers: {

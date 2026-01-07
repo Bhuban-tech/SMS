@@ -13,54 +13,46 @@ const fetchWithAuth = async (url, options = {}) => {
     toast.error("Please login again");
     return null;
   }
-
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
     ...options.headers,
   };
-
   const response = await fetch(url, { ...options, headers });
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`API error: ${response.status} - ${errorText}`);
   }
-
   return response.json();
 };
 
 export default function DeliveryReports() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("delivery-reports");
-
   const [smsData, setSmsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewSMS, setViewSMS] = useState(null);
   const [viewLoading, setViewLoading] = useState(false);
+  const[searchTerm,setSearchTerm]= useState("");
 
   const itemsPerPage = 10;
 
- 
   const fetchDeliveryReports = async () => {
     setLoading(true);
     try {
       const url = `${API_BASE_URL}/api/delivery-reports`;
       const response = await fetchWithAuth(url, { method: "GET" });
-
       if (!response || !response.success) {
         throw new Error(response?.message || "Invalid response");
       }
-
       const reports = Array.isArray(response.data) ? response.data : [];
       setSmsData(reports);
-
       if (reports.length === 0) {
         toast.info("No delivery reports found.");
       } else {
-        toast.success(`Loaded ${reports.length} delivery report`);
+        toast.success(`Loaded ${reports.length} delivery report${reports.length > 1 ? "s" : ""}`);
       }
     } catch (error) {
       console.error(error);
@@ -82,11 +74,9 @@ export default function DeliveryReports() {
     try {
       const url = `${API_BASE_URL}/api/delivery_reports/${reportId}`;
       const response = await fetchWithAuth(url, { method: "GET" });
-
       if (!response || !response.success) {
         throw new Error(response?.message || "Failed to fetch report details");
       }
-
       setViewSMS(response.data);
       toast.success("Report details loaded");
     } catch (error) {
@@ -166,12 +156,10 @@ export default function DeliveryReports() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
-
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="sticky top-0 z-30 bg-gray-50 shadow">
           <Header title="Delivery Reports" />
         </div>
-
         <main className="flex-1 overflow-auto p-4 md:p-6 space-y-6">
           {loading && (
             <p className="text-center text-blue-600 font-medium">
@@ -212,13 +200,13 @@ export default function DeliveryReports() {
               onClick={fetchDeliveryReports}
               disabled={loading}
               title="Reload reports"
-              className="flex items-center justify-center px-4 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700 disabled:opacity-70 transition-colors hover:cursor-pointer" 
+              className="flex items-center justify-center px-4 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700 disabled:opacity-70 transition-colors hover:cursor-pointer"
             >
               <RotateCw size={20} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
 
-   
+          {/* Table */}
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-center">
@@ -241,7 +229,6 @@ export default function DeliveryReports() {
                       </td>
                     </tr>
                   )}
-
                   {currentData.map((report, idx) => (
                     <tr
                       key={report.id}
@@ -269,9 +256,7 @@ export default function DeliveryReports() {
                       >
                         {report.description || "-"}
                       </td>
-                      <td className="p-4">
-                        {formatDate(report.createdAt)}
-                      </td>
+                      <td className="p-4">{formatDate(report.createdAt)}</td>
                       <td className="p-4">
                         <div className="flex justify-center">
                           <button
@@ -290,7 +275,7 @@ export default function DeliveryReports() {
             </div>
           </div>
 
-          
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-end gap-3 mt-6">
               <button

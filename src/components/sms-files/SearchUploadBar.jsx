@@ -14,7 +14,7 @@ export default function SearchUploadBar({
 
   return (
     <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-6">
-      {/* Search input */}
+  
       <div className="relative w-full sm:w-72">
         <input
           type="text"
@@ -26,9 +26,9 @@ export default function SearchUploadBar({
         <Search className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
       </div>
 
-      {/* Upload controls */}
+     
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-        {/* Group name input */}
+       
         <input
           type="text"
           placeholder="Enter group name"
@@ -38,7 +38,6 @@ export default function SearchUploadBar({
           disabled={uploading}
         />
 
-        {/* Add files button */}
         <button
           disabled={uploading}
           onClick={() => fileInputRef.current?.click()}

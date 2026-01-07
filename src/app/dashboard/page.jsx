@@ -14,13 +14,14 @@ import SMSTypePieChart from "@/components/dashboard/SMSTypePieChart";
 import TopRecipients from "@/components/dashboard/TopRecipients";
 import GroupPage from "../groups/page";
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
+import { fetchDailyReport, fetchMonthlyReport } from "@/lib/reports";
 
 const SMSDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [viewMode, setViewMode] = useState("dashboard"); 
+  const [viewMode, setViewMode] = useState("dashboard");
   const [messageText, setMessageText] = useState("");
   const [recipients, setRecipients] = useState("");
   const [status, setStatus] = useState(null);
@@ -32,12 +33,17 @@ const SMSDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [dailyReportData, setDailyReportData] = useState(null);
+  const [monthlyReportData, setMonthlyReportData] = useState(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState(null);
+
+  const adminId = typeof window !== "undefined" ? localStorage.getItem('adminId') : null;
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const adminId = localStorage.getItem('adminId');
-
         if (!token || !adminId) {
           setError("Authentication required. Please login.");
           setLoading(false);
@@ -80,55 +86,103 @@ const SMSDashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [adminId]);
+
+
+  useEffect(() => {
+    if (viewMode === "daily-report" && adminId && selectedDate) {
+      const loadDailyReport = async () => {
+        setReportLoading(true);
+        setReportError(null);
+        try {
+          const data = await fetchDailyReport(adminId, selectedDate, selectedDate);
+          if (data.success && data.data && data.data.length > 0) {
+            setDailyReportData(data.data[0]);
+          } else {
+            setDailyReportData(null);
+          }
+        } catch (err) {
+          setReportError(err.message || "Failed to load daily report");
+          setDailyReportData(null);
+        } finally {
+          setReportLoading(false);
+        }
+      };
+      loadDailyReport();
+    }
+  }, [viewMode, selectedDate, adminId]);
+
+
+  useEffect(() => {
+    if (viewMode === "monthly-report" && adminId && selectedMonth) {
+      const loadMonthlyReport = async () => {
+        setReportLoading(true);
+        setReportError(null);
+        try {
+          const year = parseInt(selectedMonth.split('-')[0]);
+          const data = await fetchMonthlyReport(adminId, year);
+          if (data.success && data.data) {
+            const filtered = data.data.filter(item => 
+              item.date.startsWith(selectedMonth)
+            );
+            setMonthlyReportData(filtered);
+          } else {
+            setMonthlyReportData([]);
+          }
+        } catch (err) {
+          setReportError(err.message || "Failed to load monthly report");
+          setMonthlyReportData([]);
+        } finally {
+          setReportLoading(false);
+        }
+      };
+      loadMonthlyReport();
+    }
+  }, [viewMode, selectedMonth, adminId]);
 
   const handleSendSMS = () => {
     if (!messageText.trim() || !recipients.trim()) {
       setStatus("Please enter both recipients and message.");
       return;
     }
-    const recipientCount = recipients.split(",").filter((num) => num.trim()).length;
+    const recipientCount = recipients.split(",").filter(num => num.trim()).length;
     setStatus(`Message successfully sent to ${recipientCount} recipient(s)!`);
     setMessageText("");
     setRecipients("");
     setTimeout(() => setStatus(null), 5000);
   };
 
-  const dailyData = [
-    { hour: '00:00', sent: 45, delivered: 43, failed: 2 },
-    { hour: '02:00', sent: 28, delivered: 27, failed: 1 },
-    { hour: '04:00', sent: 32, delivered: 31, failed: 1 },
-    { hour: '06:00', sent: 89, delivered: 87, failed: 2 },
-    { hour: '08:00', sent: 156, delivered: 152, failed: 4 },
-    { hour: '10:00', sent: 234, delivered: 230, failed: 4 },
-    { hour: '12:00', sent: 289, delivered: 285, failed: 4 },
-    { hour: '14:00', sent: 267, delivered: 263, failed: 4 },
-    { hour: '16:00', sent: 234, delivered: 230, failed: 4 },
-    { hour: '18:00', sent: 198, delivered: 195, failed: 3 },
-    { hour: '20:00', sent: 178, delivered: 175, failed: 3 },
-    { hour: '22:00', sent: 134, delivered: 132, failed: 2 },
-  ];
-
-  const monthlyData = [
-    { date: 'Week 1', sent: 4520, delivered: 4456, failed: 64 },
-    { date: 'Week 2', sent: 5230, delivered: 5180, failed: 50 },
-    { date: 'Week 3', sent: 4890, delivered: 4820, failed: 70 },
-    { date: 'Week 4', sent: 5670, delivered: 5610, failed: 60 },
-  ];
-
+  // Placeholder provider data
   const providerData = [
-    { name: 'NTC', value: 1245, color: '#14b8a6' },
-    { name: 'Ncell', value: 834, color: '#8b5cf6' },
+    { name: 'NTC', value: 65, color: '#14b8a6' },
+    { name: 'Ncell', value: 35, color: '#8b5cf6' },
   ];
 
-  const pageTitle = 
+  // Format monthly data for chart
+  const formattedMonthlyData = monthlyReportData
+    ? monthlyReportData
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(item => {
+          const dateObj = new Date(item.date);
+          const day = dateObj.getDate();
+          return {
+            date: day.toString(),
+            smsCount: item.smsCount || 0,
+          };
+        })
+    : [];
+
+  const pageTitle =
     viewMode === "daily-report" ? "Daily Report" :
     viewMode === "monthly-report" ? "Monthly Report" :
     "SMS Dashboard";
 
+  const monthTitle = selectedMonth
+    ? new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })
+    : 'Monthly Report';
+
   return (
     <div className="flex h-screen bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
-
       <button
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -148,8 +202,6 @@ const SMSDashboard = () => {
         <Header username={dashboardData?.username} email={dashboardData?.email} title={pageTitle} />
 
         <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8 overflow-y-auto">
-          {/* Back to Dashboard button REMOVED */}
-
           {activeTab === "dashboard" && (
             <>
               {loading ? (
@@ -168,7 +220,6 @@ const SMSDashboard = () => {
                 <>
                   <TopStats dashboardData={dashboardData} />
 
-                  {/* Report Buttons */}
                   <div className="flex gap-4 overflow-x-auto pb-3">
                     <button
                       onClick={() => setViewMode("daily-report")}
@@ -194,7 +245,6 @@ const SMSDashboard = () => {
 
                   <DownStats dashboardData={dashboardData} />
 
-                  {/* Main Dashboard Content */}
                   {viewMode === "dashboard" && (
                     <>
                       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -209,7 +259,7 @@ const SMSDashboard = () => {
                     </>
                   )}
 
-                  {/* Daily Report Content */}
+                  {/* Daily Report - Now with visible stats */}
                   {viewMode === "daily-report" && (
                     <>
                       <div className="py-6">
@@ -229,75 +279,36 @@ const SMSDashboard = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-md">
-                          <h3 className="text-lg font-bold text-slate-800 mb-4">Hourly SMS Distribution</h3>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={dailyData}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                              <XAxis dataKey="hour" tick={{ fontSize: 12 }} />
-                              <YAxis tick={{ fontSize: 12 }} />
-                              <Tooltip />
-                              <Legend />
-                              <Bar dataKey="sent" fill="#3b82f6" name="Sent" radius={[8, 8, 0, 0]} />
-                              <Bar dataKey="delivered" fill="#10b981" name="Delivered" radius={[8, 8, 0, 0]} />
-                              <Bar dataKey="failed" fill="#ef4444" name="Failed" radius={[8, 8, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-
-                        <div className="bg-white rounded-xl p-6 shadow-md">
-                          <h3 className="text-lg font-bold text-slate-800 mb-4">Provider Distribution</h3>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                              <Pie
-                                data={providerData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={100}
-                                paddingAngle={3}
-                                dataKey="value"
-                              >
-                                {providerData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                              <Tooltip />
-                            </PieChart>
-                          </ResponsiveContainer>
-                          <div className="mt-4 space-y-3">
-                            {providerData.map((item) => (
-                              <div key={item.name} className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }}></div>
-                                  <span className="text-sm text-slate-600">{item.name}</span>
-                                </div>
-                                <span className="font-semibold text-slate-800">{item.value.toLocaleString()}</span>
-                              </div>
-                            ))}
+                      {reportLoading ? (
+                        <p className="text-center text-gray-600 text-lg">Loading daily report...</p>
+                      ) : reportError ? (
+                        <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg text-lg">{reportError}</div>
+                      ) : dailyReportData ? (
+                        <>
+                          <div className="bg-white rounded-2xl shadow-lg p-10 text-center">
+                            <p className="text-lg font-medium text-gray-600 mb-4">
+                              Total SMS Parts Sent on {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            </p>
+                            <p className="text-6xl font-bold text-teal-600">
+                              {(dailyReportData.smsCount ?? 0).toLocaleString()}
+                            </p>
                           </div>
-                        </div>
-                      </div>
 
-                      <div className="bg-white rounded-xl p-6 shadow-md">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4">Delivery Success Trend (Hourly)</h3>
-                        <ResponsiveContainer width="100%" height={280}>
-                          <LineChart data={dailyData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                            <XAxis dataKey="hour" tick={{ fontSize: 12 }} />
-                            <YAxis tick={{ fontSize: 12 }} />
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="delivered" stroke="#14b8a6" strokeWidth={3} dot={{ fill: '#14b8a6', r: 4 }} name="Delivered" />
-                            <Line type="monotone" dataKey="failed" stroke="#ef4444" strokeWidth={3} dot={{ fill: '#ef4444', r: 4 }} name="Failed" />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
+                          <div className="mt-8 bg-white rounded-2xl shadow-md p-8 text-center">
+                            <p className="text-gray-500 italic">
+                              Hourly breakdown and delivery status will be available in future updates.
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-12">
+                          <p className="text-xl text-gray-500">No SMS activity recorded on this date.</p>
+                        </div>
+                      )}
                     </>
                   )}
 
-                  {/* Monthly Report Content */}
+                  {/* Monthly Report - Now with clear, visible daily chart */}
                   {viewMode === "monthly-report" && (
                     <>
                       <div className="py-6">
@@ -317,63 +328,82 @@ const SMSDashboard = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-md">
-                          <h3 className="text-lg font-bold text-slate-800 mb-4">Weekly SMS Distribution</h3>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={monthlyData}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                              <XAxis dataKey="date" />
-                              <YAxis />
-                              <Tooltip />
-                              <Legend />
-                              <Bar dataKey="sent" fill="#3b82f6" name="Sent" radius={[8, 8, 0, 0]} />
-                              <Bar dataKey="delivered" fill="#10b981" name="Delivered" radius={[8, 8, 0, 0]} />
-                              <Bar dataKey="failed" fill="#ef4444" name="Failed" radius={[8, 8, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-
-                        <div className="bg-white rounded-xl p-6 shadow-md">
-                          <h3 className="text-lg font-bold text-slate-800 mb-4">Provider Distribution</h3>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                              <Pie data={providerData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
-                                {providerData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                              <Tooltip />
-                            </PieChart>
-                          </ResponsiveContainer>
-                          <div className="mt-4 space-y-3">
-                            {providerData.map((item) => (
-                              <div key={item.name} className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }}></div>
-                                  <span className="text-sm text-slate-600">{item.name}</span>
-                                </div>
-                                <span className="font-semibold text-slate-800">{item.value.toLocaleString()}</span>
-                              </div>
-                            ))}
+                      {reportLoading ? (
+                        <p className="text-center text-gray-600 text-lg">Loading monthly report...</p>
+                      ) : reportError ? (
+                        <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg text-lg">{reportError}</div>
+                      ) : formattedMonthlyData.length > 0 ? (
+                        <>
+                          <div className="bg-white rounded-2xl shadow-lg p-8">
+                            <h3 className="text-2xl font-bold text-slate-800 text-center mb-8">
+                              Daily SMS Activity – {monthTitle}
+                            </h3>
+                            <ResponsiveContainer width="100%" height={450}>
+                              <BarChart data={formattedMonthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
+                                <XAxis 
+                                  dataKey="date" 
+                                  tick={{ fontSize: 14 }} 
+                                  label={{ value: 'Day of Month', position: 'insideBottom', offset: -10 }}
+                                />
+                                <YAxis 
+                                  tick={{ fontSize: 14 }} 
+                                  label={{ value: 'SMS Parts Sent', angle: -90, position: 'insideLeft' }}
+                                />
+                                <Tooltip 
+                                  formatter={(value) => value.toLocaleString()}
+                                  contentStyle={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}
+                                />
+                                <Legend />
+                                <Bar 
+                                  dataKey="smsCount" 
+                                  fill="#14b8a6" 
+                                  name="SMS Parts Sent" 
+                                  radius={[12, 12, 0, 0]} 
+                                  barSize={30}
+                                />
+                              </BarChart>
+                            </ResponsiveContainer>
                           </div>
-                        </div>
-                      </div>
 
-                      <div className="bg-white rounded-xl p-6 shadow-md">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4">Monthly Delivery Success Trend</h3>
-                        <ResponsiveContainer width="100%" height={280}>
-                          <LineChart data={monthlyData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                            <XAxis dataKey="date" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="delivered" stroke="#14b8a6" strokeWidth={3} dot={{ fill: '#14b8a6', r: 4 }} name="Delivered" />
-                            <Line type="monotone" dataKey="failed" stroke="#ef4444" strokeWidth={3} dot={{ fill: '#ef4444', r: 4 }} name="Failed" />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
+                          {/* Optional: Provider Pie Chart */}
+                          <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="bg-white rounded-2xl shadow-lg p-8">
+                              <h3 className="text-xl font-bold text-slate-800 mb-6 text-center">Estimated Provider Distribution</h3>
+                              <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                  <Pie
+                                    data={providerData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={70}
+                                    outerRadius={110}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    label={({ name, value }) => `${name}: ${value}%`}
+                                  >
+                                    {providerData.map((entry, index) => (
+                                      <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                  </Pie>
+                                  <Tooltip formatter={(value) => `${value}%`} />
+                                </PieChart>
+                              </ResponsiveContainer>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-lg p-8 flex items-center justify-center">
+                              <p className="text-center text-gray-600 italic text-lg">
+                                Real provider stats coming soon!<br />
+                                Currently showing estimated distribution.
+                              </p>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-16">
+                          <p className="text-2xl text-gray-500">No SMS activity recorded in {monthTitle}.</p>
+                        </div>
+                      )}
                     </>
                   )}
                 </>
@@ -416,7 +446,7 @@ const SMSDashboard = () => {
                     Send SMS Now
                   </button>
                   {status && (
-                    <div className={`p-4 rounded-lg text-center font-medium ${status.includes("success") || status.includes("sent") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    <div className={`p-4 rounded-lg text-center font-medium ${status.includes("sent") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                       {status}
                     </div>
                   )}
