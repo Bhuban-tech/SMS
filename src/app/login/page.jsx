@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { API_BASE_URL, ENDPOINTS } from "@/config/api";
-import { Eye, EyeOff } from "lucide-react"; // <-- added for password toggle
 
 export default function LoginPage() {
   const router = useRouter();
 
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // <-- added state
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,7 +31,10 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ login, password }),
+        body: JSON.stringify({
+          login,
+          password,
+        }),
       });
 
       const data = await res.json();
@@ -57,16 +60,21 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-teal-50 p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-10 border border-teal-100 hover:scale-105 transition-transform duration-500">
+        
         <h1 className="text-3xl font-bold mb-8 text-center">
           <span className="text-teal-600">SMS Portal</span>{" "}
           <span className="text-gray-700">Login</span>
         </h1>
 
         {error && (
-          <p className="text-red-600 text-center mb-4 font-semibold">{error}</p>
+          <p className="text-red-600 text-center mb-4 font-semibold">
+            {error}
+          </p>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
+          
+          {/* Username / Email */}
           <div>
             <label className="block text-gray-600 font-bold mb-2">
               Username or Email
@@ -80,22 +88,33 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="relative">
-            <label className="block text-gray-600 font-bold mb-2">Password</label>
-            <input
-              type={showPassword ? "text" : "password"} 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-xl border border-teal-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 focus:outline-none text-gray-700 placeholder-gray-400 transition pr-12"
-            />
-            <span
-              className="absolute right-3 top-9.5 cursor-pointer text-gray-500"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </span>
+          {/* Password with Eye */}
+          <div>
+            <label className="block text-gray-600 font-bold mb-2">
+              Password
+            </label>
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 pr-12 rounded-xl border border-teal-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 focus:outline-none text-gray-700 placeholder-gray-400 transition"
+              />
+
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-teal-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
@@ -103,6 +122,7 @@ export default function LoginPage() {
           >
             {loading ? "Logging in..." : "Login"}
           </button>
+
         </form>
       </div>
     </div>

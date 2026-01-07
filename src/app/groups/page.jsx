@@ -8,6 +8,7 @@ import GroupHeader from "@/components/groups/GroupHeader";
 import GroupTable from "@/components/groups/GroupTable";
 import GroupViewModal from "@/components/groups/GroupViewModal";
 import GroupAddContactModal from "@/components/groups/GroupAddContactModal";
+import GroupModal from "@/components/groups/GroupModal";
 
 import {
   fetchGroups,
@@ -28,6 +29,7 @@ export default function GroupPage() {
   const [editingGroupId, setEditingGroupId] = useState(null);
 
   const [groupToDelete, setGroupToDelete] = useState(null);
+  
 
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groupContacts, setGroupContacts] = useState([]);
@@ -38,6 +40,8 @@ export default function GroupPage() {
   const [showRemoveContactModal, setShowRemoveContactModal] = useState(false);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
+
 
   // Load token
   useEffect(() => {
@@ -60,22 +64,22 @@ export default function GroupPage() {
     }
   };
 
-  // Inline edit save
+  
   const handleEditGroupName = async (groupId, newName) => {
     if (!newName.trim()) return;
 
-    // Optimistic update: update locally first
+   
     setGroups((prev) =>
       prev.map((g) => (g.id === groupId ? { ...g, name: newName } : g))
     );
     setEditingGroupId(null);
 
-    // Call API to persist change
+    
     try {
       const res = await updateGroup(token, groupId, newName);
       if (!res.success) {
         toast.error(res.message || "Failed to update group");
-        // rollback local change if API fails
+       
         loadGroups();
       } else {
         toast.success("Group name updated");
@@ -83,7 +87,7 @@ export default function GroupPage() {
     } catch (err) {
       console.error(err);
       toast.error("Failed to update group");
-      loadGroups(); // rollback
+      loadGroups(); 
     }
   };
 
@@ -113,6 +117,7 @@ export default function GroupPage() {
   };
 
   const handleRemoveContact = (groupId, contact) => {
+     setShowViewModal(false);
     setContactToRemove({ groupId, contact });
     setShowRemoveContactModal(true);
   };
@@ -124,9 +129,28 @@ export default function GroupPage() {
     try {
       const res = await removeContactFromGroup(token, groupId, contact.id);
       if (res.success) {
-        setGroupContacts((prev) => prev.filter((c) => c.id !== contact.id));
-        toast.success("Contact removed");
-      } else {
+  setGroupContacts((prev) => {
+    const updated = prev.filter((c) => c.id !== contact.id);
+
+    setGroups((groupsPrev) =>
+      groupsPrev.map((g) =>
+        g.id === groupId
+          ? { ...g, contactCount: updated.length }
+          : g
+      )
+    );
+
+    setSelectedGroup((g) =>
+      g && g.id === groupId
+        ? { ...g, contactCount: updated.length }
+        : g
+    );
+
+    return updated;
+  });
+
+  toast.success("Contact removed");
+}else {
         toast.error(res.message || "Failed to remove contact");
       }
     } catch {
@@ -156,8 +180,14 @@ export default function GroupPage() {
         </div>
 
         <main className="flex-1 overflow-auto p-4 sm:p-6 space-y-6">
-          <GroupHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+          {/* <GroupHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> */}
+          <GroupHeader
+  searchTerm={searchTerm}
+  setSearchTerm={setSearchTerm}
+  openGroupModal={() => setShowGroupModal(true)}
+/>
 
+{/* 
           <GroupTable
             groups={filteredGroups}
             onDelete={(g) => setGroupToDelete(g)}
@@ -169,11 +199,26 @@ export default function GroupPage() {
             editingGroupId={editingGroupId}
             setEditingGroupId={setEditingGroupId}
             onEditGroupName={handleEditGroupName}
-          />
+          /> */}
+          <GroupTable
+  groups={filteredGroups}
+  onDelete={(g) => {
+    setGroupToDelete(g);
+    setShowDeleteModal(true);
+  }}
+  onViewContacts={handleViewContacts}
+  onAddContact={(g) => {
+    setSelectedGroup(g);
+    setShowAddContactModal(true);
+  }}
+  editingGroupId={editingGroupId}
+  setEditingGroupId={setEditingGroupId}
+  onEditGroupName={handleEditGroupName}
+/>
         </main>
       </div>
 
-      {/* Modals */}
+     
       {showViewModal && selectedGroup && (
         <GroupViewModal
           group={selectedGroup}
@@ -193,8 +238,8 @@ export default function GroupPage() {
       )}
 
       {showRemoveContactModal && contactToRemove && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-2">
+          <div className="bg-white rounded-xl p-4 w-full max-w-md shadow-lg">
             <h2 className="text-xl font-bold mb-4">Remove Contact</h2>
             <p>
               Are you sure you want to remove{" "}
@@ -202,13 +247,13 @@ export default function GroupPage() {
             </p>
             <div className="mt-6 flex justify-end gap-2 flex-wrap">
               <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 hover:cursor-pointer"
                 onClick={() => setShowRemoveContactModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer"
                 onClick={confirmRemoveContact}
               >
                 Remove
@@ -220,18 +265,18 @@ export default function GroupPage() {
 
       {showDeleteModal && groupToDelete && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
-          <div className="bg-gray-100 rounded-xl p-6 w-full max-w-md shadow-lg">
+          <div className="bg-gray-100 rounded-xl p-4 w-full max-w-md shadow-lg">
             <h2 className="text-xl font-bold mb-4">Delete Group</h2>
             <p>Are you sure you want to delete "{groupToDelete.name}"?</p>
             <div className="mt-6 flex justify-end gap-2 flex-wrap">
               <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 hover:cursor-pointer"
                 onClick={() => setShowDeleteModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer"
                 onClick={handleDelete}
               >
                 Delete
@@ -240,6 +285,15 @@ export default function GroupPage() {
           </div>
         </div>
       )}
+
+      {showGroupModal && (
+  <GroupModal
+    token={token}
+    onClose={() => setShowGroupModal(false)}
+    onSuccess={loadGroups}
+  />
+)}
+
     </div>
   );
 }

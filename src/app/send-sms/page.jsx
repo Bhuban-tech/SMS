@@ -23,6 +23,7 @@ import {
 
 import { uploadGroupFile } from "@/lib/smsfiles";
 import useAlert from "@/hooks/useAlert";
+import { toast } from "sonner";
 
 export default function SMSSendUI() {
   const [formData, setFormData] = useState({
@@ -90,7 +91,7 @@ export default function SMSSendUI() {
   ]);
 
   const handleSendSMS = useCallback(async () => {
-    if (hasSubmitted || sending) return; // Prevent double click
+    if (hasSubmitted || sending) return; 
 
     setHasSubmitted(true);
     setSending(true);
@@ -136,7 +137,7 @@ export default function SMSSendUI() {
         if (!uploadRes?.success)
           throw new Error("Failed to upload bulk file");
 
-        showAlert("success", "Bulk contacts uploaded successfully!");
+        toast.success("success", "Bulk contacts uploaded successfully!");
         setBulkFile(null);
         setBulkGroupName("");
         return;
@@ -161,7 +162,7 @@ export default function SMSSendUI() {
         throw new Error(response?.message || "Failed to send");
 
       if (formData.sendType !== "bulk") {
-        showAlert("success", "SMS sent successfully");
+        toast.success("Success! SMS sent successfully");
       }
 
       // Reset form (except sendType)
@@ -171,7 +172,7 @@ export default function SMSSendUI() {
       setSelectedGroup("");
       setTemplatePayload(null);
     } catch (err) {
-      showAlert("error", err.message || "Error sending SMS");
+      toast.error("error", err.message || "Error sending SMS");
       // Optional: Allow retry on error
       // setHasSubmitted(false);
     } finally {

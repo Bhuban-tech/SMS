@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { Eye, X, RotateCw } from "lucide-react";
+import { Eye, X, RotateCw,  } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config/api";
 
@@ -107,22 +107,40 @@ export default function DeliveryReports() {
   }, []);
 
 
+  // const filteredData = smsData.filter((item) => {
+  //   const search = searchTerm.toLowerCase();
+  //   const recipientId = item.messageRecipientId?.toString() || "";
+    
+    
+    
+
+  //   const searchMatch =
+  //     recipientId.includes(search) 
+   
+     
+      
+
+  //   const statusMatch =
+  //     filterType === "all" || status === filterType.toLowerCase();
+
+  //   return searchMatch && statusMatch;
+  // });
   const filteredData = smsData.filter((item) => {
-    const search = searchTerm.toLowerCase();
-    const recipientId = item.messageRecipientId?.toString() || "";
-    const status = (item.status || "").toLowerCase();
-    const description = (item.description || "").toLowerCase();
+  const search = searchTerm.toLowerCase();
+  const recipientId = (item.messageRecipientId || "").toString();
+  const reportId = (item.id || "").toString();
 
-    const searchMatch =
-      recipientId.includes(search) ||
-      status.includes(search) ||
-      description.includes(search);
+ 
+  const searchMatch =
+    recipientId.includes(search) || reportId.includes(search);
 
-    const statusMatch =
-      filterType === "all" || status === filterType.toLowerCase();
 
-    return searchMatch && statusMatch;
-  });
+  const statusMatch =
+    filterType === "all" || (item.status || "").toLowerCase() === filterType.toLowerCase();
+
+  return searchMatch && statusMatch;
+});
+
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -164,7 +182,7 @@ export default function DeliveryReports() {
           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <input
               type="text"
-              placeholder="Search by recipient ID, status, or description..."
+              placeholder="Search by recipient ID, report ID..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -173,19 +191,7 @@ export default function DeliveryReports() {
               className="border border-gray-300 bg-white px-4 py-2 rounded-xl shadow-sm outline-none w-full md:w-96 focus:ring-2 focus:ring-blue-500 transition-all"
             />
 
-            {/* <select
-              value={filterType}
-              onChange={(e) => {
-                setFilterType(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="border border-gray-300 bg-white px-4 py-2 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all hover:cursor-pointer"
-            >
-              <option value="all">All Status</option>
-              <option value="delivered">Delivered</option>
-              <option value="failed">Failed</option>
-              <option value="pending">Pending</option>
-            </select> */}
+            
 
             <select
   value={filterType}
@@ -310,59 +316,83 @@ export default function DeliveryReports() {
       </div>
 
     
-      {viewSMS && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
-            <button
-              onClick={() => setViewSMS(null)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
-            >
-              <X size={28} />
-            </button>
+     {viewSMS && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl relative animate-scaleIn overflow-hidden">
+      
+     
+      <button
+        onClick={() => setViewSMS(null)}
+        className="absolute top-4 right-4 z-10 text-white hover:text-white bg-black/20 hover:bg-black/30 rounded-full p-1 transition hover:cursor-pointer"
+      >
+        <X size={26} />
+      </button>
 
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">
-              Delivery Report Details
-            </h2>
+    
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-8 py-6">
+        <h2 className="text-2xl font-bold text-white text-center tracking-wide">
+          Delivery Report Details
+        </h2>
+      </div>
 
-            {viewLoading ? (
-              <p className="text-center text-blue-600">Loading details...</p>
-            ) : (
-              <div className="space-y-4 text-left">
-                <p>
-                  <strong>Report ID:</strong> #{viewSMS.id}
-                </p>
-                <p>
-                  <strong>Message Recipient ID:</strong> {viewSMS.messageRecipientId}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  <span
-                    className={`font-bold ${
-                      viewSMS.status === "DELIVERED"
-                        ? "text-green-600"
-                        : viewSMS.status === "FAILED"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    }`}
-                  >
-                    {viewSMS.status || "Unknown"}
-                  </span>
-                </p>
-                <div>
-                  <strong>Description:</strong>
-                  <p className="bg-gray-50 p-4 rounded-lg text-sm mt-1">
-                    {viewSMS.description || "No description available"}
-                  </p>
-                </div>
-                <p>
-                  <strong>Reported At:</strong>{" "}
-                  {formatDate(viewSMS.createdAt)}
-                </p>
+      {/* CONTENT */}
+      <div className="p-8">
+        {viewLoading ? (
+          <p className="text-center text-teal-600 font-medium">
+            Loading details...
+          </p>
+        ) : (
+          <div className="space-y-5 text-sm text-gray-700">
+            
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-500">Report ID</span>
+              <span className="font-mono text-gray-900">#{viewSMS.id}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-500">Recipient ID</span>
+              <span className="font-mono text-gray-900">
+                {viewSMS.messageRecipientId}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-500">Status</span>
+              <span
+                className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wider shadow-sm ${
+                  viewSMS.status === "DELIVERED"
+                    ? "bg-green-100 text-green-700"
+                    : viewSMS.status === "FAILED"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-yellow-100 text-yellow-700"
+                }`}
+              >
+                {viewSMS.status || "Unknown"}
+              </span>
+            </div>
+
+            <div>
+              <span className="font-semibold text-gray-500 block mb-1">
+                Description
+              </span>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 leading-relaxed shadow-inner">
+                {viewSMS.description || "No description available"}
               </div>
-            )}
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t">
+              <span className="font-semibold text-gray-500">Reported At</span>
+              <span className="text-gray-800">
+                {formatDate(viewSMS.createdAt)}
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

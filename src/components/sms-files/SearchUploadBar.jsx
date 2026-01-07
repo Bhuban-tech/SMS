@@ -48,10 +48,7 @@ export default function SearchUploadBar({
           {uploading ? "Uploading..." : "ADD FILES"}
         </button>
 
-      
-        <button className="w-full sm:w-auto rounded-lg px-3 py-2 border shadow-sm flex items-center justify-center hover:bg-gray-100 transition">
-          <Filter className="w-4 h-4" />
-        </button>
+  
 
   
         <input
