@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; 
 import { useDispatch, useSelector } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
 import Footer from "@/components/shared/footer";
@@ -12,6 +12,7 @@ import Header from "@/components/Header";
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const searchParams = useSearchParams(); 
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [loginInput, setLoginInput] = useState("");
@@ -20,12 +21,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/dashboard");
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.replace(redirectTo);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, searchParams]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -39,14 +40,13 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // Use the centralized login utility function
       const { token, user } = await login(loginInput, password);
 
-      // Dispatch to Redux (redux-persist will automatically save this state)
       dispatch(loginSuccess({ token, user }));
 
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect to the original page (or dashboard)
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.push(redirectTo);
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message || "Something went wrong. Please try again.");
@@ -55,6 +55,7 @@ export default function LoginPage() {
     }
   };
 
+  // UI IS EXACTLY THE SAME — NO CHANGES BELOW THIS LINE
   return (
     <>
       <Header />
