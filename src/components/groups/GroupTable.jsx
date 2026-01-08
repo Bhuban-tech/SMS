@@ -39,7 +39,7 @@ function GroupTable({
             <th className="p-4 font-medium">
               <button
                 onClick={toggleSort}
-                className="flex items-center gap-2 mx-auto hover:bg-teal-600 px-2 py-1 rounded transition-all duration-200 group"
+                className="flex items-center gap-2 mx-auto hover:bg-teal-600 px-2 py-1 rounded transition-all duration-200 group hover:cursor-pointer"
               >
                 Group Name
                 <span className="flex flex-col text-xs leading-tight opacity-70 group-hover:opacity-100 transition-opacity">

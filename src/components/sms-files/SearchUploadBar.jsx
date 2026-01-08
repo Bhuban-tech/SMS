@@ -46,10 +46,6 @@ export default function SearchUploadBar({
           <Plus size={16} />
           {uploading ? "Uploading..." : "ADD FILES"}
         </button>
-
-  
-
-  
         <input
           type="file"
           ref={fileInputRef}

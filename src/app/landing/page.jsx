@@ -1,181 +1,197 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { useRouter } from "next/navigation";
-import {
-  MessageSquare,
-  Send,
-  Users,
-  BarChart3,
-  Shield,
-  Zap,
-  CheckCircle,
-  ArrowRight,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Header from "@/components/shared/header";
+import Footer from "@/components/shared/footer";
 
 const Landing = () => {
   const router = useRouter();
-
-  const features = [
-    {
-      icon: Send,
-
-      
-      title: "Bulk SMS",
-      description:
-        "Send thousands of messages instantly to your customers with our powerful bulk SMS platform.",
-    },
-    {
-      icon: Users,
-      title: "Contact Management",
-      description:
-        "Organize your contacts into groups for targeted messaging campaigns.",
-    },
-    {
-      icon: BarChart3,
-      title: "Real-time Analytics",
-      description:
-        "Track delivery rates, engagement metrics, and campaign performance in real-time.",
-    },
-    {
-      icon: Shield,
-      title: "Secure & Reliable",
-      description:
-        "Enterprise-grade security with 99.9% uptime guarantee for your business communications.",
-    },
-    {
-      icon: Zap,
-      title: "Instant Delivery",
-      description:
-        "Lightning-fast message delivery with optimized routing across all networks.",
-    },
-    {
-      icon: CheckCircle,
-      title: "Delivery Reports",
-      description:
-        "Get detailed delivery reports and status updates for every message sent.",
-    },
-  ];
 
   const stats = [
     { value: "99.9%", label: "Delivery Rate" },
     { value: "10M+", label: "Messages Sent" },
     { value: "5K+", label: "Happy Clients" },
-    { value: "24/7", label: "Support" },
   ];
 
+  const floatVariants = {
+    animate: {
+      y: [-20, 20, -20],
+      rotate: [-5, 5, -5],
+      transition: {
+        y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+        rotate: { duration: 8, repeat: Infinity, ease: "easeInOut" },
+      },
+    },
+  };
+
+  const delayedFloat = {
+    animate: {
+      ...floatVariants.animate,
+      transition: { ...floatVariants.animate.transition, delay: 1 },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            <div className="flex items-center gap-3">
-              {/* <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-teal-400 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/30">
-                <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div> */}
-              <span className="text-xl sm:text-2xl font-bold text-white">
-                kritim<span className="text-teal-400">SMS</span>
-              </span>
-            </div>
+    <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-sky-100">
+      <Header />
 
-            <div className="flex items-center gap-3 sm:gap-4">
-         <Button
-                onClick={() => router.push("/login")}
-                className="bg-linear-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold  sm:px-6 py-4 rounded-lg shadow-lg shadow-teal-500/30 cursor-pointer"
-              >
-                Login
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-
-      <section className="pt-32 sm:pt-40 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 rounded-full px-4 py-2 mb-8">
-            <Zap className="w-4 h-4 text-teal-400" />
-            <span className="text-teal-400 text-sm font-medium">
-              Trusted by 5,000+ businesses
-            </span>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-8">
-            Powerful SMS Platform for{" "}
-            <span className="bg-linear-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
-              Modern Business
-            </span>
-          </h1>
-
-          <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-12">
-            Send bulk SMS, manage contacts, and track delivery — all from one
-            intuitive dashboard.
-          </p>
-
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button
-              onClick={() => router.push("/login")}
-              className="bg-linear-to-r from-teal-500 to-teal-600 text-white font-bold px-10 py-7 rounded-xl text-lg shadow-xl hover:scale-105 cursor-pointer"
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 lg:pt-20 pb-16">
+        {/* Hero Section */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Text & Buttons */}
+          <div className="space-y-8">
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 leading-tight"
             >
-              Get Started 
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+              Digital SMS service that{" "}
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-sky-400 to-teal-500">
+                just works
+              </span>
+            </motion.h1>
 
-            {/* <Button
-              variant="outline"
-              className="text-white bg-white/10 px-8 py-6 rounded-xl text-lg">
-              Watch Demo
-            </Button> */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-slate-600 text-lg max-w-lg"
+            >
+              KritimSMS provides one-stop solutions for all your bulk SMS needs.
+              Fast, reliable, and scalable messaging for modern businesses.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="flex flex-wrap gap-4"
+            >
+              <Button
+                onClick={() => router.push("/login")}
+                className="bg-linear-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-8 py-6 rounded-full shadow-lg text-base transition-all duration-300 hover:scale-105 cursor-pointer "
+              >
+                Get Started
+              </Button>
+              <Button
+                variant="outline"
+                className="border-2 border-teal-500 text-teal-600 hover:bg-teal-50 font-semibold px-8 py-6 rounded-full bg-white text-base transition-all duration-300 hover:scale-105 cursor-pointer"
+              >
+                Know More
+              </Button>
+            </motion.div>
+          </div>
+
+          <div className="relative flex justify-center items-center min-h-96">
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute w-96 h-96 bg-linear-to-br from-sky-100 to-sky-200 rounded-full opacity-60 blur-3xl"
+            />
+
+            <div className="relative z-10 grid grid-cols-2 gap-8 max-w-md">
+              <motion.div
+                variants={floatVariants}
+                initial="initial"
+                animate="animate"
+                className="col-span-1 flex flex-col items-center"
+              >
+                <div className="relative w-72 lg:w-96">
+                  <video
+                    src="/video.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover rounded-[3rem] scale-[1.08] translate-y-1"
+                  />
+                  <Image
+                    src="/iphone-frame.png"
+                    alt="image"
+                    width={800}
+                    height={800}
+                    className="relative z-10 pointer-events-none"
+                    priority
+                  />
+                </div>
+              </motion.div>
+
+              <div className="col-span-1 space-y-8 flex flex-col justify-center">
+                <motion.div
+                  variants={delayedFloat}
+                  initial="initial"
+                  animate="animate"
+                  className="relative -rotate-12"
+                >
+                  <Image
+                    src="/Bhuban.png"
+                    alt="SMS message example"
+                    width={200}
+                    height={300}
+                    className="rounded-2xl shadow-xl object-cover hover:scale-110 transition-transform duration-500"
+                  />
+                </motion.div>
+
+                <motion.div
+                  variants={{ ...delayedFloat, animate: { ...delayedFloat.animate, transition: { ...delayedFloat.animate.transition, delay: 2 } } }}
+                  initial="initial"
+                  animate="animate"
+                  className="relative rotate-6 ml-12"
+                >
+                  <Image
+                    src="/Bhuban.png"
+                    alt="Bulk SMS notification"
+                    width={180}
+                    height={280}
+                    className="rounded-2xl shadow-xl object-cover hover:scale-110 transition-transform duration-500"
+                  />
+                </motion.div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
 
-      <section className="py-12 sm:py-16 border-y border-white/10 bg-white/5">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, i) => (
-            <div key={i} className="text-center">
-              <div className="text-4xl font-bold bg-linear-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                {stat.value}
-              </div>
-              <p className="text-slate-400">{stat.label}</p>
+        {/* Stats Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="mt-16 lg:mt-24 bg-white rounded-3xl shadow-xl p-8 lg:p-12"
+        >
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-slate-700 text-lg leading-relaxed">
+                Create memorable experiences at scale with our world-class
+                technology and remarkable service.
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="flex flex-wrap justify-center md:justify-end gap-6 lg:gap-10">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.15 }}
+                  className="text-center"
+                >
+                  <div className="w-24 h-24 bg-linear-to-br from-sky-50 to-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-sky-200 shadow-md">
+                    <span className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-sky-500 to-teal-500">
+                      {stat.value}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 font-medium text-sm">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </main>
 
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Everything You Need
-          </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            Comprehensive SMS solutions to grow your business.
-          </p>
-        </div>
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((f, i) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={i}
-                className="p-8 bg-white/5 border border-white/10 rounded-2xl hover:border-teal-500/50 transition"
-              >
-                <div className="w-14 h-14 bg-teal-500/20 rounded-xl flex items-center justify-center mb-6">
-                  <Icon className="w-7 h-7 text-teal-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {f.title}
-                </h3>
-                <p className="text-slate-400">{f.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-   <footer className="py-10 border-t border-white/10 text-center text-slate-500">
-        © 2024 KritimSMS. All rights reserved.
-      </footer>
+      <Footer />
     </div>
   );
 };

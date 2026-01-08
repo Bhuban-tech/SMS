@@ -55,19 +55,19 @@
        
 //         <div className="p-6 lg:p-8 overflow-y-auto h-[calc(100vh-80px)] space-y-6">
        
-//           <div className="space-y-4">
-//   <button
-//     onClick={handleBack}
-//     className="flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-slate-900 transition cursor-pointer"
-//   >
-//     <ArrowLeft size={20} className='font-bold' />
-//             Back to dashboard
-//   </button>
+          <div className="space-y-4">
+  <button
+    onClick={handleBack}
+    className="flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-slate-900 transition cursor-pointer"
+  >
+    <ArrowLeft size={20} className='font-bold' />
+            Back to dashboard
+  </button>
 
-//   <p className="text-gray-600">
-//     SMS delivery performance overview for the month
-//   </p>
-// </div>
+  <p className="text-gray-600">
+    SMS delivery performance overview for the month
+  </p>
+</div>
 
 
          

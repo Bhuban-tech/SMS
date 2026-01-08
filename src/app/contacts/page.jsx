@@ -177,7 +177,7 @@ export default function ContactsPage() {
         )}
 
         {showDeleteModal && contactToDelete && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+          <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
             <div className="bg-white rounded-2xl p-6 w-96 shadow-xl">
               <h2 className="text-lg font-semibold mb-4">Delete Contact</h2>
               <p className="text-gray-600">

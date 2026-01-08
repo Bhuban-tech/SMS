@@ -114,18 +114,18 @@ export default function TransactionTable({
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-linear-to-r from-teal-50 to-cyan-50 border-b-2 border-teal-200">
+            <thead className="bg-teal-700 border-b-2 border-teal-200">
               <tr>
-                <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
+                <th className="px-8 py-5 text-left text-xs font-bold text-white uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
+                <th className="px-8 py-5 text-left text-xs font-bold text-white uppercase tracking-wider">
                   Method
                 </th>
-                <th className="px-8 py-5 text-right text-xs font-bold text-teal-800 uppercase tracking-wider">
+                <th className="px-8 py-5 text-right text-xs font-bold text-white uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-8 py-5 text-center text-xs font-bold text-teal-800 uppercase tracking-wider">
+                <th className="px-8 py-5 text-center text-xs font-bold text-white uppercase tracking-wider">
                   Status
                 </th>
               </tr>
