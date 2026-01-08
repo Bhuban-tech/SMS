@@ -28,7 +28,7 @@ const NAV = [
       { label: "Dashboard", href: "/docs/dashboard", icon: LayoutDashboard },
       { label: "Contacts", href: "/docs/contacts", icon: Users },
       { label: "Groups", href: "/docs/groups", icon: Folder },
-      { label: "Templates & SMS", href: "/docs/templates", icon: Layers },
+      { label: "Send SMS", href: "/docs/SMS", icon: Layers },
       { label: "Reports", href: "/docs/reports", icon: FileText },
     ],
   },

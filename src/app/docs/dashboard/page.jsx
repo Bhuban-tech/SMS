@@ -41,6 +41,16 @@ export default function DashboardDocsPage() {
             title="SMS Delivery Status"
             description="Provides a breakdown of delivered, failed, and pending SMS messages."
           />
+        
+        <FeatureCard
+            title="Daily and Monthly Reports"
+            description="Visual reports showing SMS activity over daily and monthly periods."
+          />
+          <FeatureCard
+            title="Graphical Analytics"
+            description="Graphs and charts representing SMS volume, delivery performance, and cost trends."
+          />
+
         </FeatureGrid>
 
         <Screenshot
