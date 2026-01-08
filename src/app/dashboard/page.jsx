@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 import { Menu, X, Calendar } from "lucide-react";
 import { API_BASE_URL, ENDPOINTS } from "@/config/api";
+import { isAuthenticated, getAuthHeaders } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import TopStats from "@/components/dashboard/TopStats";
@@ -19,6 +22,9 @@ import {
 import { fetchDailyReport, fetchMonthlyReport } from "@/lib/reports";
 
 const SMSDashboard = () => {
+  const router = useRouter();
+  const { user, token } = useSelector((state) => state.auth);
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [viewMode, setViewMode] = useState("dashboard");
@@ -38,12 +44,21 @@ const SMSDashboard = () => {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState(null);
 
-  const adminId = typeof window !== "undefined" ? localStorage.getItem('adminId') : null;
+  // Get adminId from Redux state or localStorage as fallback
+  const adminId = user?.id || (typeof window !== "undefined" ? localStorage.getItem('adminId') : null);
 
+  // Check authentication on mount
+  useEffect(() => {
+    if (!isAuthenticated() || !token) {
+      router.replace("/login");
+      return;
+    }
+  }, [token, router]);
+
+  // Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const token = localStorage.getItem('token');
         if (!token || !adminId) {
           setError("Authentication required. Please login.");
           setLoading(false);
@@ -53,10 +68,7 @@ const SMSDashboard = () => {
         const apiUrl = `${API_BASE_URL}${ENDPOINTS.GET_ADMIN(adminId)}`;
         const response = await fetch(apiUrl, {
           method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -64,7 +76,7 @@ const SMSDashboard = () => {
             setError("Session expired. Redirecting to login...");
             setTimeout(() => {
               localStorage.clear();
-              window.location.href = '/login';
+              router.replace("/login");
             }, 2000);
             return;
           }
@@ -85,10 +97,12 @@ const SMSDashboard = () => {
       }
     };
 
-    fetchDashboardData();
-  }, [adminId]);
+    if (adminId && token) {
+      fetchDashboardData();
+    }
+  }, [adminId, token, router]);
 
-
+  // Fetch daily report
   useEffect(() => {
     if (viewMode === "daily-report" && adminId && selectedDate) {
       const loadDailyReport = async () => {
@@ -112,7 +126,7 @@ const SMSDashboard = () => {
     }
   }, [viewMode, selectedDate, adminId]);
 
-
+  // Fetch monthly report
   useEffect(() => {
     if (viewMode === "monthly-report" && adminId && selectedMonth) {
       const loadMonthlyReport = async () => {
@@ -152,13 +166,11 @@ const SMSDashboard = () => {
     setTimeout(() => setStatus(null), 5000);
   };
 
-  // Placeholder provider data
   const providerData = [
     { name: 'NTC', value: 65, color: '#14b8a6' },
     { name: 'Ncell', value: 35, color: '#8b5cf6' },
   ];
 
-  // Format monthly data for chart
   const formattedMonthlyData = monthlyReportData
     ? monthlyReportData
         .sort((a, b) => a.date.localeCompare(b.date))
@@ -181,6 +193,18 @@ const SMSDashboard = () => {
     ? new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })
     : 'Monthly Report';
 
+  // Show loading state while checking authentication
+  if (!token || !isAuthenticated()) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
       <button
@@ -199,7 +223,11 @@ const SMSDashboard = () => {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header username={dashboardData?.username} email={dashboardData?.email} title={pageTitle} />
+        <Header 
+          username={dashboardData?.username || user?.username} 
+          email={dashboardData?.email || user?.email} 
+          title={pageTitle} 
+        />
 
         <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8 overflow-y-auto">
           {activeTab === "dashboard" && (
@@ -259,7 +287,6 @@ const SMSDashboard = () => {
                     </>
                   )}
 
-                  {/* Daily Report - Now with visible stats */}
                   {viewMode === "daily-report" && (
                     <>
                       <div className="py-6">
@@ -308,7 +335,6 @@ const SMSDashboard = () => {
                     </>
                   )}
 
-                  {/* Monthly Report - Now with clear, visible daily chart */}
                   {viewMode === "monthly-report" && (
                     <>
                       <div className="py-6">
@@ -366,7 +392,6 @@ const SMSDashboard = () => {
                             </ResponsiveContainer>
                           </div>
 
-                          {/* Optional: Provider Pie Chart */}
                           <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div className="bg-white rounded-2xl shadow-lg p-8">
                               <h3 className="text-xl font-bold text-slate-800 mb-6 text-center">Estimated Provider Distribution</h3>
