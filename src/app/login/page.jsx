@@ -1,23 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
-import Header from "@/components/shared/header";
 import Footer from "@/components/shared/footer";
-import { API_BASE_URL, ENDPOINTS } from "@/config/api";
+import { loginSuccess } from "@/store/slices/authSlice";
+import { login } from "@/lib/auth";
+import Header from "@/components/Header";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [login, setLogin] = useState("");
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!login || !password) {
+
+    if (!loginInput || !password) {
       setError("Username/Email and password are required");
       return;
     }
@@ -26,24 +39,17 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}${ENDPOINTS.LOGIN}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ login, password }),
-      });
+      // Use the centralized login utility function
+      const { token, user } = await login(loginInput, password);
 
-      const data = await res.json();
+      // Dispatch to Redux (redux-persist will automatically save this state)
+      dispatch(loginSuccess({ token, user }));
 
-      if (!res.ok) {
-        setError(data.message || "Invalid credentials");
-        return;
-      }
-
-      localStorage.setItem("token", data.data.token);
+      // Redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      console.error("Login error:", err);
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -62,7 +68,7 @@ export default function LoginPage() {
             <h2 className="text-2xl font-bold text-center text-teal-900 mb-2">
               Welcome Back
             </h2>
-            <p className="text-center  text-gray-600 mb-8">
+            <p className="text-center text-gray-600 mb-8">
               Log in to continue using Kritim<span className="text-teal-600">SMS</span>
             </p>
 
@@ -74,10 +80,11 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type="text"
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value)}
+                  value={loginInput}
+                  onChange={(e) => setLoginInput(e.target.value)}
                   placeholder="Username"
                   className="w-full pl-12 pr-4 py-4 rounded-xl border border-purple-200 focus:border-purple-500 focus:outline-none bg-purple-50/50"
+                  disabled={loading}
                 />
                 <svg
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-600"
@@ -101,6 +108,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   className="w-full pl-12 pr-12 py-4 rounded-xl border border-purple-200 focus:border-purple-500 focus:outline-none bg-purple-50/50"
+                  disabled={loading}
                 />
                 <svg
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-600"
@@ -118,7 +126,8 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-600 disabled:opacity-50"
+                  disabled={loading}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -127,7 +136,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition duration-200"
+                className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Logging in..." : "Login Now"}
               </button>

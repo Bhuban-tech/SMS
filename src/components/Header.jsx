@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Users, LogOut, User } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { Users, LogOut, User, LogIn } from "lucide-react";
+import { logout as logoutAction } from "@/store/slices/authSlice";
+import { handleLogout } from "@/lib/auth";
 import ProfileModal from "./profile/ProfileModal";
 
 const Header = ({
   collegeName = "Aadim National College",
   balance = 5000,
-  avatarIcon = <Users size={20} className="w-6 h-6 sm:w-8 sm:h-8 bg-teal-500 rounded-full flex items-center justify-center shrink-0" />,
   bgColor = "bg-white",
   title 
 }) => {
@@ -16,6 +18,10 @@ const Header = ({
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  // Get auth state from Redux
+  const { user, token, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -32,67 +38,108 @@ const Header = ({
     setDropdownOpen(false);
   };
 
+  const handleLogoutClick = () => {
+    handleLogout(dispatch, router, logoutAction);
+    setDropdownOpen(false);
+  };
 
-  const handleLogout = () => {
+  const handleLoginClick = () => {
+    router.push("/login");
+  };
 
-  localStorage.removeItem("token");
-  localStorage.removeItem("adminId");
-  localStorage.removeItem("user");
+  
+  const getUserInitial = () => {
+    if (user?.username) {
+      return user.username.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
 
-
-  document.cookie = "token=; path=/; max-age=0";
-
-  setDropdownOpen(false);
-
-
-  router.replace("/login");
-};
+  // Get display name
+  const getDisplayName = () => {
+    return user?.username || user?.email?.split("@")[0] || "User";
+  };
 
   return (
-    <header
-      className=" bg-slate-800 w-full  shadow-md p-4 lg:p-5 flex flex-col lg:flex-row items-center justify-between"
-    >
+    <header className="bg-slate-800 w-full shadow-md p-4 lg:p-5 flex flex-col lg:flex-row items-center justify-between">
       <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-4">
-       <h1 className="text-base sm:text-lg md:text-xl font-semibold text-white truncate"> {title} </h1>
+        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-white truncate">
+          {title}
+        </h1>
       </div>
 
       <div className="flex items-center gap-4 mt-3 lg:mt-0 relative" ref={dropdownRef}>
-        <div className="text-right">
-          <p className="text-sm lg:text-base text-white">{collegeName}</p>
-          <p className="text-xs text-white mt-0.5">
-            Rs. {balance.toLocaleString()}
-          </p>
-        </div>
+        {isAuthenticated && user ? (
+          <>
+            {/* User Info */}
+            <div className="text-right hidden sm:block">
+              <p className="text-sm lg:text-base text-white font-medium">
+                {getDisplayName()}
+              </p>
+              <p className="text-xs text-white/80 mt-0.5">
+                {user.email}
+              </p>
+            </div>
 
-        <div
-          className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center shrink-0 cursor-pointer"
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-        >
-          {avatarIcon}
-        </div>
+            {/* Avatar with Initial */}
+            <div
+              className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:bg-teal-600 transition-colors ring-2 ring-white/20"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <span className="text-white font-bold text-lg">
+                {getUserInitial()}
+              </span>
+            </div>
 
-        {dropdownOpen && (
-          <div className="absolute right-6 mt-30 bg-white shadow-md rounded-md w-40 z-50">
-            <ul>
-              <li
-                className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 cursor-pointer"
-                onClick={handleProfileClick}
-              >
-                <User size={16} /> Edit Profile
-              </li>
-              <li
-                className="flex items-center gap-2 px-4 py-2 hover:bg-slate-100 cursor-pointer"
-                onClick={handleLogout}
-              >
-                <LogOut size={16} /> Logout
-              </li>
-            </ul>
-          </div>
+            {/* Dropdown Menu */}
+            {dropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 bg-white shadow-lg rounded-lg w-48 z-50 overflow-hidden">
+                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {getDisplayName()}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user.email}
+                  </p>
+                </div>
+                <ul>
+                  <li
+                    className="flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 cursor-pointer text-gray-700 transition-colors"
+                    onClick={handleProfileClick}
+                  >
+                    <User size={16} className="text-gray-600" />
+                    <span className="text-sm">Edit Profile</span>
+                  </li>
+                  <li
+                    className="flex items-center gap-2 px-4 py-2.5 hover:bg-red-50 cursor-pointer text-red-600 transition-colors border-t border-gray-100"
+                    onClick={handleLogoutClick}
+                  >
+                    <LogOut size={16} />
+                    <span className="text-sm font-medium">Logout</span>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </>
+        ) : (
+          /* Login Button - Shows when not authenticated */
+          <button
+            onClick={handleLoginClick}
+            className="flex items-center gap-2 px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg transition-colors shadow-md"
+          >
+            <LogIn size={18} />
+            <span>Login</span>
+          </button>
         )}
       </div>
 
-      {/* Profile modal */}
-      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      {/* Profile Modal */}
+      {isAuthenticated && (
+        <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      )}
     </header>
   );
 };

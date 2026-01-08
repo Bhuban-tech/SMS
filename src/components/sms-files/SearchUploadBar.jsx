@@ -38,22 +38,22 @@ export default function SearchUploadBar({
                     disabled={uploading}
                 />
 
-                <button
-                    disabled={uploading}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full sm:w-auto px-5 py-2 bg-teal-500 text-white font-semibold rounded-lg shadow flex items-center justify-center gap-2 hover:bg-teal-600 disabled:opacity-50 hover:cursor-pointer transition"
-                >
-                    <Plus size={16} />
-                    {uploading ? "Uploading..." : "ADD FILES"}
-                </button>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleUpload}
-                    className="hidden"
-                    accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                />
-            </div>
-        </div>
-    );
+        <button
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full sm:w-auto px-5 py-2 bg-teal-500 text-white font-semibold rounded-lg shadow flex items-center justify-center gap-2 hover:bg-teal-600 disabled:opacity-50 hover:cursor-pointer transition"
+        >
+          <Plus size={16} />
+          {uploading ? "Uploading..." : "ADD FILES"}
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleUpload}
+          className="hidden"
+          accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        />
+      </div>
+    </div>
+  );
 }
