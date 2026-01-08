@@ -20,22 +20,16 @@ SMS Portal is a single-admin web application that enables smooth and efficient S
 
 ## Tech Stack
 - Next.js
-- TypeScript
 - Tailwind CSS
 - Axios
 
 ## Project Structure
 - `app/` – Application routes and pages
 - `components/` – Reusable UI components
-- `services/` – API service handlers
-- `utils/` – Helper utilities
-- `styles/` – Global styles
-
-## Environment Variables
-Create a `.env.local` file and configure required variables:
-- API base URL
-- eSewa public key
-- Khalti public key
+- `config/` – Application configuration and constants
+- `context/` – Global state management and providers
+- `hooks/` – Custom React hooks
+- `lib/` – Shared libraries and utility logic
 
 ## Development
 ```bash
