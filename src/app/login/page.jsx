@@ -43,19 +43,16 @@ export default function LoginPage() {
       const { token, user } = await login(loginInput, password);
 
       dispatch(loginSuccess({ token, user }));
-
-      // Redirect to the original page (or dashboard)
       const redirectTo = searchParams.get("redirect") || "/dashboard";
       router.push(redirectTo);
     } catch (err) {
-      console.error("Login error:", err);
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // UI IS EXACTLY THE SAME — NO CHANGES BELOW THIS LINE
+  
   return (
     <>
       <Header />

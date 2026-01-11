@@ -59,6 +59,7 @@ const Header = ({
   return (
     <header className="bg-slate-800 w-full shadow-md p-4 lg:p-5 flex flex-col lg:flex-row items-center justify-between">
       <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-4">
+        
         <h1 className="text-base sm:text-lg md:text-xl font-semibold text-white truncate">
           {title}
         </h1>
