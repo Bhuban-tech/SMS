@@ -1,166 +1,161 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { User, ArrowLeft, X } from 'lucide-react'; 
-import InputField from '@/components/profile/InputField';
-import PasswordInput from '@/components/profile/PasswordInput';
-import { fetchProfile, updateProfile } from '@/lib/profile';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { User, ArrowLeft, X } from "lucide-react";
+import InputField from "@/components/profile/InputField";
+import PasswordInput from "@/components/profile/PasswordInput";
+import { fetchProfile, updateProfile } from "@/lib/profile";
 
-export default function Profile({ isModal = false, onClose = () => {} }) {
+export default function Profile({ isModal = false, onClose }) {
   const router = useRouter();
+  const { user } = useSelector((state) => state.auth);
+  const adminId = user?.id;
 
-  const [adminId, setAdminId] = useState(null);
-  const [username, setUsername] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+  const [username, setUsername] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
-
-  const isNewPasswordSet = newPassword || confirmPassword;
-  const isNewPasswordValid = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+=[\]{};':"\\|,.<>/?]).{6,}$/.test(newPassword);
-  const isConfirmPasswordValid = newPassword === confirmPassword;
-  const isFormValid = !isNewPasswordSet || (currentPassword && isNewPasswordValid && isConfirmPasswordValid);
-
-  useEffect(() => {
-    const storedId = localStorage.getItem('adminId');
-    if (!storedId) {
-      if (isModal) onClose(); 
-      else router.push('/login');
-    } else {
-      setAdminId(storedId);
-    }
-  }, [router, isModal, onClose]);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
   useEffect(() => {
     if (!adminId) return;
+
+    setInitialLoading(true);
     fetchProfile(adminId)
-      .then((data) => setUsername(data.username || ''))
-      .catch((err) => {
-        console.error(err);
-        setMessage('Failed to load profile');
-        setMessageType('error');
-      });
+      .then((res) => setUsername(res.username || ""))
+      .catch(() => {
+        setMessage("Failed to load profile");
+        setMessageType("error");
+      })
+      .finally(() => setInitialLoading(false));
   }, [adminId]);
 
-  // ── rest of your logic stays exactly the same ──
+  const handleSubmit = async () => {
+    setLoading(true);
+    setMessage("");
 
-  const containerClass = isModal
-    ? "fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-    : "min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4";
+    if (!username.trim()) {
+      setMessage("Username is definitely required");
+      setMessageType("error");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const payload = { username };
+
+      if (newPassword) {
+        payload.currentPassword = currentPassword;
+        payload.newPassword = newPassword;
+      }
+
+      const res = await updateProfile(adminId, payload);
+      setMessage(res.message || "Profile updated");
+      setMessageType("success");
+
+      setTimeout(() => isModal && onClose(), 1200);
+    } catch (err) {
+      setMessage(err.message || "Update failed");
+      setMessageType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className={containerClass}>
-      <div className="w-full max-w-2xl bg-gray-900 text-gray-100 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto border border-gray-700">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-teal-700 shadow-md">
-          <div className="flex items-center gap-4">
-            {!isModal && (
-              <button
-                onClick={() => router.back()}
-                className="text-white hover:text-gray-200 transition"
-                aria-label="Back"
-              >
-                <ArrowLeft className="h-6 w-6" />
-              </button>
-            )}
-            {isModal && <div className="w-10" />} 
-            <h1 className="text-2xl font-bold text-white">Edit Profile</h1>
+    <div
+      className={`${
+        isModal
+          ? "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+          : "min-h-screen bg-slate-100 flex items-center justify-center"
+      }`}
+    >
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden">
+        {initialLoading ? (
+          <div className="p-10 text-center text-gray-600">
+            Loading profile...
           </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-center bg-teal-600 px-6 py-4">
+              <div className="flex items-center gap-3">
+                {!isModal && (
+                  <button onClick={() => router.back()}>
+                    <ArrowLeft className="text-white" />
+                  </button>
+                )}
+                <h2 className="text-white text-xl font-bold">Edit Profile</h2>
+              </div>
 
-          {isModal && (
-            <button
-              onClick={onClose}
-              className="text-white hover:bg-white/10 p-1.5 rounded-full transition"
-              aria-label="Close"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          )}
-        </div>
-
-        {/* Form Body - added dark theme text colors */}
-        <div className="p-6 sm:p-8 space-y-7 bg-gray-900 text-gray-100">
-          {message && (
-            <div
-              className={`p-4 rounded-lg border ${
-                messageType === 'success'
-                  ? 'bg-green-900/40 text-green-100 border-green-700'
-                  : 'bg-red-900/40 text-red-100 border-red-700'
-              }`}
-            >
-              {message}
+              {isModal && (
+                <button onClick={onClose}>
+                  <X className="text-white cursor-pointer hover:bg-teal-700 rounded-2xl" />
+                </button>
+              )}
             </div>
-          )}
 
-          <InputField
-            label="Username"
-            value={username}
-            setValue={setUsername}
-            Icon={User}
-            placeholder="Enter username"
-          />
+            <div className="p-6 space-y-5">
+              {message && (
+                <div
+                  className={`p-3 rounded ${
+                    messageType === "success"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {message}
+                </div>
+              )}
 
-          <PasswordInput
-            label="Current Password"
-            value={currentPassword}
-            setValue={setCurrentPassword}
-            show={showCurrentPassword}
-            setShow={setShowCurrentPassword}
-            required={isNewPasswordSet}
-          />
+              <InputField
+                label="Username"
+                value={username}
+                setValue={setUsername}
+                Icon={User}
+              />
 
-          <PasswordInput
-            label="New Password"
-            value={newPassword}
-            setValue={setNewPassword}
-            show={showNewPassword}
-            setShow={setShowNewPassword}
-            validate={true}
-            errorMessage="Must be 6+ chars: letter, number, special char"
-          />
+              <PasswordInput
+                label="Current Password"
+                value={currentPassword}
+                setValue={setCurrentPassword}
+              />
 
-          <PasswordInput
-            label="Confirm New Password"
-            value={confirmPassword}
-            setValue={setConfirmPassword}
-            show={showConfirmPassword}
-            setShow={setShowConfirmPassword}
-            validate={true}
-            errorMessage={newPassword !== confirmPassword ? "Passwords do not match" : ""}
-          />
+              <PasswordInput
+                label="New Password"
+                value={newPassword}
+                setValue={setNewPassword}
+              />
 
-          {(newPassword || confirmPassword) && !currentPassword && (
-            <p className="text-red-400 text-sm -mt-2">
-              Current password is required to change password
-            </p>
-          )}
+              <PasswordInput
+                label="Confirm New Password"
+                value={confirmPassword}
+                setValue={setConfirmPassword}
+              />
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-8">
-            <button
-              onClick={handleSubmit}
-              disabled={!isFormValid || loading || !username.trim()}
-              className="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed transition shadow-sm"
-            >
-              {loading ? 'Saving...' : 'Save Changes'}
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={loading}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="flex-1 bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 hover:cursor-pointer"
+                >
+                  {loading ? "Saving..." : "Save Changes"}
+                </button>
+
+                <button
+                  onClick={isModal ? onClose : () => router.back()}
+                  className="flex-1 bg-gray-300 rounded-lg py-3 hover:bg-gray-500 hover:cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

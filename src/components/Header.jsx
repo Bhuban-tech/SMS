@@ -8,6 +8,7 @@ import { logout as logoutAction } from "@/store/slices/authSlice";
 import { handleLogout } from "@/lib/auth";
 import ProfileModal from "./profile/ProfileModal";
 
+
 const Header = ({
   collegeName = "Aadim National College",
   balance = 5000,
