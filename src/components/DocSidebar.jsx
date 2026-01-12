@@ -12,6 +12,9 @@ import {
   Folder,
   FileText,
   Layers,
+
+  UsersIcon,
+  UserPlusIcon
 } from "lucide-react";
 
 const NAV = [
@@ -30,6 +33,13 @@ const NAV = [
       { label: "Groups", href: "/docs/groups", icon: Folder },
       { label: "Send SMS", href: "/docs/SMS", icon: Layers },
       { label: "Reports", href: "/docs/reports", icon: FileText },
+    ],
+  },
+   {
+    title: "Additional Featured",
+    items: [
+      { label: "Profile Update", href: "/docs/profile", icon: UserPlusIcon },
+      
     ],
   },
 ];

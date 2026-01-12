@@ -20,14 +20,53 @@ export default function IntroductionPage() {
       </DocSection>
 
       <DocSection title="Key Features">
-        <FeatureGrid>
+        {/* <FeatureGrid>
           <FeatureCard title="Dashboard Analytics" description="Track SMS usage, balance, and delivery status." />
           <FeatureCard title="Individual & Group SMS" description="Send messages  to contacts or groups easily. Also manages contact lists and groups" />
           <FeatureCard title="Bulk CSV Upload" description="Upload thousands of contacts in one go." />
           <FeatureCard title="Template-Based SMS" description="Reuse and customize SMS templates." />
           <FeatureCard title="Reports & Insights" description="Daily and monthly visual reports." />
           <FeatureCard title="Top Up balance" description="User Can top up balance via esewa and khalti to the SMS system." />
-        </FeatureGrid>
+        </FeatureGrid> */}
+
+        <FeatureGrid>
+  <FeatureCard
+    title="Dashboard Analytics"
+    description="Track SMS usage, balance, and delivery status."
+    href="/docs/dashboard"
+  />
+
+  <FeatureCard
+    title="Individual & Group SMS"
+    description="Send messages to contacts or groups easily."
+    href="/docs/contacts"
+  />
+
+  <FeatureCard
+    title="Bulk CSV Upload"
+    description="Upload thousands of contacts in one go."
+    href="/docs/groups"
+  />
+
+  <FeatureCard
+    title="Template-Based SMS"
+    description="Reuse and customize SMS templates."
+    href="/docs/SMS"
+  />
+
+  <FeatureCard
+    title="Reports & Insights"
+    description="Daily and monthly visual reports."
+    href="/docs/reports"
+  />
+
+  <FeatureCard
+    title="Top Up balance"
+    description="Top up balance via eSewa and Khalti."
+    href="/docs/reports"
+  />
+</FeatureGrid>
+
       </DocSection>
     </>
   );

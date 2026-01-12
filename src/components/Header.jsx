@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ const Header = ({
   collegeName = "Aadim National College",
   balance = 5000,
   bgColor = "bg-white",
-  title 
+  title,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -20,7 +20,6 @@ const Header = ({
   const router = useRouter();
   const dispatch = useDispatch();
 
-  // Get auth state from Redux
   const { user, token, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -47,18 +46,12 @@ const Header = ({
     router.push("/login");
   };
 
-  
   const getUserInitial = () => {
-    if (user?.username) {
-      return user.username.charAt(0).toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
+    if (user?.username) return user.username.charAt(0).toUpperCase();
+    if (user?.email) return user.email.charAt(0).toUpperCase();
     return "U";
   };
 
-  // Get display name
   const getDisplayName = () => {
     return user?.username || user?.email?.split("@")[0] || "User";
   };
@@ -71,20 +64,19 @@ const Header = ({
         </h1>
       </div>
 
-      <div className="flex items-center gap-4 mt-3 lg:mt-0 relative" ref={dropdownRef}>
+      <div
+        className="flex items-center gap-4 mt-3 lg:mt-0 relative"
+        ref={dropdownRef}
+      >
         {isAuthenticated && user ? (
           <>
-            {/* User Info */}
             <div className="text-right hidden sm:block">
               <p className="text-sm lg:text-base text-white font-medium">
                 {getDisplayName()}
               </p>
-              <p className="text-xs text-white/80 mt-0.5">
-                {user.email}
-              </p>
+              <p className="text-xs text-white/80 mt-0.5">{user.email}</p>
             </div>
 
-            {/* Avatar with Initial */}
             <div
               className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:bg-teal-600 transition-colors ring-2 ring-white/20"
               onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -94,16 +86,13 @@ const Header = ({
               </span>
             </div>
 
-            {/* Dropdown Menu */}
             {dropdownOpen && (
               <div className="absolute right-0 top-full mt-2 bg-white shadow-lg rounded-lg w-48 z-50 overflow-hidden">
                 <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                   <p className="text-sm font-semibold text-gray-800 truncate">
                     {getDisplayName()}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {user.email}
-                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
                 <ul>
                   <li
@@ -125,20 +114,26 @@ const Header = ({
             )}
           </>
         ) : (
-          /* Login Button - Shows when not authenticated */
           <button
             onClick={handleLoginClick}
-            className="flex items-center gap-2 px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg transition-colors shadow-md"
+            className="flex items-center gap-2 
+                       px-3 py-2 sm:px-6 sm:py-2.5 
+                       bg-teal-500 hover:bg-teal-600 
+                       text-white font-semibold 
+                       rounded-lg transition-colors shadow-md
+                       w-9 sm:w-auto justify-center"
           >
             <LogIn size={18} />
-            <span>Login</span>
+              <span className="hidden sm:inline">Login</span>
           </button>
         )}
       </div>
 
-      {/* Profile Modal */}
       {isAuthenticated && (
-        <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+        <ProfileModal
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+        />
       )}
     </header>
   );
