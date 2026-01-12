@@ -3,7 +3,7 @@
 import React from "react";
 import { MessageSquare, Users, LayoutDashboard, Settings, FileText, File, Pen } from "lucide-react";
 import Link from "next/link";
-import { useIsMobile } from "../hooks/useIsMobile"; // adjust path
+import { useIsMobile } from "../hooks/useIsMobile"; 
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
   const isMobile = useIsMobile();

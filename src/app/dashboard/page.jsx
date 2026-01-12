@@ -55,7 +55,6 @@ const SMSDashboard = () => {
     }
   }, [token, router]);
 
-  // Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -126,7 +125,7 @@ const SMSDashboard = () => {
     }
   }, [viewMode, selectedDate, adminId]);
 
-  // Fetch monthly report
+
   useEffect(() => {
     if (viewMode === "monthly-report" && adminId && selectedMonth) {
       const loadMonthlyReport = async () => {
