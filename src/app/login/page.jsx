@@ -1,206 +1,157 @@
-// Profile.jsx (main profile component)
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import { User, ArrowLeft, X } from "lucide-react";
-import InputField from "@/components/profile/InputField";
-import PasswordInput from "@/components/profile/PasswordInput";
-import { fetchProfile, updateProfile } from "@/lib/profile";
+import { useRouter, useSearchParams } from "next/navigation"; 
+import { useDispatch, useSelector } from "react-redux";
+import { Eye, EyeOff } from "lucide-react";
+import Footer from "@/components/shared/footer";
+import { loginSuccess } from "@/store/slices/authSlice";
+import { login } from "@/lib/auth";
+import Header from "@/components/Header";;
 
-export default function Profile({ isModal = false, onClose }) {
+export default function LoginPage() {
   const router = useRouter();
-  const { user } = useSelector((state) => state.auth);
-  const adminId = user?.id;
+  const dispatch = useDispatch();
+  const searchParams = useSearchParams(); 
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
-  const [username, setUsername] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [loginInput, setLoginInput] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!adminId) return;
+    if (isAuthenticated) {
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.replace(redirectTo);
+    }
+  }, [isAuthenticated, router,  searchParams]);
 
-    setInitialLoading(true);
-    fetchProfile(adminId)
-      .then((res) => setUsername(res.username || ""))
-      .catch(() => {
-        setMessage("Failed to load profile");
-        setMessageType("error");
-      })
-      .finally(() => setInitialLoading(false));
-  }, [adminId]);
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  const handleSubmit = async () => {
+    if (!loginInput || !password) {
+      setError("Username/Email and password are required");
+      return;
+    }
+
     setLoading(true);
-    setMessage("");
-
-    if (!username.trim()) {
-      setMessage("Username is required");
-      setMessageType("error");
-      setLoading(false);
-      return;
-    }
-
-    if (newPassword && newPassword !== confirmPassword) {
-      setMessage("New passwords do not match");
-      setMessageType("error");
-      setLoading(false);
-      return;
-    }
+    setError("");
 
     try {
-      const payload = { username };
+      const { token, user } = await login(loginInput, password);
 
-      if (newPassword) {
-        payload.currentPassword = currentPassword;
-        payload.newPassword = newPassword;
-      }
-
-      const res = await updateProfile(adminId, payload);
-      setMessage(res.message || "Profile updated successfully");
-      setMessageType("success");
-
-      setTimeout(() => {
-        if (isModal && onClose) onClose();
-      }, 1400);
+      dispatch(loginSuccess({ token, user }));
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.push(redirectTo);
     } catch (err) {
-      setMessage(err.message || "Update failed. Please try again.");
-      setMessageType("error");
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  
   return (
-    <div
-      className={`${
-        isModal
-          ? "w-full h-full"
-          : "min-h-screen bg-slate-50/50 flex items-center justify-center p-4 sm:p-6"
-      }`}
-    >
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden">
-        {initialLoading ? (
-          <div className="p-10 sm:p-12 text-center text-gray-600 text-lg">
-            Loading profile...
-          </div>
-        ) : (
-          <>
-            {/* Header */}
-            <div className="bg-teal-600 px-5 sm:px-6 py-4 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                {!isModal && (
-                  <button
-                    onClick={() => router.back()}
-                    className="p-2 -ml-2 rounded-full hover:bg-teal-700/30"
-                  >
-                    <ArrowLeft className="text-white h-5 w-5" />
-                  </button>
-                )}
-                <h2 className="text-white text-lg sm:text-xl font-bold">
-                  Edit Profile
-                </h2>
-              </div>
+    <>
+      <Header />
 
-              {isModal && (
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-full hover:bg-teal-700/30"
-                >
-                  <X className="text-white h-5 w-5" />
-                </button>
-              )}
-            </div>
+      <div className="min-h-screen bg-linear-to-br from-white to-white relative overflow-hidden flex items-center justify-center px-6 py-12">
+        <div className="absolute top-0 left-0 w-80 h-80 bg-teal-300/60 rounded-full -translate-x-40 -translate-y-40" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-700/40 rounded-full translate-x-40 translate-y-40" />
 
-            {/* Content */}
-            <div className="p-5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
-              {message && (
-                <div
-                  className={`p-3.5 rounded-lg text-sm sm:text-base ${
-                    messageType === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
-                >
-                  {message}
-                </div>
-              )}
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 max-w-7xl w-full">
+          <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md lg:-mr-15 lg:z-20 order-2 lg:order-1 lg:self-stretch flex flex-col justify-center">
+            <h2 className="text-2xl font-bold text-center text-teal-900 mb-2">
+              Welcome Back
+            </h2>
+            <p className="text-center text-gray-600 mb-8">
+              Log in to continue using Kritim<span className="text-teal-600">SMS</span>
+            </p>
 
-              <InputField
-                label="Username"
-                value={username}
-                setValue={setUsername}
-                Icon={User}
-                placeholder="Your username"
-              />
+            {error && (
+              <p className="text-red-600 text-center mb-4 text-sm">{error}</p>
+            )}
 
-              <PasswordInput
-                label="Current Password"
-                value={currentPassword}
-                setValue={setCurrentPassword}
-                show={showCurrent}
-                setShow={setShowCurrent}
-              />
-
-              <PasswordInput
-                label="New Password"
-                value={newPassword}
-                setValue={setNewPassword}
-                show={showNew}
-                setShow={setShowNew}
-              />
-
-              <PasswordInput
-                label="Confirm New Password"
-                value={confirmPassword}
-                setValue={setConfirmPassword}
-                show={showConfirm}
-                setShow={setShowConfirm}
-              />
-
-              <div className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-6">
-                <button
-                  onClick={handleSubmit}
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={loginInput}
+                  onChange={(e) => setLoginInput(e.target.value)}
+                  placeholder="Username"
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-purple-200 focus:border-purple-500 focus:outline-none bg-purple-50/50"
                   disabled={loading}
-                  className={`
-                    flex-1 py-3.5 sm:py-3 px-6 
-                    bg-teal-600 text-white font-medium 
-                    rounded-lg hover:bg-teal-700 
-                    disabled:bg-teal-400 disabled:cursor-not-allowed
-                    transition-all active:scale-[0.98]
-                    text-base sm:text-[15px]
-                  `}
+                />
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  {loading ? "Saving..." : "Save Changes"}
-                </button>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
 
-                <button
-                  onClick={isModal ? onClose : () => router.back()}
-                  className={`
-                    flex-1 py-3.5 sm:py-3 px-6 
-                    bg-gray-200 text-gray-800 font-medium 
-                    rounded-lg hover:bg-gray-300 
-                    transition-all active:scale-[0.98]
-                    text-base sm:text-[15px]
-                  `}
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full pl-12 pr-12 py-4 rounded-xl border border-purple-200 focus:border-purple-500 focus:outline-none bg-purple-50/50"
+                  disabled={loading}
+                />
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Cancel
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-600 disabled:opacity-50"
+                  disabled={loading}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-            </div>
-          </>
-        )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Logging in..." : "Login Now"}
+              </button>
+            </form>
+          </div>
+
+          <div className="hidden lg:block order-1 lg:order-2 lg:self-stretch">
+            <img
+              src="/Bhuban.png"
+              alt="Professional woman using tablet"
+              className="rounded-3xl shadow-2xl w-full h-full object-cover"
+            />
+          </div>
+        </div>
       </div>
-    </div>
+
+      <Footer />
+    </>
   );
 }
