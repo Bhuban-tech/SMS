@@ -1,3 +1,4 @@
+// TopUpModal.jsx (only responsiveness changes)
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { X, Loader } from "lucide-react";
@@ -19,7 +20,6 @@ export default function TopUpModal({
   resetModal,
   initiateTopUp,
 }) {
-
   const [hasClickedPay, setHasClickedPay] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function TopUpModal({
     setShowAmountInput(false);
     setSelectedPayment("");
     setTopUpAmount("");
-    setHasClickedPay(false)
+    setHasClickedPay(false);
   };
 
   const handleTopUp = useCallback(async () => {
@@ -46,7 +46,6 @@ export default function TopUpModal({
       toast.error("Minimum top-up is Rs. 100");
       return;
     }
-
 
     setHasClickedPay(true);
     setIsProcessing(true);
@@ -82,43 +81,31 @@ export default function TopUpModal({
       }
     } catch (err) {
       toast.error(err.message || "Payment initiation failed. Please try again.");
-      console.error("Payment initiation error:", err);
-   
     } finally {
       setIsProcessing(false);
-
     }
   }, [topUpAmount, selectedPayment, initiateTopUp, hasClickedPay]);
 
-
-  const isPayDisabled =
-    isProcessing ||
-    !topUpAmount ||
-    parseFloat(topUpAmount) < 100 ||
-    hasClickedPay;
+  const isPayDisabled = isProcessing || !topUpAmount || parseFloat(topUpAmount) < 100 || hasClickedPay;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-       
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-y-auto overscroll-contain mx-2 sm:mx-0">
         <div className="bg-linear-to-r from-teal-600 to-teal-500 p-6 rounded-t-3xl text-white relative">
           <h2 className="text-2xl font-bold mb-1">Top Up Balance</h2>
           <p className="text-teal-100 text-sm">
-            {!showAmountInput
-              ? "Choose payment method"
-              : `Pay with ${selectedPayment === "esewa" ? "eSewa" : "Khalti"}`}
+            {!showAmountInput ? "Choose payment method" : `Pay with ${selectedPayment === "esewa" ? "eSewa" : "Khalti"}`}
           </p>
           <button
             onClick={resetModal}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors absolute top-6 right-6"
+            className="p-3 hover:bg-white/20 rounded-full transition-colors absolute top-5 right-5"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="p-6">
-          
-          <div className="bg-teal-50 border-2 border-teal-200 rounded-xl p-4 mb-6">
+          <div className="bg-teal-50 border-2 border-teal-200 rounded-xl p-5 mb-6">
             <p className="text-sm text-teal-700 font-medium mb-1">Current Balance</p>
             <p className="text-3xl font-bold text-teal-900">Rs. {balance.toFixed(2)}</p>
           </div>
@@ -126,18 +113,18 @@ export default function TopUpModal({
           {!showAmountInput ? (
             <>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Payment Method</h3>
-              <div className="space-y-3 mb-6">
+              <div className="space-y-4">
                 {paymentMethods.map((method) => {
                   const Icon = method.icon;
                   return (
                     <button
                       key={method.id}
                       onClick={() => handlePaymentSelect(method.id)}
-                      className="w-full p-6 rounded-xl border-2 transition-all border-gray-200 hover:border-teal-500 hover:shadow-lg hover:scale-105"
+                      className="w-full p-5 rounded-xl border-2 transition-all border-gray-200 hover:border-teal-500 hover:shadow-lg active:scale-98"
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`${method.color} p-3 rounded-lg`}>
-                          <Icon className={`w-6 h-6 ${method.iconColor}`} />
+                        <div className={`${method.color} p-4 rounded-lg`}>
+                          <Icon className={`w-7 h-7 ${method.iconColor}`} />
                         </div>
                         <span className="text-lg font-semibold text-gray-900">{method.name}</span>
                       </div>
@@ -148,7 +135,6 @@ export default function TopUpModal({
             </>
           ) : (
             <>
-          
               {(() => {
                 const method = paymentMethods.find((m) => m.id === selectedPayment);
                 if (!method) return null;
@@ -156,8 +142,8 @@ export default function TopUpModal({
                 return (
                   <div className="flex items-center justify-between mb-6 bg-gray-50 p-4 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className={`${method.color} p-2 rounded-lg`}>
-                        <Icon className={`w-5 h-5 ${method.iconColor}`} />
+                      <div className={`${method.color} p-3 rounded-lg`}>
+                        <Icon className={`w-6 h-6 ${method.iconColor}`} />
                       </div>
                       <div>
                         <p className="text-xs text-gray-600">Selected Method</p>
@@ -174,29 +160,29 @@ export default function TopUpModal({
                 );
               })()}
 
-     
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-900 mb-3">
                   Amount (Min. Rs. 100)
                 </label>
-                <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="grid grid-cols-3 gap-3 mb-5">
                   {quickAmounts.map((amt) => (
                     <button
                       key={amt}
                       onClick={() => setTopUpAmount(amt.toString())}
                       disabled={isProcessing || hasClickedPay}
-                      className={`p-3 rounded-lg border transition-all ${
+                      className={`p-4 rounded-xl border text-base font-medium transition-all ${
                         topUpAmount === amt.toString()
-                          ? "border-teal-500 bg-teal-50 text-teal-700 font-semibold"
+                          ? "border-teal-500 bg-teal-50 text-teal-700"
                           : "border-gray-200 hover:border-teal-300"
-                      } disabled:opacity-50`}
+                      } disabled:opacity-50 active:scale-98`}
                     >
                       Rs. {amt}
                     </button>
                   ))}
                 </div>
+
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-lg">
                     Rs.
                   </span>
                   <input
@@ -205,7 +191,7 @@ export default function TopUpModal({
                     value={topUpAmount}
                     onChange={(e) => setTopUpAmount(e.target.value)}
                     disabled={isProcessing || hasClickedPay}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none disabled:bg-gray-100"
+                    className="w-full pl-16 pr-5 py-4 border border-gray-300 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none disabled:bg-gray-100 text-lg"
                     min="100"
                   />
                 </div>
@@ -214,11 +200,11 @@ export default function TopUpModal({
           )}
         </div>
 
-        <div className="p-6 bg-gray-50 rounded-b-3xl flex gap-3">
+        <div className="p-6 bg-gray-50 rounded-b-3xl flex flex-col sm:flex-row gap-4">
           {!showAmountInput ? (
             <button
               onClick={resetModal}
-              className="w-full py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 transition"
+              className="w-full py-4 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 transition text-lg sm:text-base"
             >
               Cancel
             </button>
@@ -227,14 +213,14 @@ export default function TopUpModal({
               <button
                 onClick={handleBackToPaymentMethod}
                 disabled={isProcessing}
-                className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 disabled:opacity-50"
+                className="w-full sm:flex-1 py-4 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 disabled:opacity-50 text-lg sm:text-base"
               >
                 Back
               </button>
               <button
                 onClick={handleTopUp}
                 disabled={isPayDisabled}
-                className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition"
+                className="w-full sm:flex-1 py-4 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition text-lg sm:text-base"
               >
                 {isProcessing ? (
                   <>

@@ -3,7 +3,7 @@
 import React from "react";
 import { MessageSquare, Users, LayoutDashboard, Settings, FileText, File, Pen } from "lucide-react";
 import Link from "next/link";
-import { useIsMobile } from "../hooks/useIsMobile"; 
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
   const isMobile = useIsMobile();
@@ -20,30 +20,29 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
 
   return (
     <>
-      {/* Overlay */}
+      {/* Mobile overlay when sidebar is open */}
       {isMobile && sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 backdrop-blur-sm transition-opacity duration-300"
+          className="fixed inset-0 bg-black/50 z-30 backdrop-blur-sm transition-opacity duration-300 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-   
       <aside
         className={`
-          fixed lg:relative top-0 left-0 h-screen w-64 z-40 bg-linear-to-b from-slate-900 via-slate-800 to-slate-900
-          p-6 flex flex-col justify-between transform transition-transform duration-300 ease-in-out shadow-2xl
+          fixed lg:relative top-0 left-0 h-screen w-64 z-40 
+          bg-linear-to-b from-slate-900 via-slate-800 to-slate-900
+          p-6 flex flex-col justify-between 
+          transform transition-transform duration-300 ease-in-out shadow-2xl
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
           lg:translate-x-0
         `}
       >
-        
         <div>
           <div className="mb-12">
-            <h1 className="text-white text-2xl sm:text-2xl font-bold tracking-tight">KritimSMS</h1>
+            <h1 className="text-white text-2xl font-bold tracking-tight">KritimSMS</h1>
           </div>
 
-         
           <nav className="flex-1 px-2 space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -54,12 +53,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
                   <button
                     onClick={() => {
                       setActiveTab(item.id);
-                      setSidebarOpen(false);
+                      if (isMobile) setSidebarOpen(false);
                     }}
                     className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                       isActive
                         ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30"
-                        : "text-slate-300 hover:bg-slate-800 hover:text-white hover:cursor-pointer"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
                     }`}
                   >
                     <Icon size={20} />
@@ -71,7 +70,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
           </nav>
         </div>
 
-        {/* Bottom */}
+        {/* Bottom Settings */}
         <div className="mt-auto">
           <button className="flex items-center gap-3 w-full px-4 py-2 text-slate-400 hover:text-white transition">
             <Settings size={18} />
@@ -79,18 +78,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
           </button>
         </div>
       </aside>
-
-    
-      {isMobile && !sidebarOpen && (
-        <div className="fixed top-4 left-4 z-50">
-          <button
-            className="p-2 bg-teal-600 text-white rounded-md shadow-lg"
-            onClick={() => setSidebarOpen(true)}
-          >
-            ☰
-          </button>
-        </div>
-      )}
     </>
   );
 };

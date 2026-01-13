@@ -1,3 +1,4 @@
+// TransactionTable.jsx - Most important responsiveness improvement
 "use client";
 import React from "react";
 import { AlertCircle, Loader } from "lucide-react";
@@ -15,9 +16,7 @@ export default function TransactionTable({
     let matchesType = true;
 
     if (filterDate) {
-      const transactionDate = new Date(
-        t.paidAt || t.createdAt || t.created_at || 0
-      );
+      const transactionDate = new Date(t.paidAt || t.createdAt || t.created_at || 0);
       const filterDateObj = new Date(filterDate);
 
       matchesDate =
@@ -41,15 +40,14 @@ export default function TransactionTable({
     const status = t.status?.toLowerCase();
     const method = t.paymentMethod?.toLowerCase();
 
-    
     const isTopUp =
       status === "complete" ||
       status === "completed" ||
       status === "success" ||
       method === "esewa" ||
       method === "khalti" ||
-      t.type === "credit" ||  
-      t.amount > 0;          
+      t.type === "credit" ||
+      t.amount > 0;
 
     return isTopUp ? "credit" : "debit";
   };
@@ -84,7 +82,7 @@ export default function TransactionTable({
         return "bg-emerald-100 text-emerald-800 border border-emerald-200";
       case "khalti":
         return "bg-indigo-100 text-indigo-800 border border-indigo-200";
-      case "system": 
+      case "system":
       case "deduction":
         return "bg-rose-100 text-rose-800 border border-rose-200";
       default:
@@ -100,74 +98,104 @@ export default function TransactionTable({
           <p className="text-lg text-gray-600 font-medium">Loading transactions...</p>
         </div>
       ) : filteredTransactions.length === 0 ? (
-        <div className="text-center py-20">
+        <div className="text-center py-20 px-6">
           <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-          <p className="text-lg font-semibold text-gray-700 mb-2">
-            No transactions found
-          </p>
-          <p className="text-sm text-gray-500 max-w-sm mx-auto">
-            {filterDate
-              ? "There are no transactions on the selected date."
-              : "Your transactions will appear here."}
+          <p className="text-lg font-semibold text-gray-700 mb-2">No transactions found</p>
+          <p className="text-sm text-gray-500">
+            {filterDate ? "No transactions on selected date." : "Your transactions will appear here."}
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-linear-to-r from-teal-50 to-cyan-50 border-b-2 border-teal-200">
-              <tr>
-                <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
-                  Method
-                </th>
-                <th className="px-8 py-5 text-right text-xs font-bold text-teal-800 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-8 py-5 text-center text-xs font-bold text-teal-800 uppercase tracking-wider">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {filteredTransactions.map((transaction) => (
-                <tr
-                  key={transaction.id || transaction.pidx || transaction.transactionUuid}
-                  className="hover:bg-teal-50/50 transition-all duration-200"
-                >
-                  <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {formatDate(transaction)}
-                  </td>
-                  <td className="px-8 py-5 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${
-                        getPaymentMethodColor(
-                          transaction.paymentMethod || (getTransactionType(transaction) === "debit" ? "system" : "")
-                        )
-                      }`}
-                    >
-                      {getTransactionType(transaction) === "debit"
+        <div className="divide-y divide-gray-200">
+          {/* Mobile Card View */}
+          <div className="md:hidden">
+            {filteredTransactions.map((t) => (
+              <div
+                key={t.id || t.pidx || t.transactionUuid}
+                className="p-5 bg-white hover:bg-teal-50/50 transition-colors"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="font-medium text-gray-900">{formatDate(t)}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {getTransactionType(t) === "debit"
                         ? "SMS Sent / Deduction"
-                        : getPaymentMethodDisplay(transaction.paymentMethod)}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 whitespace-nowrap text-right">
-                    {getAmountDisplay(transaction)}
-                  </td>
-                  <td className="px-8 py-5 whitespace-nowrap text-center">
-                    <span
-                      className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getStatusColor(
-                        transaction.status
-                      )}`}
-                    >
-                      {transaction.status || "Pending"}
-                    </span>
-                  </td>
+                        : getPaymentMethodDisplay(t.paymentMethod)}
+                    </div>
+                  </div>
+                  <div className="text-right">{getAmountDisplay(t)}</div>
+                </div>
+
+                <div>
+                  <span
+                    className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                      t.status
+                    )}`}
+                  >
+                    {t.status || "Pending"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-linear-to-r from-teal-50 to-cyan-50 border-b-2 border-teal-200">
+                <tr>
+                  <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
+                    Method
+                  </th>
+                  <th className="px-8 py-5 text-right text-xs font-bold text-teal-800 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-8 py-5 text-center text-xs font-bold text-teal-800 uppercase tracking-wider">
+                    Status
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {filteredTransactions.map((transaction) => (
+                  <tr
+                    key={transaction.id || transaction.pidx || transaction.transactionUuid}
+                    className="hover:bg-teal-50/50 transition-all duration-200"
+                  >
+                    <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {formatDate(transaction)}
+                    </td>
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getPaymentMethodColor(
+                          transaction.paymentMethod ||
+                            (getTransactionType(transaction) === "debit" ? "system" : "")
+                        )}`}
+                      >
+                        {getTransactionType(transaction) === "debit"
+                          ? "SMS Sent / Deduction"
+                          : getPaymentMethodDisplay(transaction.paymentMethod)}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5 whitespace-nowrap text-right">
+                      {getAmountDisplay(transaction)}
+                    </td>
+                    <td className="px-8 py-5 whitespace-nowrap text-center">
+                      <span
+                        className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getStatusColor(
+                          transaction.status
+                        )}`}
+                      >
+                        {transaction.status || "Pending"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
