@@ -19,7 +19,7 @@ export default function ProfileModal({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div
-        className="absolute inset-0 bg-black/65 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 "
         onClick={onClose}
       />
 

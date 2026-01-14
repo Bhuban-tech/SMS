@@ -5,14 +5,15 @@ function GroupHeader({ searchTerm, setSearchTerm, openGroupModal }) {
     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0">
       {/* Search Input */}
       <div className="relative w-full sm:w-64">
+         <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="text"
-          placeholder="Search group..."
+          placeholder="Search group by Name....."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border border-gray-300 rounded-xl px-4 py-2 pr-10 text-sm w-full shadow focus:outline-none focus:ring-2 focus:ring-teal-400"
+          className="border border-gray-300 rounded-2xl  px-12 py-3 pr-10 text-sm w-full shadow focus:outline-none focus:ring-2 focus:ring-teal-400"
         />
-        <Search className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2" />
+        {/* <Search className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2" /> */}
       </div>
 
       {/* Add Group Button */}

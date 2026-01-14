@@ -55,7 +55,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab }) => {
                       setActiveTab(item.id);
                       if (isMobile) setSidebarOpen(false);
                     }}
-                    className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all duration-200 hover:cursor-pointer ${
                       isActive
                         ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30"
                         : "text-slate-300 hover:bg-slate-800 hover:text-white"

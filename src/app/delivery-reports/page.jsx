@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { Eye, X, RotateCw } from "lucide-react";
+import { Eye, X, RotateCw,Menu } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config/api";
 
@@ -117,6 +117,13 @@ export default function DeliveryReports() {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <button
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+      >
+        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -161,8 +168,8 @@ export default function DeliveryReports() {
               <RotateCw size={20} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
-
-          {/* Table container */}
+{/* 
+          Table container
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -232,7 +239,142 @@ export default function DeliveryReports() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </div> */}
+
+          {/* Desktop Table */}
+<div className="hidden md:block bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+  <div className="overflow-x-auto">
+    <table className="min-w-full divide-y divide-gray-200 text-sm">
+      <thead className="bg-teal-700 text-white">
+        <tr>
+          <th className="px-4 py-3 text-center font-medium">S.N</th>
+          <th className="px-4 py-3 text-center font-medium">Report ID</th>
+          <th className="px-4 py-3 text-center font-medium">Recipient ID</th>
+          <th className="px-4 py-3 text-center font-medium">Status</th>
+          <th className="px-4 py-3 text-center font-medium">Description</th>
+          <th className="px-4 py-3 text-center font-medium">Reported At</th>
+          <th className="px-4 py-3 text-center font-medium">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody className="divide-y divide-gray-200 bg-white">
+        {currentData.length === 0 && !loading && (
+          <tr>
+            <td colSpan={7} className="px-6 py-16 text-center text-gray-500">
+              No delivery reports available
+            </td>
+          </tr>
+        )}
+
+        {currentData.map((report, idx) => (
+          <tr key={report.id} className="hover:bg-gray-50 transition-colors">
+            <td className="px-4 py-3 text-center">{startIndex + idx + 1}</td>
+            <td className="px-4 py-3 font-medium text-center">{report.id}</td>
+            <td className="px-4 py-3 text-center">{report.messageRecipientId || "—"}</td>
+            <td className="px-4 py-3 text-center">
+              <span
+                className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                  report.status === "DELIVERED"
+                    ? "bg-green-100 text-green-800"
+                    : report.status === "FAILED"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {report.status || "Unknown"}
+              </span>
+            </td>
+            <td
+              className="px-4 py-3 max-w-xs truncate text-left"
+              title={report.description || ""}
+            >
+              {report.description || "—"}
+            </td>
+            <td className="px-4 py-3 text-center whitespace-nowrap">
+              {formatDate(report.createdAt)}
+            </td>
+            <td className="px-4 py-3">
+              <div className="flex justify-center">
+                <button
+                  onClick={() => handleViewClick(report)}
+                  disabled={viewLoading}
+                  className="bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white p-2 rounded-full shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{/* Mobile Grid / Cards */}
+<div className="md:hidden grid gap-4">
+  {currentData.length === 0 && !loading ? (
+    <div className="text-center py-16 text-gray-500">
+      No delivery reports available
+    </div>
+  ) : (
+    currentData.map((report, idx) => (
+      <div
+        key={report.id}
+        className="bg-white rounded-xl shadow-md p-4 grid gap-2 border border-gray-200"
+      >
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-500">#{startIndex + idx + 1}</span>
+          <button
+            onClick={() => handleViewClick(report)}
+            disabled={viewLoading}
+            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white p-2 rounded-full shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 hover:cursor-pointer"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div>
+          <p className="text-xs text-gray-500">Report ID</p>
+          <p className="text-gray-800 font-medium">{report.id}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-gray-500">Recipient ID</p>
+          <p className="text-gray-800">{report.messageRecipientId || "—"}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-gray-500">Status</p>
+          <span
+            className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+              report.status === "DELIVERED"
+                ? "bg-green-100 text-green-800"
+                : report.status === "FAILED"
+                ? "bg-red-100 text-red-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
+            {report.status || "Unknown"}
+          </span>
+        </div>
+
+        <div>
+          <p className="text-xs text-gray-500">Description</p>
+          <p className="text-gray-800 truncate" title={report.description || ""}>
+            {report.description || "—"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs text-gray-500">Reported At</p>
+          <p className="text-gray-800">{formatDate(report.createdAt)}</p>
+        </div>
+      </div>
+    ))
+  )}
+</div>
+
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -260,8 +402,8 @@ export default function DeliveryReports() {
       </div>
 
       {/* View Modal */}
-      {viewSMS && (
-        <div className="fixed inset-0 bg-black/65 flex items-center justify-center z-50 p-4">
+      {/* {viewSMS && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 ">
           <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
             <button
               onClick={() => setViewSMS(null)}
@@ -308,7 +450,85 @@ export default function DeliveryReports() {
             )}
           </div>
         </div>
-      )}
+      )} */}
+
+
+     {viewSMS && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl relative animate-scaleIn overflow-hidden">
+      
+     
+      <button
+        onClick={() => setViewSMS(null)}
+        className="absolute top-4 right-4 z-10 text-white hover:text-white bg-black/20 hover:bg-black/30 rounded-full p-1 transition hover:cursor-pointer"
+      >
+        <X size={26} />
+      </button>
+
+    
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-8 py-6">
+        <h2 className="text-2xl font-bold text-white text-center tracking-wide">
+          Delivery Report Details
+        </h2>
+      </div>
+
+      {/* CONTENT */}
+      <div className="p-8">
+        {viewLoading ? (
+          <p className="text-center text-teal-600 font-medium">
+            Loading details...
+          </p>
+        ) : (
+          <div className="space-y-5 text-sm text-gray-700">
+            
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-500">Report ID</span>
+              <span className="font-mono text-gray-900">#{viewSMS.id}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-500">Recipient ID</span>
+              <span className="font-mono text-gray-900">
+                {viewSMS.messageRecipientId}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-500">Status</span>
+              <span
+                className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wider shadow-sm ${
+                  viewSMS.status === "DELIVERED"
+                    ? "bg-green-100 text-green-700"
+                    : viewSMS.status === "FAILED"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-yellow-100 text-yellow-700"
+                }`}
+              >
+                {viewSMS.status || "Unknown"}
+              </span>
+            </div>
+
+            <div>
+              <span className="font-semibold text-gray-500 block mb-1">
+                Description
+              </span>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 leading-relaxed shadow-inner">
+                {viewSMS.description || "No description available"}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t">
+              <span className="font-semibold text-gray-500">Reported At</span>
+              <span className="text-gray-800">
+                {formatDate(viewSMS.createdAt)}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

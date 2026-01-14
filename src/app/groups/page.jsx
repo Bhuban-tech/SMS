@@ -9,6 +9,7 @@ import GroupTable from "@/components/groups/GroupTable";
 import GroupViewModal from "@/components/groups/GroupViewModal";
 import GroupAddContactModal from "@/components/groups/GroupAddContactModal";
 import GroupModal from "@/components/groups/GroupModal";
+import { Menu,X } from "lucide-react";
 
 import {
   fetchGroups,
@@ -82,7 +83,7 @@ export default function GroupPage() {
        
         loadGroups();
       } else {
-        toast.success("Group name updated");
+        toast.success("Group name updated successfully");
       }
     } catch (err) {
       console.error(err);
@@ -103,7 +104,7 @@ export default function GroupPage() {
     try {
       const res = await deleteGroup(token, groupToDelete.id);
       if (res.success) {
-        toast.success("Group deleted");
+        toast.success("Group deleted successfully");
         setGroups(groups.filter((g) => g.id !== groupToDelete.id));
       } else {
         toast.error(res.message || "Failed to delete group");
@@ -149,7 +150,7 @@ export default function GroupPage() {
     return updated;
   });
 
-  toast.success("Contact removed");
+  toast.success("Contact removed successfully");
 }else {
         toast.error(res.message || "Failed to remove contact");
       }
@@ -167,6 +168,13 @@ export default function GroupPage() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-50">
+        <button
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+      >
+        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -236,55 +244,84 @@ export default function GroupPage() {
           onSuccess={loadGroups}
         />
       )}
+{showRemoveContactModal && contactToRemove && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-2">
+    <div className="relative bg-white rounded-xl p-4 w-full max-w-md shadow-lg">
+      
+      {/* Close button */}
+      <button
+        aria-label="Close"
+        onClick={() => setShowRemoveContactModal(false)}
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
+      >
+        ✕
+      </button>
 
-      {showRemoveContactModal && contactToRemove && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-2">
-          <div className="bg-white rounded-xl p-4 w-full max-w-md shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Remove Contact</h2>
-            <p>
-              Are you sure you want to remove{" "}
-              <strong>{contactToRemove.contact.name}</strong> from this group?
-            </p>
-            <div className="mt-6 flex justify-end gap-2 flex-wrap">
-              <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 hover:cursor-pointer"
-                onClick={() => setShowRemoveContactModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer"
-                onClick={confirmRemoveContact}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <h2 className="text-xl font-bold mb-4 text-center">
+        Remove Contact
+      </h2>
 
-      {showDeleteModal && groupToDelete && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
-          <div className="bg-gray-100 rounded-xl p-4 w-full max-w-md shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Delete Group</h2>
-            <p>Are you sure you want to delete "{groupToDelete.name}"?</p>
-            <div className="mt-6 flex justify-end gap-2 flex-wrap">
-              <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 hover:cursor-pointer"
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer"
-                onClick={handleDelete}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <p>
+        Are you sure you want to remove{" "}
+        <strong>{contactToRemove.contact.name}</strong> from this group?
+      </p>
+
+      <div className="mt-6 flex justify-center gap-2 flex-wrap">
+        <button
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 hover:cursor-pointer"
+          onClick={() => setShowRemoveContactModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer"
+          onClick={confirmRemoveContact}
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{showDeleteModal && groupToDelete && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
+    <div className="relative bg-gray-100 rounded-xl p-4 w-full max-w-md shadow-lg">
+      
+      {/* Close button */}
+      <button
+        aria-label="Close"
+        onClick={() => setShowDeleteModal(false)}
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
+      >
+        ✕
+      </button>
+
+      <h2 className="text-xl font-bold mb-4 text-center">
+        Delete Group
+      </h2>
+
+      <p className="p-5 mx-10 text-center">
+        Are you sure you want to delete "{groupToDelete.name}"?
+      </p>
+
+      <div className="mt-6 flex justify-center gap-2 flex-wrap">
+        <button
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 hover:cursor-pointer"
+          onClick={() => setShowDeleteModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer"
+          onClick={handleDelete}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {showGroupModal && (
   <GroupModal

@@ -67,7 +67,7 @@ export default function ContactsPage() {
         phoneNo: contactData.mobile,
       });
       if (!res.success) return toast.error(res.message);
-      toast.success("Contact added");
+      toast.success("Contact added successfully");
       setModalOpen(false);
       loadContacts();
     } catch {
@@ -84,7 +84,7 @@ export default function ContactsPage() {
         phoneNo: updatedData.mobile,
       });
       if (!res.success) return toast.error(res.message);
-      toast.success("Contact updated");
+      toast.success("Contact updated successfully");
       loadContacts();
     } catch {
       toast.error("Failed to update contact");
@@ -166,33 +166,49 @@ export default function ContactsPage() {
         )}
 
         {showDeleteModal && contactToDelete && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-            <div className="bg-white rounded-2xl p-6 w-96 shadow-xl">
-              <h2 className="text-lg font-semibold mb-4">Delete Contact</h2>
-              <p className="text-gray-600">
-                Are you sure you want to delete{" "}
-                <span className="font-medium text-gray-900">
-                  "{contactToDelete.name}"
-                </span>
-                ?
-              </p>
-              <div className="mt-6 flex justify-end space-x-4">
-                <button
-                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  onClick={handleDelete}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+  <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+    <div className="relative bg-white rounded-2xl p-6 w-96 shadow-xl">
+      
+      {/* Close (X) button */}
+      <button
+        onClick={() => setShowDeleteModal(false)}
+        aria-label="Close"
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
+      >
+        ✕
+      </button>
+
+      <h2 className="text-lg font-semibold mb-4 text-center">
+        Delete Contact
+      </h2>
+
+      <p className="text-gray-600 text-center">
+        Are you sure you want to delete{" "}
+        <span className="font-medium text-gray-900">
+          "{contactToDelete.name}"
+        </span>
+        ?
+      </p>
+
+      <div className="mt-6 flex justify-center space-x-4">
+        <button
+          className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-300 hover:cursor-pointer"
+          onClick={() => setShowDeleteModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 hover:cursor-pointer"
+          onClick={handleDelete}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );

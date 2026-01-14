@@ -49,7 +49,7 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
       return;
     }
 
-    toast.success("Contacts added");
+    toast.success("Contacts added successfully");
     onSuccess();
     onClose();
   };

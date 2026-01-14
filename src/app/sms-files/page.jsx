@@ -9,6 +9,7 @@ import EditGroupModal from "@/components/sms-files/EditGroupModal";
 import DeleteGroupModal from "@/components/sms-files/DeleteGroupModal";
 import { fetchGroups, uploadGroupFile, updateGroup, deleteGroup } from "@/lib/smsfiles";
 import { getGroupContacts } from "@/lib/group";
+import { X, Menu } from "lucide-react";
 
 export default function SMSFilesPage() {
   const [search, setSearch] = useState("");
@@ -184,12 +185,14 @@ export default function SMSFilesPage() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+        <button
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+      >
+        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="SMS-Files" />
         <main className="flex-1 overflow-auto p-6">
