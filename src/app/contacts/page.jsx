@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { X, Menu } from "lucide-react";
 
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -21,7 +20,6 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState([]);
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("tab1");
@@ -60,34 +58,36 @@ export default function ContactsPage() {
     }
   };
 
-  // Fixed: Now accepts contactData from modal
-  const saveContact = async (contactData) => {
+  const saveNewContact = async (contactData) => {
     if (!token) return toast.error("Session expired. Please login again.");
 
     try {
-      let res;
-      if (editing) {
-        res = await updateContact(token, editing, {
-          name: contactData.name,
-          phoneNo: contactData.mobile,
-        });
-        if (!res.success) return toast.error(res.message);
-        toast.success("Contact updated");
-      } else {
-        res = await createContact(token, {
-          name: contactData.name,
-          phoneNo: contactData.mobile,
-        });
-        if (!res.success) return toast.error(res.message);
-        toast.success("Contact added");
-      }
-
+      const res = await createContact(token, {
+        name: contactData.name,
+        phoneNo: contactData.mobile,
+      });
+      if (!res.success) return toast.error(res.message);
+      toast.success("Contact added successfully");
       setModalOpen(false);
-      setEditing(null);
-      setSearch("");
-      loadContacts(); // Refresh from server → correct data shown
+      loadContacts();
     } catch {
-      toast.error("Failed to save contact");
+      toast.error("Failed to add contact");
+    }
+  };
+
+  const updateExistingContact = async (id, updatedData) => {
+    if (!token) return toast.error("Session expired.");
+
+    try {
+      const res = await updateContact(token, id, {
+        name: updatedData.name,
+        phoneNo: updatedData.mobile,
+      });
+      if (!res.success) return toast.error(res.message);
+      toast.success("Contact updated successfully");
+      loadContacts();
+    } catch {
+      toast.error("Failed to update contact");
     }
   };
 
@@ -97,8 +97,7 @@ export default function ContactsPage() {
   };
 
   const handleDelete = async () => {
-    if (!token || !contactToDelete)
-      return toast.error("Session expired. Please login again.");
+    if (!token || !contactToDelete) return toast.error("Session expired.");
     try {
       const res = await deleteContact(token, contactToDelete.id);
       if (!res.success) return toast.error(res.message);
@@ -114,19 +113,12 @@ export default function ContactsPage() {
 
   const filtered = contacts.filter(
     (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.mobile.includes(search)
+      c.name?.toLowerCase().includes(search.toLowerCase()) ||
+      c.mobile?.includes(search)
   );
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
-        <button
-              aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
-            >
-              {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -145,11 +137,8 @@ export default function ContactsPage() {
               <ContactsHeader
                 searchTerm={search}
                 setSearchTerm={setSearch}
-                onAdd={() => {
-                  setEditing(null);
-                  setModalOpen(true);
-                }}
-                onUpload={() => fileRef.current.click()}
+                onAdd={() => setModalOpen(true)}
+                onUpload={() => fileRef.current?.click()}
                 fileInputRef={fileRef}
               />
             </div>
@@ -158,10 +147,7 @@ export default function ContactsPage() {
               <ContactsTable
                 contacts={filtered}
                 loading={loading}
-                onEdit={(c) => {
-                  setEditing(c.id);
-                  setModalOpen(true);
-                }}
+                onUpdate={updateExistingContact}   // ← new prop
                 onDelete={confirmDelete}
                 onView={(c) => toast.info(c.name)}
                 onSend={(c) => toast.success(`SMS sent to ${c.name}`)}
@@ -174,44 +160,55 @@ export default function ContactsPage() {
           <ContactModal
             open={modalOpen}
             close={() => setModalOpen(false)}
-            editingId={editing}
-            initialData={
-              editing
-                ? contacts.find((c) => c.id === editing)
-                : { name: "", mobile: "" }
-            }
-            onSave={saveContact}
+            initialData={{ name: "", mobile: "" }}
+            onSave={saveNewContact}
           />
         )}
 
         {showDeleteModal && contactToDelete && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-            <div className="bg-white rounded-2xl p-6 w-96 shadow-xl">
-              <h2 className="text-lg font-semibold mb-4">Delete Contact</h2>
-              <p className="text-gray-600">
-                Are you sure you want to delete{" "}
-                <span className="font-medium text-gray-900">
-                  "{contactToDelete.name}"
-                </span>
-                ?
-              </p>
-              <div className="mt-6 flex justify-end space-x-4">
-                <button
-                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 hover:cursor-pointer"
-                  onClick={handleDelete}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+  <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+    <div className="relative bg-white rounded-2xl p-6 w-96 shadow-xl">
+      
+      {/* Close (X) button */}
+      <button
+        onClick={() => setShowDeleteModal(false)}
+        aria-label="Close"
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
+      >
+        ✕
+      </button>
+
+      <h2 className="text-lg font-semibold mb-4 text-center">
+        Delete Contact
+      </h2>
+
+      <p className="text-gray-600 text-center">
+        Are you sure you want to delete{" "}
+        <span className="font-medium text-gray-900">
+          "{contactToDelete.name}"
+        </span>
+        ?
+      </p>
+
+      <div className="mt-6 flex justify-center space-x-4">
+        <button
+          className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-300 hover:cursor-pointer"
+          onClick={() => setShowDeleteModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 hover:cursor-pointer"
+          onClick={handleDelete}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );
