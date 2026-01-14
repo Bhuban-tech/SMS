@@ -362,7 +362,7 @@ const Landing = () => {
                   <motion.div
                     animate={{ x: [-200, 200] }}
                     transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, delay: 1 }}
-                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent rounded-2xl"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-2xl"
                     style={{ transform: "skewX(-20deg)" }}
                   />
                 </motion.div>
@@ -428,16 +428,16 @@ const Landing = () => {
                   className="text-center group cursor-pointer"
                 >
                   <motion.div
-                    className="w-24 h-24 bg-gradient-to-br from-sky-50 to-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border-2 border-sky-200 shadow-lg relative overflow-hidden"
+                    className="w-24 h-24 bg-linear-to-br from-sky-50 to-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border-2 border-sky-200 shadow-lg relative overflow-hidden"
                     whileHover={{ borderColor: "#14b8a6" }}
                   >
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-teal-400/20 to-sky-400/20"
+                      className="absolute inset-0 bg-linear-to-br from-teal-400/20 to-sky-400/20"
                       initial={{ scale: 0, opacity: 0 }}
                       whileHover={{ scale: 2, opacity: 1 }}
                       transition={{ duration: 0.4 }}
                     />
-                    <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-teal-600 relative z-10">
+                    <span className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-sky-600 to-teal-600 relative z-10">
                       {stat.value}
                     </span>
                   </motion.div>
