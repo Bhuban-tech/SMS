@@ -1,4 +1,4 @@
-// /lib/sendsms.js
+
 
 import { API_BASE_URL, ENDPOINTS } from "@/config/api";
 
@@ -7,7 +7,7 @@ export const getHeaders = (token) => ({
   Authorization: `Bearer ${token}`,
 });
 
-// Individual SMS
+
 export const sendIndividualSMS = async (token, senderId, message, recipientNumbers) => {
   console.log("sendIndividualSMS called with:", { senderId, recipientNumbers });
   
@@ -26,7 +26,7 @@ export const sendIndividualSMS = async (token, senderId, message, recipientNumbe
   return result;
 };
 
-// Group SMS
+
 export const sendGroupSMS = async (token, senderId, groupId, message) => {
 
   
@@ -34,7 +34,7 @@ export const sendGroupSMS = async (token, senderId, groupId, message) => {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify({ 
-      senderId: senderId,  // ← Make sure this is senderId
+      senderId: senderId,  
       content: message, 
       recipientGroupIds: [groupId] 
     }),
