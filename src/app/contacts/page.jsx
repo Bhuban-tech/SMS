@@ -20,7 +20,6 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState([]);
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("tab1");
@@ -59,34 +58,36 @@ export default function ContactsPage() {
     }
   };
 
-  // Fixed: Now accepts contactData from modal
-  const saveContact = async (contactData) => {
+  const saveNewContact = async (contactData) => {
     if (!token) return toast.error("Session expired. Please login again.");
 
     try {
-      let res;
-      if (editing) {
-        res = await updateContact(token, editing, {
-          name: contactData.name,
-          phoneNo: contactData.mobile,
-        });
-        if (!res.success) return toast.error(res.message);
-        toast.success("Contact updated");
-      } else {
-        res = await createContact(token, {
-          name: contactData.name,
-          phoneNo: contactData.mobile,
-        });
-        if (!res.success) return toast.error(res.message);
-        toast.success("Contact added");
-      }
-
+      const res = await createContact(token, {
+        name: contactData.name,
+        phoneNo: contactData.mobile,
+      });
+      if (!res.success) return toast.error(res.message);
+      toast.success("Contact added");
       setModalOpen(false);
-      setEditing(null);
-      setSearch("");
-      loadContacts(); // Refresh from server → correct data shown
+      loadContacts();
     } catch {
-      toast.error("Failed to save contact");
+      toast.error("Failed to add contact");
+    }
+  };
+
+  const updateExistingContact = async (id, updatedData) => {
+    if (!token) return toast.error("Session expired.");
+
+    try {
+      const res = await updateContact(token, id, {
+        name: updatedData.name,
+        phoneNo: updatedData.mobile,
+      });
+      if (!res.success) return toast.error(res.message);
+      toast.success("Contact updated");
+      loadContacts();
+    } catch {
+      toast.error("Failed to update contact");
     }
   };
 
@@ -96,8 +97,7 @@ export default function ContactsPage() {
   };
 
   const handleDelete = async () => {
-    if (!token || !contactToDelete)
-      return toast.error("Session expired. Please login again.");
+    if (!token || !contactToDelete) return toast.error("Session expired.");
     try {
       const res = await deleteContact(token, contactToDelete.id);
       if (!res.success) return toast.error(res.message);
@@ -113,8 +113,8 @@ export default function ContactsPage() {
 
   const filtered = contacts.filter(
     (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.mobile.includes(search)
+      c.name?.toLowerCase().includes(search.toLowerCase()) ||
+      c.mobile?.includes(search)
   );
 
   return (
@@ -137,11 +137,8 @@ export default function ContactsPage() {
               <ContactsHeader
                 searchTerm={search}
                 setSearchTerm={setSearch}
-                onAdd={() => {
-                  setEditing(null);
-                  setModalOpen(true);
-                }}
-                onUpload={() => fileRef.current.click()}
+                onAdd={() => setModalOpen(true)}
+                onUpload={() => fileRef.current?.click()}
                 fileInputRef={fileRef}
               />
             </div>
@@ -150,10 +147,7 @@ export default function ContactsPage() {
               <ContactsTable
                 contacts={filtered}
                 loading={loading}
-                onEdit={(c) => {
-                  setEditing(c.id);
-                  setModalOpen(true);
-                }}
+                onUpdate={updateExistingContact}   // ← new prop
                 onDelete={confirmDelete}
                 onView={(c) => toast.info(c.name)}
                 onSend={(c) => toast.success(`SMS sent to ${c.name}`)}
@@ -166,13 +160,8 @@ export default function ContactsPage() {
           <ContactModal
             open={modalOpen}
             close={() => setModalOpen(false)}
-            editingId={editing}
-            initialData={
-              editing
-                ? contacts.find((c) => c.id === editing)
-                : { name: "", mobile: "" }
-            }
-            onSave={saveContact}
+            initialData={{ name: "", mobile: "" }}
+            onSave={saveNewContact}
           />
         )}
 
@@ -189,13 +178,13 @@ export default function ContactsPage() {
               </p>
               <div className="mt-6 flex justify-end space-x-4">
                 <button
-                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
+                  className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
                   onClick={() => setShowDeleteModal(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 hover:cursor-pointer"
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                   onClick={handleDelete}
                 >
                   Delete

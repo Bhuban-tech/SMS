@@ -113,23 +113,33 @@ export default function ContactModal({
   return (
     <Modal title={isEdit ? "Edit Contact" : "Add Contact"} close={close}>
     
-      <div className="mb-4">
-        <input
-          placeholder="Name"
-          value={localData.name || ""}
-          onChange={handleNameChange}
-          className={`w-full border px-4 py-3 rounded-lg transition-colors ${
-            errors.name
-              ? "border-red-500 focus:ring-red-300"
-              : "border-gray-300 focus:ring-teal-500"
-          } focus:outline-none focus:ring-2`}
-        />
-        {errors.name && (
-          <p className="mt-1 text-sm text-red-600">Name is required</p>
-        )}
-      </div>
+<div className="mb-4">
+  <input
+    type="text"
+    placeholder="Name"
+    value={localData.name || ""}
+    onChange={handleNameChange}
+    onKeyDown={(e) => {
+    
+      if (/[0-9]/.test(e.key)) {
+        e.preventDefault();
+      }
+    }}
+    pattern="^[A-Za-z\s'-]+$"
+    title="Only letters are allowed"
+    className={`w-full border px-4 py-3 rounded-lg transition-colors ${
+      errors.name
+        ? "border-red-500 focus:ring-red-300"
+        : "border-gray-300 focus:ring-teal-500"
+    } focus:outline-none focus:ring-2`}
+  />
+  {errors.name && (
+    <p className="mt-1 text-sm text-red-600">Name must contain only letters</p>
+  )}
+</div>
 
-      {/* Mobile Field */}
+
+     
       <div className="mb-6">
         <input
           placeholder="Phone Number (e.g. 9812345678)"
