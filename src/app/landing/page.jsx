@@ -12,6 +12,13 @@ import Header from "@/components/Header";
 const Landing = () => {
   const router = useRouter();
 
+  const scrollToStats = () => {
+    const statsSection = document.getElementById("stats-section");
+    if (statsSection) {
+      statsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   const stats = [
     { value: "99.9%", label: "Delivery Rate" },
     { value: "10M+", label: "Messages Sent" },
@@ -79,19 +86,19 @@ const Landing = () => {
       <Header />
 
       <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 lg:pt-20 pb-16 relative">
-        {/* Animated background particles */}
+    
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(20)].map((_, i) => (
             <motion.div
               key={i}
               className="absolute w-2 h-2 bg-linear-to-r from-teal-400 to-sky-400 rounded-full opacity-20"
-              initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: Math.random() * window.innerHeight 
+              initial={{
+                x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 1000),
+                y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 1000),
               }}
               animate={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
+                x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 1000),
+                y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 1000),
                 scale: [1, 1.5, 1],
                 opacity: [0.2, 0.5, 0.2],
               }}
@@ -127,9 +134,9 @@ const Landing = () => {
               className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-800 leading-tight"
             >
               Digital SMS service that{" "}
-              <motion.span 
+              <motion.span
                 className="text-transparent bg-clip-text bg-linear-to-r from-sky-500 via-teal-500 to-emerald-500"
-                animate={{ 
+                animate={{
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                 }}
                 transition={{ duration: 5, repeat: Infinity }}
@@ -169,10 +176,11 @@ const Landing = () => {
                   />
                 </Button>
               </motion.div>
-              
+
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   variant="outline"
+                  onClick={scrollToStats}
                   className="border-2 border-teal-500 text-teal-600 hover:bg-teal-50 font-semibold px-8 py-6 rounded-full bg-white/80 backdrop-blur-sm text-base transition-all duration-300 hover:shadow-lg cursor-pointer w-full sm:w-auto"
                 >
                   Know More
@@ -180,8 +188,8 @@ const Landing = () => {
               </motion.div>
             </motion.div>
 
-            {/* Feature icons */}
-            <motion.div 
+            {/* Feature icons - clickable to login */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
@@ -192,17 +200,18 @@ const Landing = () => {
                   key={i}
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  transition={{ 
-                    delay: 0.8 + i * 0.1, 
-                    type: "spring", 
-                    stiffness: 200 
+                  transition={{
+                    delay: 0.8 + i * 0.1,
+                    type: "spring",
+                    stiffness: 200,
                   }}
-                  whileHover={{ 
-                    scale: 1.2, 
+                  whileHover={{
+                    scale: 1.2,
                     rotate: 360,
-                    transition: { duration: 0.6 }
+                    transition: { duration: 0.6 },
                   }}
-                  className={`w-12 h-12 rounded-xl bg-linear-to-br ${feature.color} flex items-center justify-center shadow-lg cursor-pointer`}
+                  onClick={() => router.push("/login")}
+                  className={`w-12 h-12 rounded-xl bg-linear-to-br ${feature.color} flex items-center justify-center shadow-lg cursor-pointer transition-transform`}
                 >
                   <feature.icon className="w-6 h-6 text-white" />
                 </motion.div>
@@ -210,21 +219,25 @@ const Landing = () => {
             </motion.div>
           </div>
 
-          {/* Right: Images Display - Fully Mobile Responsive */}
+          {/* Right: Images Display */}
           <div className="relative flex justify-center items-center min-h-96 mt-12 lg:mt-0">
-            {/* Background blobs - responsive sizing */}
+            {/* Background blobs */}
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1, 1.3, 1],
                 rotate: [0, 120, 0],
-                borderRadius: ["30% 70% 70% 30% / 30% 30% 70% 70%", "70% 30% 30% 70% / 70% 70% 30% 30%", "30% 70% 70% 30% / 30% 30% 70% 70%"]
+                borderRadius: [
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "70% 30% 30% 70% / 70% 70% 30% 30%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                ],
               }}
               transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
               className="absolute w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 bg-linear-to-br from-teal-200 to-sky-300 opacity-30 blur-3xl"
             />
-            
+
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1.2, 1, 1.2],
                 rotate: [120, 0, 120],
               }}
@@ -233,7 +246,7 @@ const Landing = () => {
             />
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 max-w-xs sm:max-w-sm lg:max-w-md">
-              {/* Center phone mockup - responsive */}
+              {/* Center phone mockup */}
               <motion.div
                 variants={phoneFloat}
                 initial="initial"
@@ -243,13 +256,12 @@ const Landing = () => {
                 style={{ perspective: 1000 }}
               >
                 <div className="relative w-48 sm:w-64 lg:w-72 xl:w-96 transform-gpu">
-                  {/* Glowing phone effect */}
                   <motion.div
                     animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.05, 1] }}
                     transition={{ duration: 3, repeat: Infinity }}
                     className="absolute inset-0 bg-linear-to-r from-teal-400 via-sky-400 to-emerald-400 rounded-[2.5rem] sm:rounded-[3rem] blur-2xl opacity-60"
                   />
-                  
+
                   <div className="relative bg-linear-to-br from-slate-800 to-slate-900 rounded-[2.5rem] sm:rounded-[3rem] p-2 sm:p-3 shadow-2xl">
                     <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden aspect-9/19 relative">
                       <motion.div
@@ -259,23 +271,23 @@ const Landing = () => {
                             "linear-gradient(120deg, #14b8a6 0%, #10b981 100%)",
                             "linear-gradient(240deg, #10b981 0%, #06b6d4 100%)",
                             "linear-gradient(360deg, #06b6d4 0%, #14b8a6 100%)",
-                          ]
+                          ],
                         }}
                         transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                         className="absolute inset-0"
                       />
-                      
+
                       <div className="relative z-10 p-4 sm:p-6 space-y-3 sm:space-y-4 pt-8 sm:pt-12">
                         {[0, 1, 2].map((i) => (
                           <motion.div
                             key={i}
                             initial={{ opacity: 0, x: -50 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ 
+                            transition={{
                               delay: i * 0.8,
                               duration: 0.5,
                               repeat: Infinity,
-                              repeatDelay: 2.4
+                              repeatDelay: 2.4,
                             }}
                             className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 shadow-lg"
                           >
@@ -291,14 +303,13 @@ const Landing = () => {
                         ))}
                       </div>
                     </div>
-                    
-                    {/* Phone notch */}
+
                     <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 w-20 sm:w-24 h-5 sm:h-6 bg-slate-900 rounded-full z-20" />
                   </div>
                 </div>
               </motion.div>
 
-              {/* Floating cards - hidden on very small screens */}
+         
               <div className="hidden sm:flex flex-col space-y-6 lg:space-y-8 justify-center order-2">
                 <motion.div
                   variants={cardFloat1}
@@ -308,7 +319,7 @@ const Landing = () => {
                   className="relative cursor-pointer"
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  <motion.div 
+                  <motion.div
                     animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
                     transition={{ duration: 3, repeat: Infinity }}
                     className="absolute -inset-3 sm:-inset-4 bg-linear-to-br from-teal-400 via-sky-400 to-emerald-400 rounded-3xl blur-2xl"
@@ -336,7 +347,7 @@ const Landing = () => {
                   className="relative ml-8 sm:ml-12 cursor-pointer"
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  <motion.div 
+                  <motion.div
                     animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
                     transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
                     className="absolute -inset-3 sm:-inset-4 bg-linear-to-br from-sky-400 via-emerald-400 to-teal-400 rounded-3xl blur-2xl"
@@ -362,6 +373,7 @@ const Landing = () => {
 
         {/* Stats Section */}
         <motion.div
+          id="stats-section"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -375,12 +387,12 @@ const Landing = () => {
                 "radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)",
                 "radial-gradient(circle at 0% 100%, rgba(14, 165, 233, 0.1) 0%, transparent 50%)",
                 "radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.1) 0%, transparent 50%)",
-              ]
+              ],
             }}
             transition={{ duration: 10, repeat: Infinity }}
             className="absolute inset-0 pointer-events-none"
           />
-          
+
           <div className="grid md:grid-cols-2 gap-8 items-center relative z-10">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -394,28 +406,28 @@ const Landing = () => {
                 technology and remarkable service.
               </p>
             </motion.div>
-            
+
             <div className="flex flex-wrap justify-center md:justify-end gap-6 lg:gap-10">
               {stats.map((stat, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, scale: 0, rotate: -180 }}
                   whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-                  transition={{ 
-                    duration: 0.6, 
+                  transition={{
+                    duration: 0.6,
                     delay: index * 0.15,
                     type: "spring",
-                    stiffness: 150
+                    stiffness: 150,
                   }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.2,
                     rotate: [0, -10, 10, -10, 0],
-                    transition: { duration: 0.5 }
+                    transition: { duration: 0.5 },
                   }}
                   viewport={{ once: true }}
                   className="text-center group cursor-pointer"
                 >
-                  <motion.div 
+                  <motion.div
                     className="w-24 h-24 bg-linear-to-br from-sky-50 to-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border-2 border-sky-200 shadow-lg relative overflow-hidden"
                     whileHover={{ borderColor: "#14b8a6" }}
                   >

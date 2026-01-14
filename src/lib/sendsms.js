@@ -1,4 +1,4 @@
-// /lib/sendsms.js
+
 
 import { API_BASE_URL, ENDPOINTS } from "@/config/api";
 
@@ -7,47 +7,47 @@ export const getHeaders = (token) => ({
   Authorization: `Bearer ${token}`,
 });
 
-// Individual SMS
+
 export const sendIndividualSMS = async (token, senderId, message, recipientNumbers) => {
-  console.log("📤 sendIndividualSMS called with:", { senderId, recipientNumbers });
+  console.log("sendIndividualSMS called with:", { senderId, recipientNumbers });
   
   const response = await fetch(`${API_BASE_URL}${ENDPOINTS.SEND_MESSAGE}`, {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify({ 
-      senderId: senderId,  // ← Make sure this is senderId, not adminId
+      senderId: senderId,  
       content: message, 
       recipientNumbers: recipientNumbers 
     }),
   });
   
   const result = await response.json();
-  console.log("📥 sendIndividualSMS response:", result);
+  
   return result;
 };
 
-// Group SMS
+
 export const sendGroupSMS = async (token, senderId, groupId, message) => {
-  console.log("📤 sendGroupSMS called with:", { senderId, groupId });
+
   
   const response = await fetch(`${API_BASE_URL}${ENDPOINTS.SEND_MESSAGE}`, {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify({ 
-      senderId: senderId,  // ← Make sure this is senderId
+      senderId: senderId,  
       content: message, 
-      recipientGroupIds: [groupId]  // ← Array of group IDs
+      recipientGroupIds: [groupId] 
     }),
   });
   
   const result = await response.json();
-  console.log("📥 sendGroupSMS response:", result);
+
   return result;
 };
 
 // Bulk SMS / bulk upload
 export const sendBulkSMS = async (token, senderId, groupName, file) => {
-  console.log("📤 sendBulkSMS called with:", { senderId, groupName });
+
   
   const form = new FormData();
   form.append("file", file);
@@ -72,11 +72,10 @@ export const sendBulkSMS = async (token, senderId, groupName, file) => {
 
   const text = await response.text();
   const result = text ? JSON.parse(text) : { success: true };
-  console.log("📥 sendBulkSMS response:", result);
   return result;
 };
 
-// Template CRUD operations
+
 export const createTemplate = async (token, templateData) => {
   try {
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.CREATE_TEMPLATE}`, {
@@ -155,17 +154,17 @@ export const deleteTemplate = async (token, id) => {
   }
 };
 
-// Template SMS with CSV data
+
 export const sendTemplateSMS = async (token, adminId, csvData, content) => {
-  console.log("📤 sendTemplateSMS called with:", { adminId, csvData, content });
+
   
-  const phoneNumbers = csvData.map((row) => row.phoneNo || row.phone);
+  const phoneNumbers = csvData.map((row) => row.phoneNo || row.phone || row.phoneNumber).filter(Boolean);
 
   const response = await fetch(`${API_BASE_URL}${ENDPOINTS.SEND_MESSAGE}`, {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify({
-      senderId: adminId,  // ← Make sure this is senderId
+      senderId: adminId, 
       content: content,
       recipientNumbers: phoneNumbers,
     }),
@@ -173,11 +172,11 @@ export const sendTemplateSMS = async (token, adminId, csvData, content) => {
 
   if (!response.ok) {
     const text = await response.text();
-    console.error("❌ sendTemplateSMS error:", text);
+    console.error("sendTemplateSMS error:", text);
     throw new Error(text || "Failed to send template SMS");
   }
 
   const result = await response.json();
-  console.log("📥 sendTemplateSMS response:", result);
+
   return result;
 };

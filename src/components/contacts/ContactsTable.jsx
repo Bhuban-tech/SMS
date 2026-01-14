@@ -138,7 +138,7 @@ export default function ContactsTable({
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => saveEdit(contact)}
-                          className="px-3 py-1 bg-teal-500 text-white rounded hover:cursor-pointer hover:bg-700"
+                          className="px-3 py-1 bg-teal-500 text-white rounded hover:cursor-pointer hover:bg-teal-700"
                         >
                           Save
                         </button>

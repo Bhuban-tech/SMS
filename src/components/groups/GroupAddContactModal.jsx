@@ -109,7 +109,7 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
             placeholder="Search contacts by name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full mb-2 px-4 py-2 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full px-4 py-2 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
 
           {/* Contact list */}

@@ -25,8 +25,32 @@ export default function ContactModal({
 
   if (!open) return null;
 
+
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+
+    if (value.length > 0) {
+      const firstChar = value[0];
+      if (!/[A-Za-z]/.test(firstChar)) {
+        return; 
+      }
+    }
+
+
+    if (value.length > 1 && /[^A-Za-z0-9\s'-]/.test(value)) {
+      return; 
+    }
+
+    setLocalData({ ...localData, name: value });
+
+    setErrors((prev) => ({
+      ...prev,
+      name: value.trim() === "" && value.length > 0,
+    }));
+  };
+
   const handleMobileChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Allow only digits
+    let value = e.target.value.replace(/\D/g, "");
     if (value.length > 10) value = value.slice(0, 10);
 
     setLocalData({ ...localData, mobile: value });
@@ -37,23 +61,24 @@ export default function ContactModal({
     if (value.length === 0) {
       mobileError = true;
       errorMessage = "Mobile number is required";
-    } else if (value.length < 10) {
-  
-      if (value.length >= 2 && !/^9[78]/.test(value)) {
- 
+    } else if (value.length === 1) {
+      if (value !== "9") {
         mobileError = true;
-        errorMessage = "Must start with 97 or 98";
-      } else {
-        mobileError = true;
-        errorMessage = "Must be 10 digits";
+        errorMessage = "Must start with 9";
       }
-    } else {
-    
+    } else if (value.length === 2) {
+      if (!/^9[78]$/.test(value)) {
+        mobileError = true;
+        errorMessage = "Second digit must be 7 or 8";
+      }
+    } else if (value.length < 10) {
+      mobileError = true;
+      errorMessage = `Complete 10 digits (${10 - value.length} left)`;
+    } else if (value.length === 10) {
       if (!/^9[78]\d{8}$/.test(value)) {
         mobileError = true;
-        errorMessage = "Must start with 97 or 98";
+        errorMessage = "Invalid number - must start with 97 or 98";
       }
-      // Valid → no error
     }
 
     setErrors((prev) => ({
@@ -63,20 +88,17 @@ export default function ContactModal({
     }));
   };
 
-  const handleNameChange = (e) => {
-    const value = e.target.value;
-    setLocalData({ ...localData, name: value });
-    setErrors((prev) => ({
-      ...prev,
-      name: value.trim() === "" && value !== "",
-    }));
-  };
-
   const handleSave = () => {
     const trimmedName = localData.name?.trim();
 
     if (!trimmedName) {
-      toast.error("Name field is required");
+      toast.error("Name is required");
+      setErrors((prev) => ({ ...prev, name: true }));
+      return;
+    }
+
+    if (!/^[A-Za-z]/.test(trimmedName)) {
+      toast.error("Name must start with a letter");
       setErrors((prev) => ({ ...prev, name: true }));
       return;
     }
@@ -91,17 +113,15 @@ export default function ContactModal({
       return;
     }
 
-    if (!/^(97|98)\d{8}$/.test(localData.mobile)) {
-      const msg =
-        localData.mobile.length < 10
-          ? "Must be 10 digits starting with 97 or 98"
-          : "Must start with 97 or 98";
-
+    if (!/^9[78]\d{8}$/.test(localData.mobile)) {
       toast.error("Invalid mobile number");
       setErrors((prev) => ({
         ...prev,
         mobile: true,
-        mobileMessage: msg,
+        mobileMessage:
+          localData.mobile.length < 10
+            ? "Must be 10 digits starting with 97/98"
+            : "Must start with 97 or 98",
       }));
       return;
     }
@@ -112,37 +132,28 @@ export default function ContactModal({
 
   return (
     <Modal title={isEdit ? "Edit Contact" : "Add Contact"} close={close}>
-    
-<div className="mb-4">
-  <input
-    type="text"
-    placeholder="Name"
-    value={localData.name || ""}
-    onChange={handleNameChange}
-    onKeyDown={(e) => {
-    
-      if (/[0-9]/.test(e.key)) {
-        e.preventDefault();
-      }
-    }}
-    pattern="^[A-Za-z\s'-]+$"
-    title="Only letters are allowed"
-    className={`w-full border px-4 py-3 rounded-lg transition-colors ${
-      errors.name
-        ? "border-red-500 focus:ring-red-300"
-        : "border-gray-300 focus:ring-teal-500"
-    } focus:outline-none focus:ring-2`}
-  />
-  {errors.name && (
-    <p className="mt-1 text-sm text-red-600">Name must contain only letters</p>
-  )}
-</div>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={localData.name || ""}
+          onChange={handleNameChange}
+          className={`w-full border px-4 py-3 rounded-lg transition-colors ${
+            errors.name
+              ? "border-red-500 focus:ring-red-300"
+              : "border-gray-300 focus:ring-teal-500"
+          } focus:outline-none focus:ring-2`}
+        />
+        {errors.name && (
+          <p className="mt-1 text-sm text-red-600">
+            Name is required and must start with a letter
+          </p>
+        )}
+      </div>
 
-
-     
       <div className="mb-6">
         <input
-          placeholder="Phone Number (e.g. 9812345678)"
+          placeholder="9812345678"
           value={localData.mobile || ""}
           onChange={handleMobileChange}
           inputMode="numeric"
@@ -153,15 +164,14 @@ export default function ContactModal({
               : "border-gray-300 focus:ring-teal-500"
           } focus:outline-none focus:ring-2`}
         />
-        {errors.mobile && (
+        {errors.mobile && errors.mobileMessage && (
           <p className="mt-1 text-sm text-red-600">{errors.mobileMessage}</p>
         )}
       </div>
 
-    
       <button
         onClick={handleSave}
-        className="w-full bg-teal-500 text-white font-medium py-3 rounded-lg hover:bg-teal-700 hover:cursor-pointer transition-colors"
+        className="w-full bg-teal-500 text-white font-medium py-3 rounded-lg hover:bg-teal-700 transition-colors hover:cursor-pointer"
       >
         {isEdit ? "Update" : "Add"} Contact
       </button>
