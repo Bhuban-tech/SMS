@@ -309,7 +309,7 @@ const Landing = () => {
                 </div>
               </motion.div>
 
-              {/* Floating cards - hidden on very small screens */}
+         
               <div className="hidden sm:flex flex-col space-y-6 lg:space-y-8 justify-center order-2">
                 <motion.div
                   variants={cardFloat1}
@@ -362,7 +362,7 @@ const Landing = () => {
                   <motion.div
                     animate={{ x: [-200, 200] }}
                     transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, delay: 1 }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-2xl"
+                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent rounded-2xl"
                     style={{ transform: "skewX(-20deg)" }}
                   />
                 </motion.div>

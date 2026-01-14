@@ -9,7 +9,7 @@ export const getHeaders = (token) => ({
 
 // Individual SMS
 export const sendIndividualSMS = async (token, senderId, message, recipientNumbers) => {
-  console.log("📤 sendIndividualSMS called with:", { senderId, recipientNumbers });
+  console.log("sendIndividualSMS called with:", { senderId, recipientNumbers });
   
   const response = await fetch(`${API_BASE_URL}${ENDPOINTS.SEND_MESSAGE}`, {
     method: "POST",
@@ -22,13 +22,13 @@ export const sendIndividualSMS = async (token, senderId, message, recipientNumbe
   });
   
   const result = await response.json();
-  console.log("📥 sendIndividualSMS response:", result);
+  
   return result;
 };
 
 // Group SMS
 export const sendGroupSMS = async (token, senderId, groupId, message) => {
-  console.log("📤 sendGroupSMS called with:", { senderId, groupId });
+
   
   const response = await fetch(`${API_BASE_URL}${ENDPOINTS.SEND_MESSAGE}`, {
     method: "POST",
@@ -36,18 +36,18 @@ export const sendGroupSMS = async (token, senderId, groupId, message) => {
     body: JSON.stringify({ 
       senderId: senderId,  // ← Make sure this is senderId
       content: message, 
-      recipientGroupIds: [groupId]  // ← Array of group IDs
+      recipientGroupIds: [groupId] 
     }),
   });
   
   const result = await response.json();
-  console.log("📥 sendGroupSMS response:", result);
+
   return result;
 };
 
 // Bulk SMS / bulk upload
 export const sendBulkSMS = async (token, senderId, groupName, file) => {
-  console.log("📤 sendBulkSMS called with:", { senderId, groupName });
+
   
   const form = new FormData();
   form.append("file", file);
