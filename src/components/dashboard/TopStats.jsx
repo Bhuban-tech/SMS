@@ -22,7 +22,7 @@ const TopStats = ({ dashboardData }) => {
       bgColor: "bg-gradient-to-br from-teal-500 to-teal-600",
       iconBg: "bg-white/20",
       trend: null,
-      textColor: "text-white", // default white text
+      textColor: "text-white",
     },
     {
       title: "Used SMS Credits",
@@ -32,7 +32,7 @@ const TopStats = ({ dashboardData }) => {
       iconBg: "bg-teal-500/20",
       trend: `${usagePercentage}% used`,
       trendColor: "text-gray-700",
-      textColor: "text-black", // black text for this card
+      textColor: "text-black",
     },
     {
       title: "Remaining Credits",
@@ -70,10 +70,10 @@ const TopStats = ({ dashboardData }) => {
             className={`${stat.bgColor} rounded-2xl p-6 ${stat.textColor} shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-white/10 flex flex-col justify-between min-h-45`}
           >
             {/* Top Section: Icon + Trend/Status */}
-            <div className="flex items-start justify-between mb-6">
-              <div className={`${stat.iconBg} p-4 rounded-xl backdrop-blur-sm`}>
+            <div className="flex items-start justify-between mb-4">
+              <div className={`${stat.iconBg} p-3 rounded-xl backdrop-blur-sm shrink-0`}>
                 <Icon 
-                  size={28} 
+                  size={24} 
                   className={
                     stat.bgColor.includes("white") 
                       ? "text-teal-600" 
@@ -82,29 +82,40 @@ const TopStats = ({ dashboardData }) => {
                 />
               </div>
 
-              {stat.trend && (
-                <div className="text-right">
-                  <span className={`text-xs font-medium ${stat.trendColor} bg-black/10 px-3 py-1.5 rounded-full`}>
-                    {stat.trend}
-                  </span>
-                  {stat.statusColor && (
-                    <p className={`text-lg font-bold mt-2 ${stat.statusColor}`}>
-                      {stat.value}
-                    </p>
-                  )}
-                </div>
-              )}
+              <div className="text-right flex-1 ml-4">
+                {stat.trend && (
+                  <>
+                    <span className={`text-xs font-medium ${stat.trendColor} bg-black/10 px-3 py-1.5 rounded-full inline-block`}>
+                      {stat.trend}
+                    </span>
+                    {stat.statusColor && (
+                      <p className={`text-lg font-bold mt-2 ${stat.statusColor}`}>
+                        {stat.value}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Bottom Section: Title + Value */}
-            <div className={stat.statusColor ? "" : "mt-auto"}>
-              <h3 className="text-sm font-medium opacity-90 mb-2">{stat.title}</h3>
-              {!stat.statusColor && (
+            {!stat.trend && (
+              <div className="mt-auto">
+                <h3 className="text-sm font-medium opacity-90 mb-2">{stat.title}</h3>
                 <p className="text-3xl font-bold tracking-tight">
                   {stat.value}
                 </p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {stat.trend && !stat.statusColor && (
+              <div className="mt-auto">
+                <h3 className="text-sm font-medium opacity-90 mb-2">{stat.title}</h3>
+                <p className="text-3xl font-bold tracking-tight">
+                  {stat.value}
+                </p>
+              </div>
+            )}
           </div>
         );
       })}

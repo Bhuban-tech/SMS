@@ -125,7 +125,7 @@ const Header = ({
                        rounded-lg transition-colors shadow-md
                        w-9 sm:w-auto justify-center"
           >
-            <LogIn size={18} />
+            <User size={18} />
               <span className="hidden sm:inline">Login</span>
           </button>
         )}
