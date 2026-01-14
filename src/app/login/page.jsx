@@ -124,7 +124,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-600 disabled:opacity-50"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-600 disabled:opacity-50 hover:cursor-pointer"
                   disabled={loading}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -134,7 +134,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
               >
                 {loading ? "Logging in..." : "Login Now"}
               </button>
