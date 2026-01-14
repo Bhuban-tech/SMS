@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { CreditCard, Phone } from "lucide-react";
+import { CreditCard, Phone,Menu,X } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
 import Filters from "../../components/balance-report/Filters";
@@ -225,6 +225,13 @@ export default function BalanceReportPage() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
+        <button
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+      >
+        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}

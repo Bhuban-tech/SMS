@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { X, Menu } from "lucide-react";
 
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -119,6 +120,13 @@ export default function ContactsPage() {
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
+        <button
+              aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+            >
+              {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}

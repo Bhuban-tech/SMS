@@ -9,6 +9,7 @@ import GroupTable from "@/components/groups/GroupTable";
 import GroupViewModal from "@/components/groups/GroupViewModal";
 import GroupAddContactModal from "@/components/groups/GroupAddContactModal";
 import GroupModal from "@/components/groups/GroupModal";
+import { Menu,X } from "lucide-react";
 
 import {
   fetchGroups,
@@ -167,6 +168,13 @@ export default function GroupPage() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-50">
+        <button
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+      >
+        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}

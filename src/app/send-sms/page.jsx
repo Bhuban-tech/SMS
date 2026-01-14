@@ -11,6 +11,7 @@ import BulkSMS from "@/components/send-sms/BulkSMS";
 import MessageBox from "@/components/send-sms/MessageBox";
 import Alert from "@/components/send-sms/Alert";
 import TemplateSMS from "@/components/send-sms/TemplateSMS";
+import { X, Menu } from "lucide-react";
 
 import { fetchGroups } from "@/lib/group";
 import { fetchContacts } from "@/lib/contacts";
@@ -204,6 +205,13 @@ export default function SMSSendUI() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+        <button
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+      >
+        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
