@@ -20,7 +20,7 @@ export default function SMSFilesPage() {
   const [loading, setLoading] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-const [editingName, setEditingName] = useState("");
+  const [editingName, setEditingName] = useState("");
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [bulkGroupName, setBulkGroupName] = useState("");
@@ -36,6 +36,9 @@ const [editingName, setEditingName] = useState("");
   const [contacts, setContacts] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [loadingContacts, setLoadingContacts] = useState(false);
+  
+  // New state for contacts search
+  const [contactSearch, setContactSearch] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -69,7 +72,6 @@ const [editingName, setEditingName] = useState("");
     const allowedTypes = ["csv", "xlsx"];
     const extension = file.name.split(".").pop()?.toLowerCase();
     if (!extension || !allowedTypes.includes(extension)) {
-      toast.warning("Only CSV or XLSX files are allowed");
       e.target.value = null;
       return;
     }
@@ -95,56 +97,30 @@ const [editingName, setEditingName] = useState("");
     }
   };
 
-  const openEditModal = (file) => {
-    setSelectedFile(file);
-    setNewGroupName(file.name || "");
-    setEditModalOpen(true);
+  const onEditStart = (file) => {
+    setEditingId(file.id);
+    setEditingName(file.name || "");
   };
 
-  // const handleSaveEdit = async () => {
-  //   if (!selectedFile?.id) return;
-
-  //   const trimmedName = newGroupName.trim();
-  //   if (!trimmedName) return toast.warning("Group name cannot be empty");
-
-  //   try {
-  //     await updateGroup(token, selectedFile.id, { name: trimmedName });
-  //     toast.success("Group name updated successfully!");
-  //     setEditModalOpen(false);
-  //     setNewGroupName("");
-  //     await fetchFiles();
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error(err.message || "Failed to update group");
-  //     await fetchFiles();
-  //   }
-  // };
-
-  const onEditStart = (file) => {
-  setEditingId(file.id);
-  setEditingName(file.name || "");
-};
-
-const onEditCancel = () => {
-  setEditingId(null);
-  setEditingName("");
-};
-
-const onEditSave = async (id) => {
-  const trimmedName = editingName.trim();
-  if (!trimmedName) return toast.warning("Group name cannot be empty");
-
-  try {
-    await updateGroup(token, id, { name: trimmedName });
-    toast.success("Group name updated");
+  const onEditCancel = () => {
     setEditingId(null);
     setEditingName("");
-    await fetchFiles();
-  } catch (err) {
-    toast.error("Failed to update group");
-  }
-};
+  };
 
+  const onEditSave = async (id) => {
+    const trimmedName = editingName.trim();
+    if (!trimmedName) return toast.warning("Group name cannot be empty");
+
+    try {
+      await updateGroup(token, id, { name: trimmedName });
+      toast.success("Group name updated");
+      setEditingId(null);
+      setEditingName("");
+      await fetchFiles();
+    } catch (err) {
+      toast.error("Failed to update group");
+    }
+  };
 
   const handleDeleteClick = (file) => {
     setFileToDelete(file);
@@ -172,37 +148,40 @@ const onEditSave = async (id) => {
     (f.fileName || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  
   const handleViewContacts = async (row) => {
-  if (!token) return toast.error("Token not available");
+    if (!token) return toast.error("Token not available");
 
-  try {
-    setLoadingContacts(true);
-    const res = await getGroupContacts(token, row.id);
+    try {
+      setLoadingContacts(true);
+      const res = await getGroupContacts(token, row.id);
 
-    if (res.success && res.data) {
-      // Remove first row (CSV header) before setting contacts
-      const allContacts = res.data.contacts || [];
-      const contactsWithoutHeader = allContacts.slice(1);
+      if (res.success && res.data) {
+        const allContacts = res.data.contacts || [];
+        const contactsWithoutHeader = allContacts.slice(1);
 
-      setContacts(contactsWithoutHeader);
-      setSelectedGroup(res.data); 
-      setShowContacts(true);
-    } else {
+        setContacts(contactsWithoutHeader);
+        setSelectedGroup(res.data);
+        setShowContacts(true);
+        setContactSearch(""); // reset search when opening modal
+      } else {
+        setContacts([]);
+        toast.error("No contacts found");
+        setShowContacts(false);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load contacts");
       setContacts([]);
-      toast.error("No contacts found");
       setShowContacts(false);
+    } finally {
+      setLoadingContacts(false);
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to load contacts");
-    setContacts([]);
-    setShowContacts(false);
-  } finally {
-    setLoadingContacts(false);
-  }
-};
+  };
 
+  // Filter contacts by name
+  const filteredContacts = contacts.filter((contact) =>
+    (contact.name || "").toLowerCase().includes(contactSearch.toLowerCase())
+  );
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -226,37 +205,19 @@ const onEditSave = async (id) => {
             uploading={uploading}
           />
 
-          {/* <FilesTable
+          <FilesTable
             files={files}
             filteredFiles={filteredFiles}
             loading={loading}
-            openEditModal={openEditModal}
+            editingId={editingId}
+            editingName={editingName}
+            setEditingName={setEditingName}
+            onEditStart={onEditStart}
+            onEditCancel={onEditCancel}
+            onEditSave={onEditSave}
             handleDeleteClick={handleDeleteClick}
-            handleViewClick={handleViewContacts} // <-- Eye icon triggers this
-          /> */}
-
-          <FilesTable
-  files={files}
-  filteredFiles={filteredFiles}
-  loading={loading}
-  editingId={editingId}
-  editingName={editingName}
-  setEditingName={setEditingName}
-  onEditStart={onEditStart}
-  onEditCancel={onEditCancel}
-  onEditSave={onEditSave}
-  handleDeleteClick={handleDeleteClick}
-  handleViewClick={handleViewContacts}
-/>
-
-
-          {/* <EditGroupModal
-            editModalOpen={editModalOpen}
-            setEditModalOpen={setEditModalOpen}
-            newGroupName={newGroupName}
-            setNewGroupName={setNewGroupName}
-            handleSaveEdit={handleSaveEdit}
-          /> */}
+            handleViewClick={handleViewContacts}
+          />
 
           <DeleteGroupModal
             deleteModalOpen={deleteModalOpen}
@@ -265,18 +226,45 @@ const onEditSave = async (id) => {
             confirmDelete={confirmDelete}
           />
 
-        
+          {/* Contacts Modal with Search */}
           {showContacts && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
               <div className="bg-white w-full max-w-lg rounded-xl p-6 shadow-xl">
                 <h2 className="text-xl font-bold mb-4 text-teal-700">
-                  {selectedGroup?.name} — Contacts
+                  {selectedGroup?.name}
                 </h2>
+
+                {/* Search Input */}
+                <div className="mb-4 relative">
+                  <input
+                    type="text"
+                    placeholder="Search by name..."
+                    value={contactSearch}
+                    onChange={(e) => setContactSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                  />
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
 
                 {loadingContacts ? (
                   <p className="text-center py-10">Loading contacts...</p>
-                ) : contacts.length === 0 ? (
-                  <p className="text-center text-gray-500">No contacts found</p>
+                ) : filteredContacts.length === 0 ? (
+                  <p className="text-center text-gray-500 py-6">
+                    {contactSearch
+                      ? "No matching contacts found"
+                      : "No contacts found"}
+                  </p>
                 ) : (
                   <div className="max-h-80 overflow-y-auto border rounded-lg">
                     <table className="w-full text-sm">
@@ -287,8 +275,8 @@ const onEditSave = async (id) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {contacts.map((c, i) => (
-                          <tr key={i} className="border-t">
+                        {filteredContacts.map((c, i) => (
+                          <tr key={i} className="border-t hover:bg-gray-50">
                             <td className="p-3">{c.name || "-"}</td>
                             <td className="p-3">{c.phoneNo || c.contact || "-"}</td>
                           </tr>
@@ -299,8 +287,11 @@ const onEditSave = async (id) => {
                 )}
 
                 <button
-                  onClick={() => setShowContacts(false)}
-                  className="mt-4 w-full py-2 text-white bg-teal-500 rounded-lg hover:bg-teal-700 hover:cursor-pointer text-center"
+                  onClick={() => {
+                    setShowContacts(false);
+                    setContactSearch(""); 
+                  }}
+                  className="mt-6 w-full py-2 text-white bg-teal-500 rounded-lg hover:bg-teal-700 hover:cursor-pointer text-center"
                 >
                   Close
                 </button>

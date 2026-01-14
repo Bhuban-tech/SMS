@@ -73,10 +73,10 @@ const Header = ({
         {isAuthenticated && user ? (
           <>
             <div className="text-right hidden sm:block">
-              <p className="text-sm lg:text-base text-white font-medium">
+              {/* <p className="text-sm lg:text-base text-white font-medium">
                 {getDisplayName()}
-              </p>
-              <p className="text-xs text-white/80 mt-0.5">{user.email}</p>
+              </p> */}
+              {/* <p className="text-xs text-white/80 mt-0.5">{user.email}</p> */}
             </div>
 
             <div

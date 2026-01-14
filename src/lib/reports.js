@@ -19,13 +19,16 @@ export const fetchDailyReport = async (adminId, startDate, endDate) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    let errorMessage = "Failed to fetch daily report";
+    // const errorText = await response.text();
+    // let errorMessage = "Failed to fetch daily report";
+    let errorMessage = "no data avalible here  so sorry guys la ";
     try {
-      const errorJson = JSON.parse(errorText);
-      errorMessage += `: ${errorJson.message || errorText}`;
+      // const errorJson = JSON.parse(errorText);
+      // errorMessage += `: ${errorJson.message || errorText}`;
+       let errorMessage = "no data avalible here  so sorry guys lala ";
     } catch {
-      errorMessage += `: ${errorText}`;
+      // errorMessage += `: ${errorText}`;
+       let errorMessage = "no data avalible here  so sorry guys lala  ";
     }
     throw new Error(errorMessage);
   }

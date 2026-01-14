@@ -1,4 +1,3 @@
-// TransactionTable.jsx - Most important responsiveness improvement
 "use client";
 import React from "react";
 import { AlertCircle, Loader } from "lucide-react";
@@ -11,85 +10,112 @@ export default function TransactionTable({
   formatDate,
   getPaymentMethodDisplay,
 }) {
+  // Filtering Logic
   const filteredTransactions = transactions.filter((t) => {
+    // Date filter
     let matchesDate = true;
-    let matchesType = true;
-
     if (filterDate) {
-      const transactionDate = new Date(t.paidAt || t.createdAt || t.created_at || 0);
+      const txDate = new Date(t.paidAt || t.createdAt || t.created_at || 0);
       const filterDateObj = new Date(filterDate);
 
       matchesDate =
-        transactionDate.getFullYear() === filterDateObj.getFullYear() &&
-        transactionDate.getMonth() === filterDateObj.getMonth() &&
-        transactionDate.getDate() === filterDateObj.getDate();
+        txDate.getFullYear() === filterDateObj.getFullYear() &&
+        txDate.getMonth() === filterDateObj.getMonth() &&
+        txDate.getDate() === filterDateObj.getDate();
     }
 
+    // Type filter ("top up")
+    let matchesType = true;
     if (filterType === "top up") {
-      matchesType =
-        t.status === "COMPLETE" ||
-        t.status === "Completed" ||
-        t.status === "Success" ||
-        ["esewa", "khalti"].includes(t.paymentMethod?.toLowerCase());
+      const status = (t.status || "").trim();
+      const method = (t.paymentMethod || "").toLowerCase();
+
+      const isSuccessfulTopup =
+        status === "Completed" ||           // Current official Khalti success status
+        status.toLowerCase() === "completed" ||
+        status === "COMPLETE" ||
+        status === "Success" ||
+        status === "success" ||
+        method === "khalti" ||
+        method === "esewa";
+
+      matchesType = isSuccessfulTopup;
     }
 
     return matchesDate && matchesType;
   });
 
+  // Helpers
   const getTransactionType = (t) => {
-    const status = t.status?.toLowerCase();
-    const method = t.paymentMethod?.toLowerCase();
+    const status = (t.status || "").toLowerCase().trim();
+    const method = (t.paymentMethod || "").toLowerCase();
 
-    const isTopUp =
-      status === "complete" ||
+    const isCredit =
       status === "completed" ||
+      status === "complete" ||
       status === "success" ||
-      method === "esewa" ||
       method === "khalti" ||
+      method === "esewa" ||
       t.type === "credit" ||
-      t.amount > 0;
+      (t.amount ?? t.totalAmount ?? 0) > 0;
 
-    return isTopUp ? "credit" : "debit";
+    return isCredit ? "credit" : "debit";
   };
 
-  const getAmountDisplay = (t) => {
-    const amount = t.totalAmount || t.amount || 0;
+  const getDisplayAmount = (t) => {
+    let raw = t.totalAmount ?? t.amount ?? 0;
+
+    // Most common case: backend saves Khalti amount in paisa
+    if ((t.paymentMethod?.toLowerCase() === "khalti" || t.pidx) && raw > 500) {
+      raw = raw / 100;
+    }
+
     const type = getTransactionType(t);
-    const sign = type === "credit" ? "+" : "–";
-    const colorClass = type === "credit" ? "text-emerald-700" : "text-rose-700";
+    const sign = type === "credit" ? "+" : "−";
+    const color = type === "credit" ? "text-emerald-700" : "text-rose-700";
 
     return (
-      <span className={`text-lg font-bold ${colorClass}`}>
-        {sign} Rs. {Math.abs(amount).toFixed(2)}
+      <span className={`text-lg font-bold ${color}`}>
+        {sign} रु{" "}
+        {Math.abs(raw).toLocaleString("en-NP", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
       </span>
     );
   };
 
-  const getStatusColor = (status) => {
-    const s = status?.toLowerCase();
-    if (s === "complete" || s === "completed" || s === "success") {
+  const getStatusBadgeStyle = (status) => {
+    const s = (status || "Pending").toLowerCase().trim();
+
+    if (["completed", "complete", "success"].includes(s)) {
       return "bg-emerald-100 text-emerald-800 border border-emerald-200";
     }
-    if (s?.includes("pending")) {
+    if (s.includes("pending")) {
       return "bg-amber-100 text-amber-800 border border-amber-200";
     }
-    return "bg-rose-100 text-rose-800 border border-rose-200";
-  };
-
-  const getPaymentMethodColor = (method) => {
-    switch (method?.toLowerCase()) {
-      case "esewa":
-        return "bg-emerald-100 text-emerald-800 border border-emerald-200";
-      case "khalti":
-        return "bg-indigo-100 text-indigo-800 border border-indigo-200";
-      case "system":
-      case "deduction":
-        return "bg-rose-100 text-rose-800 border border-rose-200";
-      default:
-        return "bg-gray-100 text-gray-800 border border-gray-200";
+    if (
+      s.includes("cancel") ||
+      s.includes("fail") ||
+      s.includes("expire") ||
+      s.includes("refund")
+    ) {
+      return "bg-rose-100 text-rose-800 border border-rose-200";
     }
+    return "bg-gray-100 text-gray-700 border border-gray-200";
   };
 
+  const getMethodBadgeStyle = (method) => {
+    const m = (method || "").toLowerCase();
+
+    if (m === "khalti") return "bg-indigo-100 text-indigo-800 border border-indigo-200";
+    if (m === "esewa") return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+    if (m === "system" || m === "deduction")
+      return "bg-rose-100 text-rose-800 border border-rose-200";
+    return "bg-gray-100 text-gray-700 border border-gray-200";
+  };
+
+  // Render
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
       {isLoading ? (
@@ -102,7 +128,9 @@ export default function TransactionTable({
           <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-6" />
           <p className="text-lg font-semibold text-gray-700 mb-2">No transactions found</p>
           <p className="text-sm text-gray-500">
-            {filterDate ? "No transactions on selected date." : "Your transactions will appear here."}
+            {filterDate
+              ? "No transactions found for selected date."
+              : "Your transaction history will appear here."}
           </p>
         </div>
       ) : (
@@ -111,37 +139,35 @@ export default function TransactionTable({
           <div className="md:hidden">
             {filteredTransactions.map((t) => (
               <div
-                key={t.id || t.pidx || t.transactionUuid}
-                className="p-5 bg-white hover:bg-teal-50/50 transition-colors"
+                key={t.id || t.pidx || t.transactionUuid || Math.random()}
+                className="p-5 hover:bg-teal-50/50 transition-colors"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-medium text-gray-900">{formatDate(t)}</div>
                     <div className="text-sm text-gray-600 mt-1">
                       {getTransactionType(t) === "debit"
-                        ? "SMS Sent / Deduction"
+                        ? "SMS Deduction"
                         : getPaymentMethodDisplay(t.paymentMethod)}
                     </div>
                   </div>
-                  <div className="text-right">{getAmountDisplay(t)}</div>
+                  <div className="text-right">{getDisplayAmount(t)}</div>
                 </div>
 
-                <div>
-                  <span
-                    className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                      t.status
-                    )}`}
-                  >
-                    {t.status || "Pending"}
-                  </span>
-                </div>
+                <span
+                  className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadgeStyle(
+                    t.status
+                  )}`}
+                >
+                  {t.status || "Pending"}
+                </span>
               </div>
             ))}
           </div>
 
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-160">
               <thead className="bg-linear-to-r from-teal-50 to-cyan-50 border-b-2 border-teal-200">
                 <tr>
                   <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
@@ -159,36 +185,36 @@ export default function TransactionTable({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {filteredTransactions.map((transaction) => (
+                {filteredTransactions.map((t) => (
                   <tr
-                    key={transaction.id || transaction.pidx || transaction.transactionUuid}
-                    className="hover:bg-teal-50/50 transition-all duration-200"
+                    key={t.id || t.pidx || t.transactionUuid || Math.random()}
+                    className="hover:bg-teal-50/50 transition-colors"
                   >
                     <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatDate(transaction)}
+                      {formatDate(t)}
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getPaymentMethodColor(
-                          transaction.paymentMethod ||
-                            (getTransactionType(transaction) === "debit" ? "system" : "")
+                        className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getMethodBadgeStyle(
+                          t.paymentMethod ||
+                            (getTransactionType(t) === "debit" ? "system" : "")
                         )}`}
                       >
-                        {getTransactionType(transaction) === "debit"
-                          ? "SMS Sent / Deduction"
-                          : getPaymentMethodDisplay(transaction.paymentMethod)}
+                        {getTransactionType(t) === "debit"
+                          ? "SMS Deduction"
+                          : getPaymentMethodDisplay(t.paymentMethod)}
                       </span>
                     </td>
-                    <td className="px-8 py-5 whitespace-nowrap text-right">
-                      {getAmountDisplay(transaction)}
+                    <td className="px-8 py-5 whitespace-nowrap text-right font-medium">
+                      {getDisplayAmount(t)}
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap text-center">
                       <span
-                        className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getStatusColor(
-                          transaction.status
+                        className={`inline-flex px-4 py-1.5 text-xs font-semibold rounded-full ${getStatusBadgeStyle(
+                          t.status
                         )}`}
                       >
-                        {transaction.status || "Pending"}
+                        {t.status || "Pending"}
                       </span>
                     </td>
                   </tr>

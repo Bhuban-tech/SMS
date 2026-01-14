@@ -21,6 +21,30 @@ export default function FilesTable({
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
+
+  const getDisplayType = (contentType) => {
+    if (!contentType) return "-";
+
+    const type = contentType.toLowerCase();
+
+    if (type.includes("csv")) return "CSV";
+    if (
+      type.includes("spreadsheetml") ||
+      type.includes("xlsx") ||
+      type.includes("xls")
+    )
+      return "XLSX";
+    if (type.includes("pdf")) return "PDF";
+    if (type.includes("image")) return "Image";
+    if (type.includes("text/plain")) return "TXT";
+
+    // Fallback: show clean version of mime type
+    return contentType
+      .replace("application/", "")
+      .replace("text/", "")
+      .toUpperCase();
+  };
+
   const sortedFiles = [...filteredFiles].sort((a, b) => {
     const nameA = (a.name || "").toLowerCase();
     const nameB = (b.name || "").toLowerCase();
@@ -171,13 +195,13 @@ export default function FilesTable({
                     <>
                       <button
                         onClick={() => onEditSave(row.id)}
-                        className="px-3 py-1 rounded bg-teal-600 text-white hover:bg-teal-700 hover:cursor-pointer"
+                        className="px-3 py-1 rounded bg-teal-600 text-white hover:bg-teal-700"
                       >
                         Save
                       </button>
                       <button
                         onClick={onEditCancel}
-                        className="px-3 py-1 rounded bg-gray-400 text-white hover:bg-gray-500 hover:cursor-pointer"
+                        className="px-3 py-1 rounded bg-gray-400 text-white hover:bg-gray-500"
                       >
                         Cancel
                       </button>
@@ -186,19 +210,22 @@ export default function FilesTable({
                     <>
                       <button
                         onClick={() => handleViewClick(row)}
-                        className="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600 hover:cursor-pointer"
+                        className="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600"
+                        title="View"
                       >
                         <Eye size={16} />
                       </button>
                       <button
                         onClick={() => onEditStart(row)}
-                        className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 hover:cursor-pointer"
+                        className="bg-teal-500 text-white p-2 rounded-full hover:bg-teal-600"
+                        title="Edit name"
                       >
                         <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDeleteClick(row)}
-                        className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 hover:cursor-pointer"
+                        className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                        title="Delete"
                       >
                         <Trash2 size={16} />
                       </button>

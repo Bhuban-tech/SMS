@@ -44,10 +44,10 @@ const SMSDashboard = () => {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState(null);
 
-  // Get adminId from Redux state or localStorage as fallback
+
   const adminId = user?.id || (typeof window !== "undefined" ? localStorage.getItem('adminId') : null);
 
-  // Check authentication on mount
+
   useEffect(() => {
     if (!isAuthenticated() || !token) {
       router.replace("/login");
@@ -135,9 +135,9 @@ const SMSDashboard = () => {
           const year = parseInt(selectedMonth.split('-')[0]);
           const data = await fetchMonthlyReport(adminId, year);
           if (data.success && data.data) {
-            const filtered = data.data.filter(item => 
-              item.date.startsWith(selectedMonth)
-            );
+          const filtered = data.data.filter(item => 
+  item.date && typeof item.date === 'string' && item.date.startsWith(selectedMonth)
+);
             setMonthlyReportData(filtered);
           } else {
             setMonthlyReportData([]);

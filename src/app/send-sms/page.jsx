@@ -33,7 +33,7 @@ export default function SMSSendUI() {
   });
 
   const [token, setToken] = useState("");
-  const [adminId, setAdminId] = useState(0);
+  const senderId = 1; // ← STATIC SENDER ID
 
   const [groups, setGroups] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -46,7 +46,7 @@ export default function SMSSendUI() {
   const [bulkGroupName, setBulkGroupName] = useState("");
 
   const [sending, setSending] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false); // ← NEW: Track one-time click
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const [templatePayload, setTemplatePayload] = useState(null);
 
@@ -55,15 +55,24 @@ export default function SMSSendUI() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("send-sms");
 
-  /** Load token & adminId */
+  /** Load token */
   useEffect(() => {
-    setToken(localStorage.getItem("token") || "");
-    setAdminId(Number(localStorage.getItem("adminId")) || 0);
+    const storedToken = localStorage.getItem("token");
+    
+    if (storedToken) {
+      setToken(storedToken);
+      console.log("✅ Token loaded, using static senderId:", senderId);
+    } else {
+      console.error("❌ No token found in localStorage");
+    }
   }, []);
 
   /** Load contacts and groups */
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      console.log("⏳ Waiting for token...");
+      return;
+    }
 
     (async () => {
       try {
@@ -72,7 +81,8 @@ export default function SMSSendUI() {
 
         const c = await fetchContacts(token);
         if (c.success) setContacts(c.data);
-      } catch {
+      } catch (error) {
+        console.error("Failed to load data:", error);
         showAlert("error", "Failed to load data");
       }
     })();
@@ -92,7 +102,9 @@ export default function SMSSendUI() {
   ]);
 
   const handleSendSMS = useCallback(async () => {
-    if (hasSubmitted || sending) return; 
+    if (hasSubmitted || sending) return;
+    
+    console.log("📤 Sending SMS with static senderId:", senderId);
 
     setHasSubmitted(true);
     setSending(true);
@@ -104,9 +116,10 @@ export default function SMSSendUI() {
         if (!formData.message.trim()) throw new Error("Enter a message");
         if (phoneNumbers.length === 0) throw new Error("Add phone numbers");
 
+        console.log("Sending individual SMS:", { senderId, phoneNumbers });
         response = await sendIndividualSMS(
           token,
-          adminId,
+          senderId,
           formData.message,
           phoneNumbers
         );
@@ -116,9 +129,10 @@ export default function SMSSendUI() {
         if (!selectedGroup) throw new Error("Select a group");
         if (!formData.message.trim()) throw new Error("Enter a message");
 
+        console.log("Sending group SMS:", { senderId, selectedGroup });
         response = await sendGroupSMS(
           token,
-          adminId,
+          senderId,
           selectedGroup,
           formData.message
         );
@@ -128,9 +142,10 @@ export default function SMSSendUI() {
         if (!bulkFile || !bulkGroupName)
           throw new Error("Select file & group name");
 
+        console.log("Uploading bulk file:", { senderId, bulkGroupName });
         const uploadRes = await uploadGroupFile(
           token,
-          adminId,
+          senderId,
           bulkFile,
           bulkGroupName
         );
@@ -138,7 +153,7 @@ export default function SMSSendUI() {
         if (!uploadRes?.success)
           throw new Error("Failed to upload bulk file");
 
-        toast.success("success", "Bulk contacts uploaded successfully!");
+        toast.success("Bulk contacts uploaded successfully!");
         setBulkFile(null);
         setBulkGroupName("");
         return;
@@ -150,20 +165,23 @@ export default function SMSSendUI() {
 
         const { content, csvData, selectedContacts, selectedGroup } = templatePayload;
 
+        console.log("Sending template SMS:", { senderId, csvData, selectedGroup });
         if (selectedContacts?.length > 0 || csvData?.length > 0) {
-          response = await sendTemplateSMS(token, adminId, csvData || [], content);
+          response = await sendTemplateSMS(token, senderId, csvData || [], content);
         } else if (selectedGroup) {
-          response = await sendGroupSMS(token, adminId, selectedGroup, content);
+          response = await sendGroupSMS(token, senderId, selectedGroup, content);
         } else {
           throw new Error("Select recipients or upload CSV");
         }
       }
 
+      console.log("📥 Response:", response);
+
       if (response && !response?.success)
         throw new Error(response?.message || "Failed to send");
 
       if (formData.sendType !== "bulk") {
-        toast.success("Success! SMS sent successfully");
+        toast.success("SMS sent successfully!");
       }
 
       // Reset form (except sendType)
@@ -173,9 +191,9 @@ export default function SMSSendUI() {
       setSelectedGroup("");
       setTemplatePayload(null);
     } catch (err) {
-      toast.error("error", err.message || "Error sending SMS");
-      // Optional: Allow retry on error
-      // setHasSubmitted(false);
+      console.error("❌ Error sending SMS:", err);
+      toast.error(err.message || "Error sending SMS");
+      setHasSubmitted(false); // Allow retry on error
     } finally {
       setSending(false);
     }
@@ -184,7 +202,7 @@ export default function SMSSendUI() {
     sending,
     formData,
     token,
-    adminId,
+    senderId,
     phoneNumbers,
     selectedGroup,
     bulkFile,
