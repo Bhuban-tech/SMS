@@ -229,13 +229,23 @@ export default function SMSFilesPage() {
           {/* Contacts Modal with Search */}
           {showContacts && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white w-full max-w-lg rounded-xl p-6 shadow-xl">
-                <h2 className="text-xl font-bold mb-4 text-teal-700">
+              <div className="relative bg-white w-full max-w-lg rounded-xl p-6 shadow-xl">
+                         <button
+        onClick={() => setShowContacts(false)}
+        aria-label="Close"
+        className="absolute top-4 right-6 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
+      >
+        ✕
+      </button>
+        
+                <h2 className="text-xl text-center font-bold mb-4 text-teal-700">
                   {selectedGroup?.name}
                 </h2>
+                 
 
                 {/* Search Input */}
                 <div className="mb-4 relative">
+                  
                   <input
                     type="text"
                     placeholder="Search by name..."

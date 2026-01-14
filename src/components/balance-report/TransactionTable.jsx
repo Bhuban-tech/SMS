@@ -168,18 +168,18 @@ export default function TransactionTable({
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full min-w-160">
-              <thead className="bg-linear-to-r from-teal-50 to-cyan-50 border-b-2 border-teal-200">
+              <thead className="bg-teal-700 border-b-2 border-teal-200">
                 <tr>
-                  <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
+                  <th className="px-8 py-5 text-left text-white text-xs font-bold text-teal-800 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-8 py-5 text-left text-xs font-bold text-teal-800 uppercase tracking-wider">
+                  <th className="px-8 py-5 text-left text-xs text-white font-bold text-teal-800 uppercase tracking-wider">
                     Method
                   </th>
-                  <th className="px-8 py-5 text-right text-xs font-bold text-teal-800 uppercase tracking-wider">
+                  <th className="px-8 py-5 text-right text-xs text-white font-bold text-teal-800 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-8 py-5 text-center text-xs font-bold text-teal-800 uppercase tracking-wider">
+                  <th className="px-8 py-5 text-center text-xs text-white font-bold text-teal-800 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>

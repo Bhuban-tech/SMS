@@ -36,7 +36,7 @@ const NAV = [
     ],
   },
    {
-    title: "Additional Featured",
+    title: "Additional Features",
     items: [
       { label: "Profile Update", href: "/docs/profile", icon: UserPlusIcon },
       
@@ -63,7 +63,7 @@ export default function DocSidebar() {
             onClick={() => toggle(section.title)}
             className="flex items-center justify-between w-full px-3 py-2 text-sm
               font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400
-              hover:text-gray-900 dark:hover:text-gray-200 transition"
+              hover:text-gray-900 dark:hover:text-gray-200 transition hover:cursor-pointer"
           >
             <span>{section.title}</span>
             {open[section.title] ? (
