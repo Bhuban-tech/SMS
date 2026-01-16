@@ -11,7 +11,6 @@ import BulkSMS from "@/components/send-sms/BulkSMS";
 import MessageBox from "@/components/send-sms/MessageBox";
 import Alert from "@/components/send-sms/Alert";
 import TemplateSMS from "@/components/send-sms/TemplateSMS";
-import { X, Menu } from "lucide-react";
 
 import { fetchGroups } from "@/lib/group";
 import { fetchContacts } from "@/lib/contacts";
@@ -33,7 +32,7 @@ export default function SMSSendUI() {
   });
 
   const [token, setToken] = useState("");
-  const senderId = 1; // ← STATIC SENDER ID
+  const [adminId, setAdminId] = useState(0);
 
   const [groups, setGroups] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -46,7 +45,7 @@ export default function SMSSendUI() {
   const [bulkGroupName, setBulkGroupName] = useState("");
 
   const [sending, setSending] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false); // ← NEW: Track one-time click
 
   const [templatePayload, setTemplatePayload] = useState(null);
 
@@ -55,24 +54,15 @@ export default function SMSSendUI() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("send-sms");
 
-  /** Load token */
+  /** Load token & adminId */
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    
-    if (storedToken) {
-      setToken(storedToken);
-      console.log("✅ Token loaded, using static senderId:", senderId);
-    } else {
-      console.error("❌ No token found in localStorage");
-    }
+    setToken(localStorage.getItem("token") || "");
+    setAdminId(Number(localStorage.getItem("adminId")) || 0);
   }, []);
 
   /** Load contacts and groups */
   useEffect(() => {
-    if (!token) {
-      console.log("⏳ Waiting for token...");
-      return;
-    }
+    if (!token) return;
 
     (async () => {
       try {
@@ -81,8 +71,7 @@ export default function SMSSendUI() {
 
         const c = await fetchContacts(token);
         if (c.success) setContacts(c.data);
-      } catch (error) {
-        console.error("Failed to load data:", error);
+      } catch {
         showAlert("error", "Failed to load data");
       }
     })();
@@ -102,9 +91,7 @@ export default function SMSSendUI() {
   ]);
 
   const handleSendSMS = useCallback(async () => {
-    if (hasSubmitted || sending) return;
-    
-    console.log("📤 Sending SMS with static senderId:", senderId);
+    if (hasSubmitted || sending) return; 
 
     setHasSubmitted(true);
     setSending(true);
@@ -116,10 +103,9 @@ export default function SMSSendUI() {
         if (!formData.message.trim()) throw new Error("Enter a message");
         if (phoneNumbers.length === 0) throw new Error("Add phone numbers");
 
-        console.log("Sending individual SMS:", { senderId, phoneNumbers });
         response = await sendIndividualSMS(
           token,
-          senderId,
+          adminId,
           formData.message,
           phoneNumbers
         );
@@ -129,10 +115,9 @@ export default function SMSSendUI() {
         if (!selectedGroup) throw new Error("Select a group");
         if (!formData.message.trim()) throw new Error("Enter a message");
 
-        console.log("Sending group SMS:", { senderId, selectedGroup });
         response = await sendGroupSMS(
           token,
-          senderId,
+          adminId,
           selectedGroup,
           formData.message
         );
@@ -142,10 +127,9 @@ export default function SMSSendUI() {
         if (!bulkFile || !bulkGroupName)
           throw new Error("Select file & group name");
 
-        console.log("Uploading bulk file:", { senderId, bulkGroupName });
         const uploadRes = await uploadGroupFile(
           token,
-          senderId,
+          adminId,
           bulkFile,
           bulkGroupName
         );
@@ -153,7 +137,7 @@ export default function SMSSendUI() {
         if (!uploadRes?.success)
           throw new Error("Failed to upload bulk file");
 
-        toast.success("Bulk contacts uploaded successfully!");
+        toast.success("success", "Bulk contacts uploaded successfully!");
         setBulkFile(null);
         setBulkGroupName("");
         return;
@@ -165,23 +149,20 @@ export default function SMSSendUI() {
 
         const { content, csvData, selectedContacts, selectedGroup } = templatePayload;
 
-        console.log("Sending template SMS:", { senderId, csvData, selectedGroup });
         if (selectedContacts?.length > 0 || csvData?.length > 0) {
-          response = await sendTemplateSMS(token, senderId, csvData || [], content);
+          response = await sendTemplateSMS(token, adminId, csvData || [], content);
         } else if (selectedGroup) {
-          response = await sendGroupSMS(token, senderId, selectedGroup, content);
+          response = await sendGroupSMS(token, adminId, selectedGroup, content);
         } else {
           throw new Error("Select recipients or upload CSV");
         }
       }
 
-      console.log("📥 Response:", response);
-
       if (response && !response?.success)
         throw new Error(response?.message || "Failed to send");
 
       if (formData.sendType !== "bulk") {
-        toast.success("SMS sent successfully!");
+        toast.success("Success! SMS sent successfully");
       }
 
       // Reset form (except sendType)
@@ -191,9 +172,9 @@ export default function SMSSendUI() {
       setSelectedGroup("");
       setTemplatePayload(null);
     } catch (err) {
-      console.error("❌ Error sending SMS:", err);
-      toast.error(err.message || "Error sending SMS");
-      setHasSubmitted(false); // Allow retry on error
+      toast.error("error", err.message || "Error sending SMS");
+      // Optional: Allow retry on error
+      // setHasSubmitted(false);
     } finally {
       setSending(false);
     }
@@ -202,7 +183,7 @@ export default function SMSSendUI() {
     sending,
     formData,
     token,
-    senderId,
+    adminId,
     phoneNumbers,
     selectedGroup,
     bulkFile,
@@ -223,13 +204,6 @@ export default function SMSSendUI() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-        <button
-        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
-      >
-        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
-      </button>
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
