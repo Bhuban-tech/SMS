@@ -138,13 +138,13 @@ export default function ContactsTable({
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => saveEdit(contact)}
-                          className="px-3 py-1 bg-teal-600 text-white rounded"
+                          className="px-3 py-1 bg-teal-500 text-white rounded hover:cursor-pointer hover:bg-teal-700"
                         >
                           Save
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="px-3 py-1 bg-gray-500 text-white rounded"
+                          className="px-3 py-1 bg-gray-500 text-white rounded hover:cursor-pointer hover:bg-gray-700"
                         >
                           Cancel
                         </button>

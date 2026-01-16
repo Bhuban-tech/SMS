@@ -9,6 +9,10 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(""); // New state for search input
+  const existingContactIds = useMemo(() => {
+  return group?.contacts?.map((c) => c.id) || [];
+}, [group]);
+
 
   useEffect(() => {
     if (!token) return;
@@ -37,22 +41,51 @@ function GroupAddContactModal({ token, group, onClose, onSuccess }) {
     );
   };
 
+  // const handleAdd = async () => {
+  //   if (contactIds.length === 0) {
+  //     toast.error("Select at least one contact");
+  //     return;
+  //   }
+
+  //   const res = await addContactsToGroup(token, group.id, contactIds);
+  //   if (!res.success) {
+  //     toast.error(res.message);
+  //     return;
+  //   }
+
+  //   toast.success("Contacts added successfully");
+  //   onSuccess();
+  //   onClose();
+  // };
+
   const handleAdd = async () => {
-    if (contactIds.length === 0) {
-      toast.error("Select at least one contact");
-      return;
-    }
+  if (contactIds.length === 0) {
+    toast.error("Select at least one contact");
+    return;
+  }
 
-    const res = await addContactsToGroup(token, group.id, contactIds);
-    if (!res.success) {
-      toast.error(res.message);
-      return;
-    }
 
-    toast.success("Contacts added successfully");
-    onSuccess();
-    onClose();
-  };
+  const alreadyExists = contactIds.filter((id) =>
+    existingContactIds.includes(id)
+  );
+
+  if (alreadyExists.length > 0) {
+    toast.error("This contact already exist in this group");
+    return;
+  }
+
+  const res = await addContactsToGroup(token, group.id, contactIds);
+
+  if (!res.success) {
+    toast.error(res.message);
+    return;
+  }
+
+  toast.success("Contacts added successfully");
+  onSuccess();
+  onClose();
+};
+
 
   // Filter contacts by search term (case-insensitive)
   const filteredContacts = useMemo(() => {

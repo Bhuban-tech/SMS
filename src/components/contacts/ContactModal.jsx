@@ -171,7 +171,7 @@ export default function ContactModal({
 
       <button
         onClick={handleSave}
-        className="w-full bg-teal-500 text-white font-medium py-3 rounded-lg hover:bg-teal-700 transition-colors"
+        className="w-full bg-teal-500 text-white font-medium py-3 rounded-lg hover:bg-teal-700 transition-colors hover:cursor-pointer"
       >
         {isEdit ? "Update" : "Add"} Contact
       </button>

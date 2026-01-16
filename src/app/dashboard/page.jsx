@@ -190,7 +190,7 @@ const SMSDashboard = () => {
 
   if (!token || !isAuthenticated()) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4">
         <div className="text-center animate-fade-in">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 text-sm sm:text-base">Checking authentication...</p>
@@ -200,14 +200,14 @@ const SMSDashboard = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
       {/* Mobile Menu Button - Enhanced */}
       <button
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="lg:hidden fixed top-3 left-3 z-50 w-11 h-11 sm:w-12 sm:h-12 bg-slate-700 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-slate-800 active:scale-95 transition-all duration-200"
       >
-        {sidebarOpen ? <X size={20} className="sm:w-[22px] sm:h-[22px]" /> : <Menu size={20} className="sm:w-[22px] sm:h-[22px]" />}
+        {sidebarOpen ? <X size={20} className="sm:w-5.5 sm:h-5.5" /> : <Menu size={20} className="sm:w-5.5 sm:h-5.5" />}
       </button>
 
       {/* Sidebar with smooth animation */}
@@ -379,7 +379,7 @@ const SMSDashboard = () => {
                               <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 text-center mb-4 sm:mb-6 md:mb-8">
                                 Daily SMS Activity – {monthTitle}
                               </h3>
-                              <ResponsiveContainer width="100%" height={300} className="sm:h-[350px] md:h-[450px]">
+                              <ResponsiveContainer width="100%" height={300} className="sm:h-87.5 md:h-112.5">
                                 <BarChart data={formattedMonthlyData} margin={{ top: 20, right: 10, left: 0, bottom: 60 }}>
                                   <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
                                   <XAxis 
@@ -412,7 +412,7 @@ const SMSDashboard = () => {
                             <div className="mt-6 sm:mt-8 md:mt-10 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                               <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 animate-fade-in-left">
                                 <h3 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 mb-4 sm:mb-6 text-center">Estimated Provider Distribution</h3>
-                                <ResponsiveContainer width="100%" height={250} className="sm:h-[280px] md:h-[300px]">
+                                <ResponsiveContainer width="100%" height={250} className="sm:h-70 md:h-75">
                                   <PieChart>
                                     <Pie
                                       data={providerData}
@@ -488,7 +488,7 @@ const SMSDashboard = () => {
                     </div>
                     <button
                       onClick={handleSendSMS}
-                      className="w-full py-3 sm:py-4 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold rounded-lg sm:rounded-xl hover:from-teal-600 hover:to-teal-700 active:scale-[0.98] transition-all duration-200 shadow-lg text-sm sm:text-base"
+                      className="w-full py-3 sm:py-4 bg-linear-to-r from-teal-500 to-teal-600 text-white font-bold rounded-lg sm:rounded-xl hover:from-teal-600 hover:to-teal-700 active:scale-[0.98] transition-all duration-200 shadow-lg text-sm sm:text-base"
                     >
                       Send SMS Now
                     </button>

@@ -245,7 +245,7 @@ export default function GroupPage() {
         />
       )}
 {showRemoveContactModal && contactToRemove && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-2">
+  <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-2">
     <div className="relative bg-white rounded-xl p-4 w-full max-w-md shadow-lg">
       
       {/* Close button */}
