@@ -7,6 +7,8 @@ import { Users, LogOut, User, LogIn } from "lucide-react";
 import { logout as logoutAction } from "@/store/slices/authSlice";
 import { handleLogout } from "@/lib/auth";
 import ProfileModal from "./profile/ProfileModal";
+import Logo from "@/components/Logo";
+
 
 
 const Header = ({
@@ -59,13 +61,12 @@ const Header = ({
 
   return (
     <header className="bg-slate-800 w-full shadow-md p-4 lg:p-5 flex flex-col lg:flex-row items-center justify-between">
-      <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-4">
-        
-        <h1 className="text-base sm:text-lg md:text-xl font-semibold text-white truncate">
-          {title}
-        </h1>
+      <div className="flex items-center gap-3 lg:gap-4">
+        <Logo href="/dashboard" />
+          <h1 className="text-base sm:text-lg md:text-xl font-semibold text-white truncate">
+            {title}
+          </h1>
       </div>
-
       <div
         className="flex items-center gap-4 mt-3 lg:mt-0 relative"
         ref={dropdownRef}
